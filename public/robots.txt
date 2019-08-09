@@ -1,0 +1,9 @@
+#http://support.google.com/webmasters/bin/answer.py?hl=es&answer=156449
+Sitemap: http://localhost/sitemap/sitemap.xml
+
+User-agent: *
+Disallow: /core/
+Disallow: /library/
+Disallow: /model/
+Disallow: /views/
+Disallow: /controllers/

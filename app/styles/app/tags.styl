@@ -1,0 +1,72 @@
+header
+#main
+footer
+    width 90%
+    margin auto
+
+header
+    position fixed
+    background-color #FFF
+    width 100%
+    z-index 100
+    top 0
+    nav
+    li
+    figcaption
+        display inline-block
+        vertical-align middle
+    li
+        a
+            display block
+            padding 10px
+            padding-bottom 2px
+            font-weight 900
+            color #777
+            position relative
+            &:before
+                content ""
+                position absolute
+                width 0
+                height 3px
+                bottom 0
+                left 0
+                background #FFB515
+                visibility hidden
+                border-radius 5px
+                transition all .3s ease-in
+                -moz-transition all .3s ease-in
+                -webkit-transition all .3s ease-in
+                -o-transition width all .3s ease-in
+            &:hover:before
+            &:focus:before
+                visibility visible
+                width 100%
+
+body
+    padding-top 80px
+
+code
+    padding .2em 0
+    background-color rgba(0,0,0,0.04)
+    border-radius 3px
+
+footer
+    text-align center
+    background-color #333
+    color #999
+    clear both
+    border-radius .9em
+    padding 1em
+    margin 1em auto
+    position relative
+    a
+        color #FFF
+        &:hover 
+            color #FFB515
+
+article.about-scoop
+    width 75%
+
+pre.prettyprint
+    white-space pre
+    overflow auto

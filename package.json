@@ -1,0 +1,35 @@
+{
+  "name": "scoop",
+  "version": "0.5.5",
+  "description": "scoop project",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mirdware/scoop"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/gulp",
+    "dev": "./node_modules/.bin/gulp dev"
+  },
+  "author": "Marlon Ramirez <marlonramirez@outlook.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "babelify": "^10.0.0",
+    "browserify": "^16.2.3",
+    "gulp": "^4.0.1",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-livereload": "^4.0.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-stylus": "^2.7.0",
+    "gulp-uglify": "^3.0.2",
+    "nib": "^1.1.2",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "fa-stylus": "^0.3.2",
+    "scalar": "^0.1.8"
+  }
+}

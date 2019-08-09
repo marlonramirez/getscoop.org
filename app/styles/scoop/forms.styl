@@ -1,0 +1,109 @@
+label
+    position relative
+    text-align right
+    margin-right .5em
+    cursor pointer
+
+.btn
+    background $color-gray-normal
+    border 0
+    border-bottom 1px solid rgba(0, 0, 0, .25)
+    border-radius .5em
+    box-shadow 0 1px 3px rgba(0, 0, 0, .6)
+    color white
+    cursor pointer
+    display inline-block
+    font-weight 700
+    padding .5em 1em
+    margin .5em 0
+    position relative
+    text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
+    &:hover
+        background-color $color-gray-hover
+    &:disabled
+        background-color $color-bg-disable
+        color $color-gray-normal
+        cursor not-allowed
+        &:hover
+            background-color $color-bg-disable
+
+.input
+    border-radius .3em
+    border solid 1px $color-border-text
+    padding .5em
+    padding-right 1.5em
+    margin .5em 0
+    vertical-align middle
+    max-width 100%
+    box-sizing border-box
+    &:disabled
+        cursor not-allowed
+        background-color lighten($color-bg-disable, 60%)
+
+.custom-input-file
+    overflow hidden
+    position relative
+    cursor pointer
+    .input-file
+        outline 0
+        font-size 10000px
+        border 10000px solid transparent
+        opacity 0
+        filter unquote("alpha(opacity=50)")
+        position absolute
+        right -1000px
+        top -1000px
+        cursor pointer
+        z-index 1
+
+.group-box
+    icon-box()
+    display inline-block
+    vertical-align top
+    padding 0 .5em
+    box-sizing border-box
+    text-align left
+    {$inputs}
+        width 100%
+        margin-top .2em
+    .btn
+        margin-top 1.6em
+    textarea
+        height 120px
+
+.inline-box
+    icon-box()
+    display inline-block
+
+.radio
+.checkbox
+    input[type=radio]
+    input[type=checkbox]
+        display none
+        & + label:before
+            display inline-block
+            color $color-border-text
+            font-family FontAwesome
+            font-style normal
+            font-weight normal
+            line-height 1
+            padding-right .5em
+            width 1em
+            text-align left
+        &:checked + label:before
+        & + label:hover:before
+            color $color-check
+        &:disabled + label:before
+            color $color-bg-disable
+    input[type=radio]
+        & + label
+            fa-icon "circle-o"
+        &:checked + label
+            fa-icon "check-circle-o"
+    input[type=checkbox]
+        & + label
+            fa-icon "square-o"
+        &:checked + label
+            fa-icon "check-square-o"
+    label
+        padding-left 0

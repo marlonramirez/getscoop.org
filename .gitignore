@@ -1,0 +1,14 @@
+/vendor
+/node_modules
+/public/css
+/public/js
+/public/fonts
+/app/cache
+*.lock
+*.log
+# Windows detritus
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

@@ -1,0 +1,51 @@
+<IfModule mod_deflate.c>
+    <filesMatch "\.(js|css|html|php)$">
+        SetOutputFilter DEFLATE
+    </filesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access 1 year"
+    ExpiresByType image/jpeg "access 1 year"
+    ExpiresByType image/gif "access 1 year"
+    ExpiresByType image/png "access 1 year"
+    ExpiresByType text/css "access 1 month"
+    ExpiresByType text/html "access 1 month"
+    ExpiresByType application/pdf "access 1 month"
+    ExpiresByType text/x-javascript "access 1 month"
+    ExpiresByType application/x-shockwave-flash "access 1 month"
+    ExpiresByType image/x-icon "access 1 year"
+    ExpiresDefault "access plus 1 month"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    #Descomentar si tu servidor web está realmente siendo servido desde un directorio de usuario
+    #que ya utiliza mod_rewrite:
+    #RewriteBase /
+
+    #ocultar las carpetas de la app
+    RewriteRule ^(app|vendor|scoop|src)/ - [F]
+
+    #Forzar a usar la barra o slash (/) final dentro de la URL
+    RewriteCond %{REQUEST_URI} /+[^\.]+$
+        RewriteRule ^(.*[^/])$ %{REQUEST_URI}/ [R=308,L]
+    RewriteCond %{REQUEST_URI} ^(.*)//(.*)$
+        RewriteRule . %1/%2 [R=308,L]
+
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+        RewriteRule ^ %{ENV:PROTO}://%1%{REQUEST_URI} [R=301,L]
+
+    #Redirigir cualquier petición a index.php
+    #Si la url solicitada no es un fichero(existente), continuar...
+    RewriteCond %{REQUEST_FILENAME} !-f
+        #Si la url solicitada no es una carpeta(existente), continuar...
+        RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
+</IfModule>
+
+<FilesMatch "\.(htaccess|htpasswd|ini|log|bak)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
