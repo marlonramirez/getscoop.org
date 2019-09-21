@@ -1,6 +1,6 @@
 @extends 'layers/layer'
 <h2 class="head-main">¿Tienes una idea? Cuentanos <a href="http://mirdware.com" rel="external"><img src="{#view->img('logo-blanco.png')}" alt="MirdWare" title="MirdWare" /></a></h2>
-<div id="main">
+<div class="main">
     <section id="service">
         <figcaption>
             <img src="{#view->img('services.png')}" alt="servicios web">
@@ -10,7 +10,7 @@
         hasta desarrollos a la medida de tus necesidades. Sea cual sea tu problema consultanos, seguramente somos la
         solución que necesitas.</p>
     </section>
-    <form id="contact-project" method="post" action="{ROOT}services/contact/" class="scoop-form">
+    <form id="contact-project" method="post" action="{#view->route('contact')}" class="scoop-form">
         <fieldset class="box-shadow">
             <legend>Acerca de tí</legend>
             <div class="inline-box">

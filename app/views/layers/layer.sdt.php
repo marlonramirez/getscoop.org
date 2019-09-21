@@ -3,18 +3,18 @@
 <head>
     <!-- Codificación de la pagina a utf-8 para que admita caracteres especiales -->
     <meta charset="utf-8" />
+    <!-- Visualización en cualquier dispositivo utilizando responsive disign -->
+    <meta name="viewport" content="width=device-width" />
+    @if isset($meta)
+        <meta name="description" content="{$meta['description']}" />
+        <meta name="keywords" content="{$meta['keywords']}" />
+    :if
     <!-- Referencia a los datos del autor y material utilizado -->
     <link rel="author" href="{#view->asset('humans.txt')}" />
-    <!-- Visualización en cualquier dispositivo utilizando responsive disign -->
-    <meta name="viewport" content="width=device-width">
     <!-- Icono de la aplicación -->
     <link rel="shortcut icon" type="image/x-icon" href="{#view->asset('favicon.ico')}" />
     <!-- Enlace a la hoja de estilos general -->
     <link rel="stylesheet" href="{#view->css(#config->get('app.name').'.min.css')}" />
-    <!-- trabajar las rutas absolutas dentro de javascript -->
-    <script type="text/javascript">
-        var root = "{ROOT}";
-    </script>
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
     <script src="{#view->js(#config->get('app.name').'.min.js')}" async></script>
     <!-- Titulo de la pagina -->
@@ -30,12 +30,12 @@
             </a>
         </figcaption>
 
-        <div id="nav-icon">
+        <div id="nav-icon" data-attr="className:classIcon">
             <span></span>
             <span></span>
             <span></span>
         </div>
-        <nav>
+        <nav data-attr="style.display:showNav">
             <ul>
                 <li><a href="{#view->route('doc')}">Documentación</a></li>
                 <li><a href="{ROOT}api/">API</a></li>

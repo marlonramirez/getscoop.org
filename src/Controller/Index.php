@@ -19,4 +19,8 @@ class Index extends \Scoop\Controller {
         $view = new \Scoop\View('home');
         return $view->set('title', 'Simple Characteristics of Object-Oriented PHP');
     }
+
+    public function sendMail() {
+        return ['out' => 'Gracias por comunicarse con nosotros'];
+    }
 }

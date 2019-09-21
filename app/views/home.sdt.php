@@ -7,7 +7,7 @@
         <i class="fa fa-download"></i> Descargar <small>(v. {#config->get('app.version')})</small>
     </a>
 </div>
-<div id="main">
+<div class="main">
 
     <div class="col-3 mark-stack-scoop">
         <span class="fa-stack">

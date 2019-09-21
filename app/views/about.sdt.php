@@ -1,6 +1,6 @@
 @extends 'layers/layer'
 <h2 class="head-main">¡Esto es Scoop! <a href="http://mirdware.com" rel="external"><img src="{#view->img('logo-blanco.png')}" alt="MirdWare" title="MirdWare" /></a></h2>
-<div id="main">
+<div class="main">
     <div style="overflow:auto">
         <figcaption class="about-scoop">
             <img src="{#view->img('about_scoop.png')}">

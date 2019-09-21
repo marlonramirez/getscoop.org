@@ -43,7 +43,7 @@ class Environment
         if (empty($args)) {
             $currentPath = '//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
             if ($query) {
-                return $this->mergeQueryString($currentPath, $query);
+                return $this->mergeQuery($currentPath, $query);
             }
             return $currentPath;
         }
@@ -94,24 +94,35 @@ class Environment
         return $this;
     }
 
-    private function mergeQueryString($currentPath, $query)
+    private function getQuery($params)
     {
-        $path = explode('?', $currentPath);
-        $currentPath = array_shift($path);
-        $params = array_shift($path);
-        $path = array();
-        if ($params) {
-            $params = explode('&', $params);
-            foreach ($params AS $param) {
-                $param = explode('=', $param);
-                $path[$param[0]] = $param[1];
+        $query = array();
+        $params = explode('&', $params);
+        foreach ($params AS $param) {
+            $param = explode('=', $param);
+            $query[$param[0]] = $param[1];
+        }
+        return $query;
+    }
+
+    private function cleanQuery($query)
+    {
+        foreach ($query AS $name => $value) {
+            if (!$value) {
+                unset($query[$name]);
             }
         }
-        $query += $path;
-        $queryString = '';
-        foreach ($query AS $name => $value) {
-            $queryString .= $name.'='.$value;
+        return $query;
+    }
+
+    private function mergeQuery($url, $query)
+    {
+        $url = explode('?', $url);
+        if (isset($url[1])) {
+            $query += $this->getQuery($url[1]);
         }
-        return $currentPath.'?'.$queryString;
+        $query = $this->cleanQuery($query);
+        if (!$query) return $url[0];
+        return $url[0].$this->router->formatQueryString($query);   
     }
 }

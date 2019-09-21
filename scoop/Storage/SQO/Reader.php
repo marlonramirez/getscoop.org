@@ -29,7 +29,7 @@ class Reader extends Filter
     public function page($params)
     {
         $page = isset($params['page']) ? intval($params['page']) : 0;
-        $size = isset($params['size']) ? intval($params['size']) : 10;
+        $size = isset($params['size']) ? intval($params['size']) : 12;
         unset($params['page'], $params['size']);
         $sql = $this->query;
         $this->query = preg_replace('/^SELECT (.*) FROM /', 'SELECT COUNT(*) AS total FROM ', $sql);

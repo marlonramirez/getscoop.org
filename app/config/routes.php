@@ -18,5 +18,9 @@ return array(
         'url' => '/docs/',
         'controller' => 'App\Controller\Documentation',
         'routes' => require 'routes/documentation.php'
+    ),
+    'contact' => array(
+        'url' => '/contact/',
+        'controller' => Index::class.':sendMail'
     )
 );

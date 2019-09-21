@@ -25,7 +25,7 @@ class Router
             if (!is_subclass_of($controller, $classController)) {
                 throw new \UnexpectedValueException($controller.' not implement '.$classController);
             }
-            $controller =  \Scoop\Context::getInjector()->getInstance($controller);
+            $controller = \Scoop\Context::getInjector()->getInstance($controller);
             if ($controller) {
                 $this->intercept($url);
                 $controllerReflection = new \ReflectionClass($controller);
@@ -36,14 +36,12 @@ class Router
                     throw new \Scoop\Http\MethodNotAllowedException();
                 }
                 $method = $controllerReflection->getMethod($method);
-                $numParams = count($route['params']);
                 if (
-                    $numParams < $method->getNumberOfRequiredParameters() ||
-                    $numParams > $method->getNumberOfParameters()
+                    $numParams >= $method->getNumberOfRequiredParameters() &&
+                    $numParams <= $method->getNumberOfParameters()
                 ) {
-                    throw new \Scoop\Http\MethodNotAllowedException();
+                    return $method->invokeArgs($controller, $route['params']);
                 }
-                return $method->invokeArgs($controller, $route['params']);
             }
         }
         throw new \Scoop\Http\NotFoundException();
@@ -80,14 +78,16 @@ class Router
         if (strrpos($url, '/') !== strlen($url)-1) {
             $url .= '/';
         }
-        if ($query) {
-            $queryString = '';
-            foreach ($query AS $queryName => $queryValue) {
-                $queryString .= $queryName.'='.$queryValue;
-            }
-            $url .= '?'.$queryString;
+        return ROOT.substr($url, 1).($query ? $this->formatQueryString($query) : '');
+    }
+
+    public function formatQueryString($query)
+    {
+        $queryString = '';
+        foreach ($query AS $name => $value) {
+            $queryString .= $name.'='.$value;
         }
-        return ROOT.substr($url, 1);
+        return '?'.$queryString;
     }
 
     public function getCurrentRoute()
