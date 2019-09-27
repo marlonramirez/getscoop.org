@@ -10,7 +10,7 @@ sobre el uso del bootstrap y esta guia.</p>
 cada vez más complejos, partiendo de sistemas mucho más simples denominados bootstrap. Básicamente se
 trata del core o motor que pone en marcha el software. Es decir que scoop es la capa más simple y
 básica, pero que a su vez se encarga de dirigir las funcionalidades y procesos de cualquier aplicación
-web escrita en PHP Orientado a Objetos.</p>
+web escrita en PHP Orientada a Objetos.</p>
 
 <p>Es importante diferenciar un sistema de bootstrapping y un framework, ya que un bootstrap no puede
 ser un framework; pero un framework puede conciderarse un sistema de bootstrapping, ya que este se usa
@@ -20,7 +20,7 @@ sistemas como frameworks o directamente aplicaciones web.</p>
 <p>Scoop es un bootstrap escrito de una manera facil y elegante, conservando y teniendo siempre en
 cuenta los principios <a href="http://es.wikipedia.org/wiki/Principio_KISS" rel="external">KISS</a>
 y <a href="http://es.wikipedia.org/wiki/No_te_repitas" rel="external">DRY</a>. Scoop intenta que el
-proceso de desarrollar aplicaciones web en PHP orientado a objetos no duela, facilitando algunas tareas
+proceso de desarrollar aplicaciones web orientadas a objetos con PHP no duela, facilitando algunas tareas
 propias de la arquitectura MVC como el enrutamiento, inyección de dependencias y manejo de plantillas.</p>
 
 <p>Scoop es simple; pero potente y flexible, proporciona poderosas herramientas para la creación de
@@ -81,7 +81,7 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 }
 </pre>
 
-<p>Scoop ha sido desarrollado con <i>PHP 5.6</i> con soporte desde <i>PHP 5.3</i> hasta <i>PHP 7</i>. La percistencia
+<p>Scoop ha sido desarrollado con <i>PHP 5.6</i> con soporte desde <i>PHP 5.3</i> hasta <i>PHP 7.4</i>. La percistencia
 se puede manejar con MySQL, postgreSQL, SQLServer o cualquier motor de base de datos con soporte para PDO.</p>
 
 <p>Es recomendable aunque no obligatorio instalar algunas de las herramientas que usa scoop para la
@@ -103,6 +103,8 @@ automatización de procesos, esto garantiza una mayor productividad en el desarr
         <p>Desde la versión 0.1.4 el bootstrap utiliza <a href="http://gulpjs.com" rel="external">gulp</a>
         como automatizador de tareas.</p>
         <pre class="prettyprint">npm install -g gulp</pre>
+        <p class="doc-alert">Desde la versión <code>0.4.1</code> no es necesario instalar gulp como libreria global, 
+        cada repositorio genera su propia instancia de gulp.</p>
     </li>
 </ul>
 
@@ -142,7 +144,9 @@ composer install
 </pre>
 
 <p class="doc-alert">Cada vez que se vaya a trabajar en el proyecto es recomendable usar el comando
-<code>npm start</code>, con esto se garantiza la ejecución de tareas automaticas como minificación de archivos javascript y CSS, para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> con esta herramienta y el uso de <a href="https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei">livereload</a> se aumenta la velocidad de desarrollo.</p>
+<code>npm start</code>, con esto se garantiza la ejecución de tareas automaticas como minificación de archivos 
+javascript y CSS, para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> con esta herramienta 
+y el uso de <a href="https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei">livereload</a> se aumenta la velocidad de desarrollo.</p>
 
 <p>para probar que todo ha salido bien ingresa a <code>http://localhost/project-name/</code>, ya
 deberias tener instalada en tú maquina toda la estructura para usar scoop.</p>

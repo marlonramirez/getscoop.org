@@ -33,7 +33,7 @@
         <h2 class="h-green"><i class="fa fa-wrench"></i> Roadmap</h2>
         <p>Scoop continua siendo un proyecto poco  estable al cual se le deben realizar númerosos cambios 
         y mejoras, pero siempre teniendo en mente la filosofía y dinámica del proyecto. De momento lo más 
-        crítico es completar la <a href="{#view->route('doc')}">documentación</a> para contar con una guía de rápido 
+        crítico es completar la <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">documentación</a> para contar con una guía de rápido 
         acceso y entender el funcionamiento del bootstrap en profundidad, otro asunto por tratar es el 
         sistema de persistencia y modelado del negocio tomando como base DDD (Domain-Driven Design).</p>
     </div>
@@ -43,7 +43,7 @@
         <p>MirdWare no opta por una política de donaciones, así que una manera de contribuir 
         monetariamente es contratar alguno de nuestros <a href="{#view->route('services')}">servicios</a>, 
         también puedes contribuir con código mediante la cuenta de 
-        <a href="https://github.com/marlonramirez/scoop" rel="external">github</a>, recuerda que scoop 
+        <a href="https://github.com/mirdware/scoop" target="_blank">github</a>, recuerda que scoop 
         se encuentra liberado bajo una <b>licencia MIT</b> por lo cual estas en la libertad de realizar cualquier
         tipo de modificación o mejora personal, pero recuerda que muchos más programadores pueden beneficiarse de
         estos cambios.</p>

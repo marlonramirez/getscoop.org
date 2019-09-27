@@ -56,7 +56,6 @@ function submit($, form) {
   } else {
     data = formatObject(form);
   }
-  console.log(data);
   resource[form.method.toLowerCase()](data)
   .then((res) => $.done(res, form))
   .catch((res) => $.fail(res, form))
