@@ -7,20 +7,23 @@ return array(
         'url' => '/'
     ),
     'about' => array(
-        'controller' => Index::class.':about',
-        'url' => '/about/'
+        'controller' => Index::class,
+        'url' => '/about/',
+        'methods' => array(
+            'get' => 'about'
+        )
     ),
     'services' => array(
-        'controller' => Index::class.':services',
+        'controller' => Index::class,
         'url' => '/services/',
+        'methods' => array(
+            'get' => 'services',
+            'post' => 'sendEmail'
+        )
     ),
     'doc' => array(
         'url' => '/docs/',
         'controller' => 'App\Controller\Documentation',
         'routes' => require 'routes/documentation.php'
-    ),
-    'contact' => array(
-        'url' => '/contact/',
-        'controller' => Index::class.':sendMail'
     )
 );

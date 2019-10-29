@@ -143,7 +143,7 @@ npm install
 composer install
 </pre>
 
-<p class="doc-alert">Cada vez que se vaya a trabajar en el proyecto es recomendable usar el comando
+<p class="doc-alert">Cada vez que se vaya a desplegar el proyecto es recomendable usar el comando
 <code>npm start</code>, con esto se garantiza la ejecución de tareas automaticas como minificación de archivos 
 javascript y CSS, para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> con esta herramienta 
 y el uso de <a href="https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei">livereload</a> se aumenta la velocidad de desarrollo.</p>

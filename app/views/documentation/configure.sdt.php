@@ -37,6 +37,23 @@ return array(
 );
 </pre>
 
+<h3>Carga peresoza</h3>
+
+<p>Otra posibilidad de extender la configuración es mediante la carga peresoza de archivos, esta en vez de usar directamente
+u  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
+
+<pre class="prettyprint">
+return array(
+    'routes' => 'import:app/config/route'
+);
+</pre>
+
+<p>Dentro de las diferencias a destacar en la carga peresoza es que se debe referenciar el archivo a cargar desde la raíz
+del proyecto y no sobre el archivo donde se esta configurando el arreglo, la segunda es el uso de <code>:</code> para
+separar el método de carga con la url del archivo y la última es la ausencia de extención para el tipo de archivo, esto se
+debe a que cada método de carga tiene su propio tipo de extensión, así el método json solo cargara archivos con esta extensión,
+mientras import hará lo mismo con los archivos .php.</p>
+
 <h3>app</h3>
 
 <p>dentro de app se pueden establecer todas las variables de entorno a las que puede acceder la aplicación, aqui se 
@@ -78,7 +95,7 @@ return array(
 );
 </pre>
 
-<p class="doc-alert">Desde la versión <code>0.2.1</code> no se cuenta con soporte nativo para drivers diferentes a }
+<p class="doc-alert">Desde la versión <code>0.2.1</code> no se cuenta con soporte nativo para drivers diferentes a
 los suministrados por PDO.</p>
 
 <h3>messages</h3>
@@ -127,13 +144,16 @@ return array(
 <p class="doc-alert">Desde la version <code>0.2.2</code> cambio drasticamente el sistema de enrutamiento
 del bootstrap, para favorecer la inclusión de proxies y alias en las rutas.</p>
 
-<p>Dentro del archivo routes.php se establecen las propiedades de una ruta, no es
-un sistema de ruteo simple como en anteriores versiones, si no que establece una serie de caracteristicas
-como la interceptación de peticiones y generación de rutas dinamicamente, sin sacrificar en ningún momento
-la funcionalidad y caracteristicas que tenia el anterior sistema.</p>
+<p>Dentro del archivo de rutas se establecen las propiedades que definen una URL, no es un sistema de ruteo 
+simple como en anteriores versiones, si no que establece una serie de caracteristicas como la interceptación 
+de peticiones y generación de rutas dinamicamente, sin sacrificar en ningún momento la funcionalidad y caracteristicas 
+que tenia el anterior sistema.</p>
+
+<p class="doc-alert">Desde la version <code>0.5.4</code> Las rutas hacen parte integral del archivo de configuración
+y por este motivo su ubicación dependere de la configuración realizada.</p>
 
 <p>La configuración de rutas no solo se limita a indicarle al bootstrap hacia que controlador debe dirigir la
-petición. Se modifico el funcionamiento del array en donde la clave era la ruta y el valor era el controlador,
+petición. Se modifico el funcionamiento del arreglo en donde la clave era la ruta y el valor era el controlador,
 ahora la clave es el alias de la ruta y el valor un array asociativo con las siguientes propiedades:</p>
 
 <ul>
@@ -157,18 +177,20 @@ return array(
     </li>
 
     <li><h3>controller</h3>
-        <p>Establece el controlador hacia el cual debe apuntar la ruta, ahora se debe indicar hasta que metodo
-        del controlador se debe enrutar la petición con el uso del caracter <code>:</code>.</p>
+        <p>Establece el controlador hacia el cual debe apuntar la ruta. En caso que no especifique de manera explicita
+        la forma de manejar métodos https. el ruteador verificara que existan dentro del controlador métodos con el mismo 
+        nombre de su contraparte en http, de no ser así se denerara un error 405.</p>
+        <p class="doc-alert">Desde la version <code>0.5.6</code> no se usa el signo <code>:</code> para separar controlador
+        de método, en su lugar se creo la propiedad <i>methods</i>.</p>
 
 <pre class="prettyprint">
 return array(
     'user' => array(
         'url' => '/user/&#123;var&#125;/',
-        'controller' => 'Controller\User:get'
+        'controller' => 'Controller\User'
     )
 );
 </pre>
-        <p>En caso que el controller no posea el caracter este debe implementar la interface <i>Resource</i>.</p>
     </li>
 
     <li><h3>proxy</h3>
@@ -180,23 +202,27 @@ return array(
 return array(
     'user' => array(
         'url' => '/user/&#123;var&#125;/',
-        'proxy' => 'App\Interceptor\Test:validateUser'
+        'proxy' => 'App\Interceptor\Verify'
     ),
     'home' => array(
-        'url' => '/',
-        'proxy' => 'App\Interceptor\Test:auth'
+        'url' => '/user',
+        'proxy' => 'App\Interceptor\Auth'
     )
 );
 </pre>
-        <p>En el ejemplo anterior primero se ejecuta el metodo <code>auth</code> de la clase
-        <code>/App/Interceptor/Test</code> y luego el metodo <code>validateUser</code> de la misma clase.</p>
+        <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento la ruta interceptada
+        en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de 
+        <code>App\Interceptor\Verify</code>. Vale la pena mencionar que un Proxy no puede devolver ningún valor para su 
+        encadenamiento, simplemente lanzar excepciones o redirigir peticiones.</p>
     </li>
 
     <li><h3>routes</h3>
-        <p>El sistema de enrutamiento que maneja scoop es fragmentado al igual que sucede con el archivo config.php.
-        Para hacer uso de este sistema se debe establecer la propiedad routes y dentro un array que continuara
-        el ruteo de la aplicación, para obtener el array se puede hacer uso de las mismas tecnicas de <code>require</code>
-        o <code>file_gets_content</code> que en el archivo de configuración.</p>
+        <p>El sistema de enrutamiento que maneja scoop es fragmentado al igual que sucede con el archivo de configuración.
+        Para hacer uso de este sistema se debe establecer la propiedad routes y dentro un areglo que se encargará decontinuar
+        el ruteo de la aplicación, para obtener el array se puede hacer uso de las mismas tecnicas de require, file_gets_content
+        o carga peresoza que en el archivo de configuración. CAbe mencionar que aunque sea posible realizar la carga peresoza desde
+        la propiedad route no es una practica recomendable dado que desde el principio se deberan cargar todas las rutas y
+        de esta manera la carga peresoza perdera toda su utilidad.</p>
 
 <pre class="prettyprint">
 return array(
@@ -211,6 +237,23 @@ return array(
     manera una url <code>routes/</code> dentro de la subruta <code>routes/docs</code> se accedera como
     <code>/documentation/routes/</code>.</p>
     </li>
+
+    <li><h3>methods</h3>
+        <p>Finalmente tenemos la configuración de métodos, esta es opcional ya que como se menciono anteriormente si no se
+        especifica ningún método el router intentara encontrar uno que se llame igual que el método http ejecutado. En caso
+        de querer enmascarar el nombre del método o que varias peticiones compartan un controlador, se debe especificar en un
+        arreglo el nombre del método http (get, post, put, delete...) en minuscula y el nombre del método del controlador.</p>
+
+<pre class="prettyprint">
+return array(
+    'doc' => array(
+        'url' => '/documentation/'
+        'routes' => require 'routes/docs.php',
+        'methods' => array('get' => 'view')
+    )
+);
+</pre>
+    </li>
 </ul>
 
 <p>Todas estas propiedades se pueden combinar entre si, para generar un sistema robusto de enrutamiento.</p>
@@ -219,8 +262,11 @@ return array(
     'home' => array(
         'url' => '/',
         'controller' => 'Controller\Home:get',
-        'interceptor' => 'App\Interceptor\Test:auth',
-        'routes' => require 'routes/main.php'
+        'interceptor' => 'App\Interceptor\Test',
+        'routes' => require 'routes/main.php',
+        'method' => array(
+            'get' => 'auth'
+        )
     )
 );
 </pre>

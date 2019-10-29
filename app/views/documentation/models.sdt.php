@@ -72,5 +72,29 @@ $bookSQO->create([
 </pre>
 
 <h3>Paginación</h3>
+<p>De manera sencilla es posible paginar el resultado de una consulta mediante SQO, lo que se debe tener en cuenta
+es el arreglo que necesita el método page para funcionar.</p>
+
+<pre class="prettyprint">
+array(
+    'page' => 0,
+    'size' => 12
+);
+</pre>
+
+<p>Si no se suministra ninguno de estos valores, scoop tomara por defecto los acá descritos y retornara un arreglo asociativo
+con una estructura similar a la siguiente.</p>
+
+<pre class="prettyprint">
+array(
+    'page' => 0,
+    'size' => 12,
+    'result' => array(),
+    'total' => 0
+);
+</pre>
+
+<p>En donde page y size son los mismo datos enviados o colocados por defecto, mientras result y total hacen referencia a la
+consulta realizada.</p>
 
 <h2><a href="#repositories">Repositorios</a><span class="anchor" id="repositories">...</span></h2>

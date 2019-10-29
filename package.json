@@ -1,6 +1,6 @@
 {
   "name": "scoop",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "scoop project",
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
     "browserify": "^16.5.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.2.0",
-    "gulp-livereload": "^4.0.1",
+    "gulp-livereload": "^4.0.2",
     "gulp-rename": "^1.4.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-stylus": "^2.7.0",
@@ -30,6 +30,6 @@
   },
   "dependencies": {
     "fa-stylus": "^0.3.2",
-    "scalar": "^0.2.6"
+    "scalar": "^0.2.7"
   }
 }

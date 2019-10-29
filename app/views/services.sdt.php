@@ -10,40 +10,40 @@
         hasta desarrollos a la medida de tus necesidades. Sea cual sea tu problema consultanos, seguramente somos la
         solución que necesitas.</p>
     </section>
-    <form id="contact-project" method="post" action="{#view->route('contact')}" class="scoop-form">
+    <form id="contact-project" method="post" action="{#view->route()}" class="scoop-form">
         <fieldset class="box-shadow">
             <legend>Acerca de tí</legend>
-            <div class="inline-box">
+            <span class="input-box">
                 <label for="nombres">Nombres:</label>
                 <input type="text" class="input" size="30" name="nombres" id="nombres" required />
                 <label for="nombres" class="icon"></label>
-            </div>
-            <div class="inline-box">
+            </span>
+            <span class="input-box">
                 <label for="apellidos">Apellidos:</label>
                 <input type="text" class="input" size="30" name="apellidos" id="apellidos" required />
                 <label for="apellidos" class="icon"></label>
-            </div><br />
-            <div class="inline-box">
+            </span><br />
+            <span class="input-box">
                 <label for="company">Compañia:</label>
                 <input type="text" class="input" size="20" name="company" id="company" />
-            </div>
-            <div class="inline-box">
+            </span>
+            <span class="input-box">
                 <label for="email">Email:</label>
                 <input type="email" class="input" size="30" name="email" id="email" required />
                 <label for="email" class="icon"></label>
-            </div>
-            <div class="inline-box">
+            </span>
+            <span class="input-box">
                 <label for="tel">Teléfono:</label>
                 <input type="tel" class="input" size="12" name="tel" id="tel" required />
                 <label for="tel" class="icon"></label>
-            </div>
+            </span>
         </fieldset>
 
         <fieldset class="box-shadow">
             <legend>Acerca de tú proyecto</legend>
             <div>
                 <label for="desarrollo">Tipo:</label>
-                <div class="inline-box radio-group">
+                <div class="input-box radio-group">
                     <span class="radio">
                         <input type="radio" name="tipo" value="1" id="desarrollo" checked />
                         <label for="desarrollo">Desarrollo</label>
@@ -58,14 +58,16 @@
                     </span>
                 </div>
             </div>
-            <div class="inline-box">
+            <div class="input-box">
                 <label for="presupuesto">Presupuesto:</label>
                 <span style="margin-right:.5em">$</span><input type="number" size="20" class="input" name="presupuesto" id="presupuesto" />
             </div>
             <div class="group-box">
                 <label for="descripcion">Descripción:</label>
-                <textarea class="input" id="descripcion" name="descripcion" required></textarea>
-                <label for="descripcion" class="icon"></label>
+                <div class="input-box">
+                    <textarea class="input" id="descripcion" rows="7" name="descripcion" required></textarea>
+                    <label for="descripcion" class="icon"></label>
+                </div>
             </div>
         </fieldset>
         <div class="center"><input type="submit" value="Enviar proyecto" class="btn" /></div>
