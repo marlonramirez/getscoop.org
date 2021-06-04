@@ -6,26 +6,26 @@
     <!-- Visualización en cualquier dispositivo utilizando responsive disign -->
     <meta name="viewport" content="width=device-width" />
     @if isset($meta)
-        <meta name="description" content="{$meta['description']}" />
-        <meta name="keywords" content="{$meta['keywords']}" />
+        <meta name="description" content="{{$meta['description']}}" />
+        <meta name="keywords" content="{{$meta['keywords']}}" />
     :if
     <!-- Referencia a los datos del autor y material utilizado -->
-    <link rel="author" href="{#view->asset('humans.txt')}" />
+    <link rel="author" href="{{#view->asset('humans.txt')}}" />
     <!-- Icono de la aplicación -->
-    <link rel="shortcut icon" type="image/x-icon" href="{#view->asset('favicon.ico')}" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{#view->asset('favicon.ico')}}" />
     <!-- Enlace a la hoja de estilos general -->
-    <link rel="stylesheet" href="{#view->css(#config->get('app.name').'.min.css')}" />
+    <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}" />
     <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
-    <script src="{#view->js(#config->get('app.name').'.min.js')}" async></script>
+    <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" async></script>
     <!-- Titulo de la pagina -->
-    <title>{$title} - {#config->get('app.name')}</title>
+    <title>{{$title}} - {{#view->getConfig('app.name')}}</title>
 </head>
 
 <body>
     <header>
         <figcaption>
-            <a href="{ROOT}" class="logo">
-                <img src="{#view->img('scoop.png')}" alt="Scoop">
+            <a href="{{ROOT}}" class="logo">
+                <img src="{{#view->img('scoop.png')}}" alt="Scoop">
                 <span></span>
             </a>
         </figcaption>
@@ -37,15 +37,15 @@
         </div>
         <nav data-attr="style.display:showNav">
             <ul>
-                <li><a href="{#view->route('doc')}">Documentación</a></li>
-                <li><a href="{ROOT}api/">API</a></li>
-                <li><a href="{#view->route('services')}">Servicios</a></li>
-                <li><a href="{#view->route('about')}">Acerca</a></li>
+                <li><a href="{{#view->route('doc')}}">Documentación</a></li>
+                <li><a href="{{ROOT}}api/">API</a></li>
+                <li><a href="{{#view->route('services')}}">Servicios</a></li>
+                <li><a href="{{#view->route('about')}}">Acerca</a></li>
             </ul>
         </nav>
     </header>
     <main>
-        {#view->compose('message')}
+        {{#view->composeMessage()}}
         @sprout
     </main>
     <footer>

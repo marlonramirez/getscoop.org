@@ -14,22 +14,17 @@ class Router
         uasort($this->routes, array($this, 'sortByURL'));
     }
 
-    public function route($url)
+    public function route($request)
     {
-        $route = $this->getRoute($url);
+        $route = $this->getRoute($request->getURL());
         if ($route) {
-            $classController = '\Scoop\Controller';
-            $controller = $route['controller'];
-            if (!is_subclass_of($controller, $classController)) {
-                throw new \UnexpectedValueException($controller.' not implement '.$classController);
-            }
-            $controller = \Scoop\Context::getInjector()->getInstance($controller);
+            $method = strtolower($_SERVER['REQUEST_METHOD']);
+            $controller = $this->getController($route['controller'], $method);
             if ($controller) {
-                $this->intercept($url);
+                $this->intercept($request);
                 $controllerReflection = new \ReflectionClass($controller);
-                $method = $this->getMethod($route);
                 if (!$controllerReflection->hasMethod($method)) {
-                    throw new \Scoop\Http\MethodNotAllowedException();
+                    throw new \Scoop\Http\MethodNotAllowedException($controllerReflection->getName().' not implement '.$method.' method');
                 }
                 $method = $controllerReflection->getMethod($method);
                 $numParams = count($route['params']);
@@ -44,13 +39,13 @@ class Router
         throw new \Scoop\Http\NotFoundException();
     }
 
-    public function intercept($url)
+    public function intercept($request)
     {
-        $matches = $this->filterProxy($url);
+        $matches = $this->filterProxy($request->getURL());
         $injector = \Scoop\Context::getInjector();
         foreach ($matches as $route) {
             $proxy = $injector->getInstance($route['proxy']);
-            $proxy->execute($url);
+            $proxy->execute($request);
         }
     }
 
@@ -64,7 +59,7 @@ class Router
         }
         for ($i = 0; $i < $count; $i++) {
             if (isset($params[$i])) {
-                $url .= self::encodeURL($params[$i]).$path[$i];
+                $url .= self::encodeURL(trim($params[$i])).$path[$i];
             }
         }
         if (strrpos($url, '/') !== strlen($url)-1) {
@@ -90,19 +85,19 @@ class Router
         return $this->current;
     }
 
-    private function getMethod($route)
+    private function getController($controller, $method)
     {
-        $method = strtolower($_SERVER['REQUEST_METHOD']);
-        if (isset($route['methods'])) {
-            $methods = $route['methods'];
-            if (isset($methods[$method])) {
-                return $methods[$method];
-            }
-            if (isset($methods['all'])) {
-                return $methods['all'];
-            }
+        if (is_array($controller)) {
+            if (!isset($controller[$method])) {
+                throw new \Scoop\Http\MethodNotAllowedException('There not controller for '.$method.' method');
+            };
+            $controller = $controller[$method];
         }
-        return $method;
+        $classController = '\Scoop\Controller';
+        if (!is_subclass_of($controller, $classController)) {
+            throw new \UnexpectedValueException($controller.' not implement '.$classController);
+        }
+        return \Scoop\Context::getInjector()->getInstance($controller);
     }
 
     private function getRoute($url)
@@ -161,7 +156,7 @@ class Router
         if (isset($route['routes'])) {
             $routes = $route['routes'];
             if (is_string($routes)) {
-                $routes = \Scoop\Context::getService('config')->load($routes);
+                $routes = \Scoop\Context::getEnvironment()->loadLazily($routes);
                 if (is_string($routes)) {
                     throw new \InvalidArgumentException('routes '.$routes.' not supported');
                 }
@@ -197,24 +192,23 @@ class Router
 
     private static function encodeURL($str)
     {
-        $str = mb_strtolower($str);
         $str = str_replace(
-            array('á', 'à', 'ä', 'â', 'ª'), 'a', $str
+            array('á', 'à', 'ä', 'â', 'ª', 'Á', 'À', 'Â', 'Ä'), 'a', $str
         );
         $str = str_replace(
-            array('é', 'è', 'ë', 'ê'), 'e', $str
+            array('é', 'è', 'ë', 'ê', 'É', 'È', 'Ê', 'Ë'), 'e', $str
         );
         $str = str_replace(
-            array('í', 'ì', 'ï', 'î'), 'i', $str
+            array('í', 'ì', 'ï', 'î', 'Í', 'Ì', 'Ï', 'Î'), 'i', $str
         );
         $str = str_replace(
-            array('ó', 'ò', 'ö', 'ô'), 'o', $str
+            array('ó', 'ò', 'ö', 'ô', 'Ó', 'Ò', 'Ö', 'Ô'), 'o', $str
         );
         $str = str_replace(
-            array('ú', 'ù', 'ü', 'û'), 'u', $str
+            array('ú', 'ù', 'ü', 'û', 'Ú', 'Ù', 'Û', 'Ü'), 'u', $str
         );
         $str = str_replace(
-            array(' ', 'ñ', 'ç'), array('-', 'n', 'c'), $str
+            array(' ', 'ñ', 'Ñ', 'ç', 'Ç'), array('-', 'n', 'N', 'c', 'C'), $str
         );
         return urlencode($str);
     }

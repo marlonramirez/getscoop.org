@@ -1,9 +1,9 @@
 @extends 'layers/layer'
-<h2 class="head-main">¡Esto es Scoop! <a href="http://mirdware.com" rel="external"><img src="{#view->img('logo-blanco.png')}" alt="MirdWare" title="MirdWare" /></a></h2>
+<h2 class="head-main">¡Esto es Scoop! <a href="http://mirdware.com" rel="external"><img src="{{#view->img('logo-blanco.png')}}" alt="MirdWare" title="MirdWare" /></a></h2>
 <div class="main">
     <div style="overflow:auto">
         <figcaption class="about-scoop">
-            <img src="{#view->img('about_scoop.png')}">
+            <img src="{{#view->img('about_scoop.png')}}">
         </figcaption>
         <article class="about-scoop">
             <p>Scoop es un sistema de bootstrapping open source desarrollado por 
@@ -18,7 +18,7 @@
 
             <p>Bajo el desarrollo de MirdWare el proyecto cuenta con una amplia gama de recursos no solamente orientado 
             al desarrollo en PHP, al ser un bootstrap posee una gran base de herramientas open source que cohesionan diversas 
-            tecnologias creando un completo ambiente de desarrollo web. Disponible en su versión {#config->get('app.version')}, 
+            tecnologias creando un completo ambiente de desarrollo web. Disponible en su versión {{#view->getConfig('app.version')}}, 
             scoop cuenta con algunos sitios y aplicaciones tanto empresariales como independientes.</p>
             
             <p>¿Por que un bootstrap? La filosofía detras de scoop no permite que sea considerado un 
@@ -41,7 +41,7 @@
     <div class="col-3">
         <h2 class="h-green"><i class="fa fa-money"></i> Contribuye</h2>
         <p>MirdWare no opta por una política de donaciones, así que una manera de contribuir 
-        monetariamente es contratar alguno de nuestros <a href="{#view->route('services')}">servicios</a>, 
+        monetariamente es contratar alguno de nuestros <a href="{{#view->route('services')}}">servicios</a>, 
         también puedes contribuir con código mediante la cuenta de 
         <a href="https://github.com/mirdware/scoop" target="_blank">github</a>, recuerda que scoop 
         se encuentra liberado bajo una <b>licencia MIT</b> por lo cual estas en la libertad de realizar cualquier

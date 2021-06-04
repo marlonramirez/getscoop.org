@@ -1,5 +1,9 @@
 <?php
-use App\Controller\Index;
+use App\Controller\{
+    Index,
+    Service,
+    About
+};
 
 return array(
     'home' => array(
@@ -7,23 +11,16 @@ return array(
         'url' => '/'
     ),
     'about' => array(
-        'controller' => Index::class,
-        'url' => '/about/',
-        'methods' => array(
-            'get' => 'about'
-        )
+        'controller' => About::class,
+        'url' => '/about/'
     ),
     'services' => array(
-        'controller' => Index::class,
-        'url' => '/services/',
-        'methods' => array(
-            'get' => 'services',
-            'post' => 'sendEmail'
-        )
+        'controller' => Service::class,
+        'url' => '/services/'
     ),
     'doc' => array(
         'url' => '/docs/',
-        'controller' => 'App\Controller\Documentation',
+        'controller' => 'App\Controller\Documentation\Index',
         'routes' => require 'routes/documentation.php'
     )
 );

@@ -17,5 +17,8 @@
             "Scoop\\": "scoop/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "require": {
+        "phpdocumentor/phpdocumentor": "^2.9"
+    }
 }

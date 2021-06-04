@@ -1,16 +1,16 @@
 @extends 'layers/layer'
-<h2 class="head-main">¿Tienes una idea? Cuentanos <a href="http://mirdware.com" rel="external"><img src="{#view->img('logo-blanco.png')}" alt="MirdWare" title="MirdWare" /></a></h2>
+<h2 class="head-main">¿Tienes una idea? Cuentanos <a href="http://mirdware.com" rel="external"><img src="{{#view->img('logo-blanco.png')}}" alt="MirdWare" title="MirdWare" /></a></h2>
 <div class="main">
     <section id="service">
         <figcaption>
-            <img src="{#view->img('services.png')}" alt="servicios web">
+            <img src="{{#view->img('services.png')}}" alt="servicios web">
         </figcaption>
         <p>Sabemos que desarrollar un proyecto de software es costoso, por esta razón hemos creado scoop. Si aún asi tú
         proyecto se encuentra consumiendo tiempo y recursos innesarios para tú empresa ¡MirdWare puede ayudar! Ofrecemos una amplia gama de servicios innovadores, profesionales y precisos, desde asesorias o capacitaciones
         hasta desarrollos a la medida de tus necesidades. Sea cual sea tu problema consultanos, seguramente somos la
         solución que necesitas.</p>
     </section>
-    <form id="contact-project" method="post" action="{#view->route()}" class="scoop-form">
+    <form id="contact-project" method="post" action="{{#view->route()}}" class="scoop-form">
         <fieldset class="box-shadow">
             <legend>Acerca de tí</legend>
             <span class="input-box">

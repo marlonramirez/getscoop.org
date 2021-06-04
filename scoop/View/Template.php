@@ -4,6 +4,7 @@ namespace Scoop\View;
 final class Template
 {
     const HERITAGE = '\Scoop\View\Heritage';
+    const SERVICE = '\Scoop\View\Service';
 
     /**
      * Convierte las platillas sdt a vistas php, en caso que la vista sea más
@@ -23,10 +24,37 @@ final class Template
         } elseif (is_readable($template)) {
             self::create($view, self::compile($template));
         } else {
-            throw new \UnderflowException('Unable to load view or template');
+            throw new \UnderflowException('Unable to load view or template '.$templatePath);
         }
         extract($viewData);
         require $view;
+    }
+
+    /**
+     * Reglas para limpiar y minificar la vista.
+     * @param  string $html Contenido completo de la plantilla.
+     * @return string Plantilla limpia y minificada.
+     */
+    public static function clearHTML($html)
+    {
+        $blockElements = array(
+            'div', 'main', 'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'dl', 'dt', 'fieldset',
+            'figcaption', 'figure', 'footer', 'form', 'h\d', 'header', 'hr', 'li', 'nav', 'noscript', 'ol', 'p',
+            'pre', 'section', 'table', 'tfoot', 'ul', 'video', 'script', 'style'
+        );
+        preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
+        if (isset($matches[0])) {
+            $head = preg_replace('/>\s+</', '><', $matches[2]);
+            $html = str_replace($matches[0], '<html'.$matches[1].'><head>'.$head.'</head><body>', $html);
+        }
+        $html = preg_replace(
+            array('/\s+/', '/<!--.*?-->/s', '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/', '/(;|=)\s*(\"|\')/', '/\s*(\/?)\s*>/', '/<\s/'),
+            array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<'), $html
+        );
+        foreach ($blockElements as $element) {
+            $html = preg_replace('/\s*(<'.$element.'[^>]*>)\s*(.*?)\s*(<\/'.$element.'>)\s*/', '${1}${2}${3}', $html);
+        }
+        return $html;
     }
 
     /**
@@ -37,132 +65,66 @@ final class Template
     private static function compile($template)
     {
         $content = '';
-        $flagPHP = false;
-        $lastLine = '';
         $file = fopen($template, 'r');
         while (!feof($file)) {
-            $line = fgets($file);
-            $flag = self::replace($line);
-            if ($flagPHP) {
-                $lastChar = strpos($lastLine, ':') === strlen($lastLine)-1 ? '' : ';';
-                if (!$flag) {
-                    $lastChar = ' ?>';
-                    $flagPHP = false;
-                }
-                $lastLine .= $lastChar;
-            } elseif ($flag) {
-                $line = '<?php '.$line;
-                $flagPHP = true;
-            }
-            $content .= $lastLine;
-            $lastLine = $line;
+            $content .= self::replace(fgets($file));
         }
         fclose($file);
-        $content .= $lastLine;
-        if ($flagPHP) {
-            $content .= ' ?>';
-        }
-        return $content;
+        return self::convertViewServices($content);
     }
 
     /**
      * Reglas de reemplazo para cada uno de los comandos de la plantilla.
      * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param string $line Linea que se encuentra analizando el parseador.
+     * @param string $line Linea que se encuentra analizando el parseador,
+     * se pasa por referencia para reflejar cambios pues la función debe devolver un boolean.
      * @return boolean Existio o no reemplazo dentro de la linea,
-     *  se pasa por referencia para reflejar cambios pues la función debe devolver un boolean.
      */
-    private static function replace(&$line)
+    private static function replace($line)
     {
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
-        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+)\])*';
+        $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[('.$quotes.'|\d+|\$\w+)\])*';
         $conditional = $safeChars.'|'.$vars.'|[<>!]|and|or';
         $fn = '\(('.$quotes.'|'.$safeChars.'|'.$vars.'|,|\[.*\]|array\(.*\))*\)';
         $safeExp = $quotes.'|'.$conditional.'|'.$fn;
-        $simpleString = '\'([\w\/-]+)\'';
+        $uri = '\'([\w\/-]+)\'';
         $line = preg_replace(array(
-            '/@extends '.$simpleString.'/',
-            '/@import '.$simpleString.'/',
+            '/@inject ([\\\\\w]+)#(\w+)/',
+            '/@extends '.$uri.'/',
+            '/@import '.$uri.'/',
             '/@if (('.$safeExp.')+)/',
             '/@elseif (('.$safeExp.')+)/',
             '/@while (('.$conditional.'|'.$fn.')+)/',
-            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+)/',
+            '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
             '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
-            self::HERITAGE.'::extend(\'${1}\')',
-            self::HERITAGE.'::import(\'${1}\')',
-            'if(${1}):',
-            'elseif(${1}):',
-            'while(${1}):',
-            'foreach(${1}):',
-            'for(${1}):'
+            '<?php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?>',
+            '<?php '.self::HERITAGE.'::extend(\'${1}\') ?>',
+            '<?php '.self::HERITAGE.'::import(\'${1}\') ?>',
+            '<?php if(${1}): ?>',
+            '<?php elseif(${1}): ?>',
+            '<?php while(${1}): ?>',
+            '<?php foreach(${1}): ?>',
+            '<?php for(${1}): ?>'
         ), $line, 1, $count);
-        if ($count !== 0) {
-            $line = self::convertViewServices($line);
-            return true;
-        }
-        $line = str_replace(array(
-            ':if',
-            ':foreach',
-            ':for',
-            ':while',
-            '@else',
-            '@sprout'
-        ), array(
-            'endif',
-            'endforeach',
-            'endfor',
-            'endwhile',
-            'else:',
-            self::HERITAGE.'::sprout()'
-        ), $line, $count);
-        if ($count !== 0) return true;
-        $line = preg_replace('/([^\$]|^)\{(('.$safeExp.'|:|\?)+)\}/',
-        '${1}<?php echo ${2} ?>', $line, -1, $count);
-        if ($count !== 0) {
-            $line = self::convertViewServices($line);
-        }
-        return false;
+        if ($count !== 0) return $line;
+        $line = str_replace(
+            array(':if', ':foreach', ':for', ':while', '@else', '@sprout'),
+            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>', '<?php '.self::HERITAGE.'::sprout() ?>'),
+            $line, $count
+        );
+        if ($count !== 0) return $line;
+        return str_replace(array('{{', '}}'), array('<?php echo ', ' ?>'), $line, $count);
     }
 
     private static function convertViewServices($line)
     {
         preg_match_all('/#(\w*)->/is', $line, $servicesFound);
         for ($i = 0; isset($servicesFound[0][$i]); $i++) {
-            $line = str_replace($servicesFound[0][$i], '\Scoop\Context::getService(\''.$servicesFound[1][$i].'\')->', $line);
+            $line = str_replace($servicesFound[0][$i], self::SERVICE.'::get(\''.$servicesFound[1][$i].'\')->', $line);
         }
         return $line;
-    }
-
-    /**
-     * Reglas para limpiar y minificar la vista.
-     * @param  string $html Contenido completo de la plantilla.
-     * @return string Plantilla limpia y minificada.
-     */
-    private static function clearHTML($html)
-    {
-        return preg_replace(array(
-            '/\s+/',
-            '/[\t\n\r]+/',
-            '/<!--.*?-->/s',
-            '/>\s*</',
-            '/;\s*(\"|\')/',
-            '/<\/\s+/',
-            '/\s+\/>/',
-            '/<\s+/',
-            '/\s+>/'
-        ), array(
-            ' ',
-            ' ',
-            '',
-            '><',
-            '${1}',
-            '</',
-            '/>',
-            '<',
-            '>'
-        ), $html);
     }
 
     /**
@@ -172,13 +134,13 @@ final class Template
      */
     private static function create($viewName, $content)
     {
-        preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $match);
-        $match = $match[0];
+        preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
+        $matches = $matches[0];
         $content = self::clearHTML($content);
-        $search = array_map(array('\scoop\view\Template', 'clearHTML'), $match);
-        $search += array(' ?><?php ');
-        $match += array(';');
-        $content = str_replace($search, $match, $content);
+        $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
+        $search += array(': ?><?php ', ' ?><?php ');
+        $matches += array(':', ';');
+        $content = str_replace($search, $matches, $content);
         $path = explode('/', $viewName);
         $count = count($path)-1;
         $dir = '';
@@ -189,7 +151,7 @@ final class Template
             }
         }
         $view = fopen($viewName, 'w');
-        fwrite($view, trim($content));
+        fwrite($view, $content);
         fclose($view);
     }
 }

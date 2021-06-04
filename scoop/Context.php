@@ -7,28 +7,36 @@ class Context
     private static $loader;
     private static $service;
     private static $injector;
+    private static $environment;
 
     /**
      * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
      * @return vendor|\Scoop\Bootstrap\Loader El cargador usado para ejecutar la carga.
      */
-    public static function load()
+    public static function load($configPath)
     {
-        if (!isset(self::$loader)) {
-            if (is_readable('vendor/autoload.php')) {
-                self::$loader = require 'vendor/autoload.php';
-            } else {
-                require 'scoop/Bootstrap/Loader.php';
-                self::$loader = new \Loader();
-                $conf = json_decode(file_get_contents('composer.json'), true);
-                $psr4 = $conf['autoload']['psr-4'];
-                foreach ($psr4 as $key => $value) {
-                    self::$loader->setPsr4($key, $value);
-                }
-                self::$loader->register(true);
-            }
+        if (isset(self::$loader)) {
+            throw new \Exception('Context loaded');
         }
-        return self::$loader;
+        if (is_readable('vendor/autoload.php')) {
+            self::$loader = require 'vendor/autoload.php';
+        } else {
+            require 'scoop/Bootstrap/Loader.php';
+            self::$loader = new \Loader();
+            $conf = json_decode(file_get_contents('composer.json'), true);
+            $psr4 = $conf['autoload']['psr-4'];
+            foreach ($psr4 as $key => $value) {
+                self::$loader->setPsr4($key, $value);
+            }
+            self::$loader->register(true);
+        }
+        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
+        $injector = self::$environment->getConfig('injector', '\Scoop\IoC\BasicInjector');
+        $baseInjector = '\Scoop\IoC\Injector';
+        if (!is_subclass_of($injector, $baseInjector)) {
+            throw new \UnexpectedValueException($injector.' not implement '.$baseInjector);
+        }
+        self::$injector = new $injector();
     }
 
     /**
@@ -54,20 +62,28 @@ class Context
         return self::$connections[$key];
     }
 
+    public static function getLoader()
+    {
+        return self::$loader;
+    }
+
+    public static function getEnvironment()
+    {
+        return self::$environment;
+    }
+
     /**
      * Obtiene la instancia del injector según las capacidades del servidor.
      * @return \Scoop\IoC\Injector El injector apropiado para el servidor.
      */
     public static function getInjector()
     {
-        if (!self::$injector) {
-            self::$injector = new \Scoop\IoC\BasicInjector();
-        }
         return self::$injector;
     }
 
     /**
      * Obtiene un servicio configurado previamente
+     * @deprecated
      * @param string $service Nombre del servicio a buscar.
      * @return object Servicio hallado.
      * @throws \UnderflowException Si no se ha registrado ningún servicio arroja la excepción.
@@ -75,15 +91,16 @@ class Context
     public static function getService($service)
     {
         if (!self::$service) {
-            throw new \UnderflowException('No service registered');
+            throw new \UnderflowException('No service '.$service.' registered');
         }
         return self::$service->get($service);
     }
 
     /**
      * Registra un servicio en el service manager.
+     * @deprecated
      * @param string $key Nombre del servicio
-     * @param string|object $callback Nombre de la clase del servicio 
+     * @param string|object $callback Nombre de la clase del servicio
      *  o el objeto mismo que representa el servicio.
      * @param array<mixed> $params Parametros enviados al servicio.
      */
@@ -104,9 +121,8 @@ class Context
      */
     private static function getDBConfig($bundle)
     {
-        $serviceConfig = self::getService('config');
-        if (is_string($bundle)) return $serviceConfig->get('db'.$bundle);
-        $config = $serviceConfig->get('db.default');
+        if (is_string($bundle)) return self::$environment->getConfig('db'.$bundle);
+        $config = self::$environment->getConfig('db.default');
         if (is_array($bundle)) {
             $config += $bundle;
         }

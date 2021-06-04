@@ -18,8 +18,9 @@ para crear sistemas más complejos como aplicaciones web, mientras que con un bo
 sistemas como frameworks o directamente aplicaciones web.</p>
 
 <p>Scoop es un bootstrap escrito de una manera facil y elegante, conservando y teniendo siempre en
-cuenta los principios <a href="http://es.wikipedia.org/wiki/Principio_KISS" rel="external">KISS</a>
-y <a href="http://es.wikipedia.org/wiki/No_te_repitas" rel="external">DRY</a>. Scoop intenta que el
+cuenta los principios <a href="http://es.wikipedia.org/wiki/Principio_KISS" rel="external">KISS</a>, 
+<a href="https://es.wikipedia.org/wiki/SOLID" rel="external">SOLID</a> y
+<a href="http://es.wikipedia.org/wiki/No_te_repitas" rel="external">DRY</a>. Scoop intenta que el
 proceso de desarrollar aplicaciones web orientadas a objetos con PHP no duela, facilitando algunas tareas
 propias de la arquitectura MVC como el enrutamiento, inyección de dependencias y manejo de plantillas.</p>
 
@@ -30,7 +31,7 @@ frameworks o aplicaciones robustas, siempre teniendo en cuenta la comodidad del 
 
 <p>En ocaciones otorgar libertad y flexibilidad al desarrollador significa dejar la puerta abierta a las
 llamadas malas prácticas y como no se puede controlar todo a la vez y para mejorar la experiencia al momento
-de desarrollar, en ocaciones es posible el uso de estas malas prácticas, aunque a lo largo de la guia se irán
+de desarrollar, en ocaciones es posible el uso de estas malas prácticas; aunque a lo largo de la guia se irán
 explicando para advertir al usuario de su desaconcejable uso y la buena pratica que puede utilizar en su lugar.</p>
 
 <p>Cuando la mala práctica sea muy grave o no estaba claro que lo era, será establecido en la misma documentación
@@ -38,7 +39,7 @@ para mas adelante explicarlo de la forma correcta.</p>
 
 <h2><a href="#versions">Manejo de versiones</a><span class="anchor" id="versions">...</span></h2>
 
-<p>Esta guia esta basada en la versión estable de scoop a la fecha, la cual es la {#config->get('app.version')}.
+<p>Esta guia esta basada en la versión estable de scoop a la fecha, la cual es la {{#view->getConfig('app.version')}}.
 Esto es importante tenerlo en cuenta ya que algún ejemplo inicial puede no funcionar en versiones
 anteriores.</p>
 
@@ -81,7 +82,10 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 }
 </pre>
 
-<p>Scoop ha sido desarrollado con <i>PHP 5.6</i> con soporte desde <i>PHP 5.3</i> hasta <i>PHP 7.4</i>. La percistencia
+<p class="doc-alert">Desde la versión 0.6.1 se incluye un servidor integrado, este se ejecuta automaticamente al ejecutar el entorno 
+de desarrollo.</p>
+
+<p>Scoop ha sido desarrollado con <i>PHP 7.3</i> con soporte desde <i>PHP 5.3</i> hasta <i>PHP 8</i>. La percistencia
 se puede manejar con MySQL, postgreSQL, SQLServer o cualquier motor de base de datos con soporte para PDO.</p>
 
 <p>Es recomendable aunque no obligatorio instalar algunas de las herramientas que usa scoop para la
@@ -111,7 +115,7 @@ automatización de procesos, esto garantiza una mayor productividad en el desarr
 <h2><a href="#download">Medios de descarga</a><span class="anchor" id="download">...</span></h2>
 
 <p>Descargue las distintas versiones de scoop mediante el medio que más se ajuste a sus necesidades.
-La versión actual del bootstrap es la {#config->get('app.version')}.</p>
+La versión actual del bootstrap es la {{#view->getConfig('app.version')}}.</p>
 <ul>
     <li>
         <h3>Composer</h3>
@@ -143,10 +147,11 @@ npm install
 composer install
 </pre>
 
-<p class="doc-alert">Cada vez que se vaya a desplegar el proyecto es recomendable usar el comando
-<code>npm start</code>, con esto se garantiza la ejecución de tareas automaticas como minificación de archivos 
-javascript y CSS, para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> con esta herramienta 
-y el uso de <a href="https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei">livereload</a> se aumenta la velocidad de desarrollo.</p>
+<p>Cada vez que se vaya a desplegar el proyecto es recomendable usar el comando <code>npm start</code>,
+con esto se garantiza la ejecución de tareas automaticas como minificación de archivos Javascript y CSS,
+para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> el comando levantara un
+proxy hot-reload que por defecto apunta a un servidor php built creado desde gulp. Para apuntar el proxy 
+a un host diferente se debe configurara la variables <code>PHP_HOST</code>.</p>
 
 <p>para probar que todo ha salido bien ingresa a <code>http://localhost/project-name/</code>, ya
 deberias tener instalada en tú maquina toda la estructura para usar scoop.</p>
@@ -158,5 +163,8 @@ suministrar el ABC o primeros pasos para comprender como funciona este bootstrap
 orientado a objetos.</p>
 
 <ul>
-    <li><a href="{#view->route('doc-config')}">Configuración del entorno</a></li>
+    <li><a href="{{#view->route('doc-config')}}">Configuración del entorno</a></li>
+    <li><a href="{{#view->route('doc-model')}}">Diseño del dominio</a></li>
+    <li><a href="{{#view->route('doc-view')}}">Plantillas dinámicas</a></li>
+    <li><a href="{{#view->route('doc-controller')}}">Inversión de control</a></li>
 </ul>

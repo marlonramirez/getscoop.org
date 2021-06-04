@@ -3,8 +3,8 @@
     <a href="https://github.com/marlonramirez/scoop" rel="external"><img src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub" id="ribbon-github"></a>
     <h1>Scoop</h1>
     <h2>Simple Characteristics of Object-Oriented PHP</h2>
-    <a href="{#view->route('doc')}#download" class="btn download">
-        <i class="fa fa-download"></i> Descargar <small>(v. {#config->get('app.version')})</small>
+    <a href="{{#view->route('doc')}}#download" class="btn download">
+        <i class="fa fa-download"></i> Descargar <small>(v. {{#view->getConfig('app.version')}})</small>
     </a>
 </div>
 <div class="main">
@@ -29,8 +29,7 @@
         <h2>Herramientas scoop</h2>
         <p>Existen muchísimas herramientas disponibles que facilitan el desarrollo tanto en el lado
         del cliente como del servidor. Scoop se basa en composer para el manejo de dependencias PHP y
-        NodeJS junto con npm para la gestión de archivos
-        JavaScript y CSS.</p>
+        NodeJS junto con npm para la gestión de archivos JavaScript y CSS.</p>
     </div>
 
     <div class="col-3 mark-stack-scoop">
@@ -39,9 +38,9 @@
             <i class="fa fa-cogs fa-stack-1x fa-inverse"></i>
         </span>
         <h2>API RESTful</h2>
-        <p>Un sistema basado en servicios RESTful nunca fue tan facil de crear, solo basta con
-        implementar la interfaz <code>Scoop\Http\Resource</code> a un controlador para que este se convierta en un recurso con
-        metodos accesores <code>GET</code>, <code>POST</code>, <code>PUT</code> y <code>DELETE</code>.</p>
+        <p>Un sistema basado en servicios RESTful nunca fue tan facil de crear, scoop se basa en comunicaciones HTTP
+        por lo cual cada controlador maneja métodos <code>GET</code>, <code>POST</code>, <code>PUT</code> y 
+        <code>DELETE</code> de manera explicita, además devuelve recursos basados en la solicitud que envía el cliente.</p>
     </div>
 
     <div class="col-3 mark-stack-scoop">
@@ -50,9 +49,9 @@
             <i class="fa fa-database fa-stack-1x fa-inverse"></i>
         </span>
         <h2>Acceso a datos</h2>
-        <p>SQO es la base del sistema de persistencia que maneja scoop, una capa de abstracción orientada
-        a objetos que simplifica el manejo de base de datos y mediante la cual es posible generar modelos
-        orientados tanto a objetos como a datos.</p>
+        <p>SQO(Scoop|Simple Query Object) es un query builder sobre el cual se basa el sistema de persistencia.
+        Una capa de abstracción orientada a objetos que simplifica el manejo de la base de datos, usando filtros
+        dinámicos y posibilitando la generación de modelos orientados a datos.</p>
     </div>
 
     <div class="col-3 mark-stack-scoop">
@@ -62,7 +61,7 @@
         </span>
         <h2>Sistema de plantillas</h2>
         <p>Es posible usar PHP para generar las vistas de tú aplicación, pero esto no es tan sencillo y
-        divertido como crearlas con el sistema de plantillas que proporciona scoop, aparte de simplificar
+        divertido como crearlas con sdt(Scoop|Simple Dynamic Templates) el sistema de plantillas que proporciona scoop, aparte de simplificar
         la escritura de código en la vista se provee herramientas como la minificación inteligente de
         HTML.</p>
     </div>

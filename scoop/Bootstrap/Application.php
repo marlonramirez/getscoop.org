@@ -3,26 +3,27 @@ namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $router;
-    private $url;
-    private $environment;
+    private $request;
 
-    public function __construct(Environment $environment)
+    public function __construct()
     {
-        $this->environment = $environment;
+        $this->request = new \Scoop\Http\Request();
+        $this->enableCORS();
     }
 
     public function run()
     {
-        $url = $this->getURL();
-        $response = $this->environment->route($url);
+        $response = \Scoop\Context::getEnvironment()->route($this->request);
         return $this->formatResponse($response);
     }
 
-    public function showError($error)
+    public function showError($ex)
     {
         try {
-            return $this->formatResponse($error);
+            if ($this->request->isAjax()) {
+                $ex->addHeader('Content-Type: application/json');
+            }
+            return $this->formatResponse($ex->handler());
         } catch (\UnderflowException $ex) {}
     }
 
@@ -40,23 +41,34 @@ class Application
         return $response;
     }
 
-    public function setURL($url)
+    private function enableCORS()
     {
-        $this->url = $url;
-        return $this;
-    }
-
-    private function getURL()
-    {
-        if (!isset($this->url)) {
-            if (substr($_SERVER['REQUEST_URI'], -9) === 'index.php') {
-                \Scoop\Controller::redirect(
-                    str_replace('index.php', '', $_SERVER['REQUEST_URI']), 301
-                );
+        $cors = \Scoop\Context::getEnvironment()->getConfig('cors');
+        if (!$cors) return;
+        if (isset($_SERVER['HTTP_ORIGIN'])) {
+            $origin = isset($cors['origin']) ?
+            array_map('trim', explode(',', $cors['origin'])) :
+            array($_SERVER['HTTP_ORIGIN']);
+            if (in_array($_SERVER['HTTP_ORIGIN'], $origin)) {
+                header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+                header('Access-Control-Allow-Credentials: true');
+                header('Access-Control-Max-Age: 86400');
             }
-            $this->url = '/'.filter_input(INPUT_GET, 'route', FILTER_SANITIZE_STRING);
-            unset($_GET['route'], $_REQUEST['route']);
         }
-        return $this->url;
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+                $methods = isset($cors['methods']) ?
+                $cors['methods'] :
+                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'];
+                header("Access-Control-Allow-Methods: $methods");
+            }
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+                $headers = isset($cors['headers']) ?
+                $cors['headers'] :
+                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'];
+                header("Access-Control-Allow-Headers: $headers");
+            }
+            exit;
+        }
     }
 }

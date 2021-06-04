@@ -4,32 +4,32 @@ un desarrollador necesita hacer ganando simplicidad preo sin abandonar flexibili
 no convencionales de la aplicación que se deben especificar y es aqui donde entra el sistema de configuración.</p>
 
 <h2>
-    <a href="#routes-config">Entornos</a>
+    <a href="#routes-config">Contexto y entorno</a>
     <span class="anchor" id="routes-config">...</span>
 </h2>
 
 <p>Si nos fijamos una de las primeras cosas que realiza el sistema es establecer un entorno de ejecución, 
-este se debe instanciar de la clase <code>\Scoop\Bootstrap\Environment</code> y se le debe enviar como
-parametro la ubicación del archivo de configuración.</p>
+este no se instancia directamente si no que se carga mediante un contexto <code>\Scoop\Context</code>, el contexto
+no solo genera el entorno si no el cargador de namespaces y el injector de dependencias, se debe pasar la ruta
+del archivo de configuración al momento de cargar el contexto. Una vez definido el contexto se puede instanciar 
+la aplicación.</p>
 
 <pre class="prettyprint">
-$environment = new \Scoop\Bootstrap\Environment('app/config');
-$app = new \Scoop\Bootstrap\Application($environment);
+\Scoop\Context::load('app/config');
+$app = new \Scoop\Bootstrap\Application();
 echo $app->run();
 </pre>
 
-<p>Con el entorno ya creado solo basta enviarselo a una instancia de <code>\Scoop\Bootstrap\Application</code> y 
-ejecutar; una aplicación bootstrap retorna la salida por lo cual es recomendable realizar el volcamiento con el 
-uso de <code>echo</code>.</p>
-
-<p>Cuando un entorno es establecido se puede acceder a las variables de configuración mediante el servicio
-<code>config</code> y su método <code>get</code>.</p>
+<p>Cuando un contexto es establecido se puede acceder al entorno mediante su método
+<code>\Scoop\Context::getEnvironment()</code>, al cargador mediante <code>\Scoop\Context::getLoader()</code> y
+ al inyector de dependencias mediante <code>\Scoop\Context::getInjector()</code>, tambien se pueden establecer
+ conexiones a la base de datos mediante <code>\Scoop\Context::connect()</code>.</p>
 
 <h2>Configuraciones básicas</h2>
 
 <p>El archivo de configuración establece los ajustes para el correcto funcionamiento de la aplicación, 
 aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mensajes de error, entre muchos más. 
-Se pueden extender a otros archivos mediante <code>require</code> o <code>file_gets_content</code>.</p>
+Se pueden extender a otros archivos mediante <code>require</code> o carga perezosa.</p>
 
 <pre class="prettyprint">
 return array(
@@ -40,7 +40,7 @@ return array(
 <h3>Carga peresoza</h3>
 
 <p>Otra posibilidad de extender la configuración es mediante la carga peresoza de archivos, esta en vez de usar directamente
-u  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
+un  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
 
 <pre class="prettyprint">
 return array(
@@ -62,9 +62,7 @@ package.json como archivo de configuración.</p>
 
 <pre class="prettyprint">
 return array(
-    'app' => json_decode(file_get_contents(
-        __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'package.json'
-    ), true)
+    'app' => 'json:package'
 );
 </pre>
 
@@ -100,15 +98,20 @@ los suministrados por PDO.</p>
 
 <h3>messages</h3>
 
-<p>Por defecto scoop mostrara un mensaje si este no se encuentra dentro del archivo de configuración, para el caso 
-de los mensajes de validaciones estos den hayarse dentro de un arrary con key error seguido de otro array cuyo key 
-debera ser el nombre de la validación y el valor el mensaje a mostrar cuando falle la validación.</p>
+<p>Por defecto scoop mostrara un mensaje si este no se encuentra dentro del archivo de configuración, se pueden 
+manejar técnicas de internacionalización realizando la respectiva separación de mensajes por idioma, este tema
+escapa al manejo de la herramienta, pero presta las condiciones para su implementación.</p>
 
 <pre class="prettyprint">
 return array(
     'messages' => array(
-        'error' => array(
-            'required' => 'Complete este campo'
+        'es' => array(
+            'required' => 'Complete este campo',
+            'email' => 'Introduzca una dirección de correo valida'
+        ),
+        'en' => array(
+            'required' => 'Please fill out this field',
+            'email' => 'Please include a valid email'
         )
     )
 );
@@ -134,7 +137,7 @@ return array(
 
 <p>En el anterior ejemplo para referirse al archivo stylesheet.css se debe seguir la ruta
 <code>public/css/stylesheeet.css</code> y para acceder a esta desde una vista basta con solo colocar
-<code>#view->css('stylesheet.css')</code>.</p>
+<code>&#123;{#view->css('stylesheet.css')}&#125;</code>, por defecto se usa la configuración de ejemplo para ubicar los assets.</p>
 
 <h2>
     <a href="#routes">Rutas</a>
@@ -165,12 +168,12 @@ ahora la clave es el alias de la ruta y el valor un array asociativo con las sig
 <pre class="prettyprint">
 return array(
     'user' => array(
-        'url' => '/user/&#123;var&#125;/'
+        'url' => '/user/{var}/'
     )
 );
 </pre>
 
-        <p>El uso de variables se limita a dos tipo: <code>&#123;var&#125;</code> e <code>&#123;int&#125;</code>, en el
+        <p>El uso de variables se limita a dos tipo: <code>{var}</code> e <code>{int}</code>, en el
         primero se puede suministrar cualquier tipo de dato consistente con el formato url y el segundo filtra solo
         valores númericos, scoop toma todas las variables como parametros opcionales hacia el controlador, es este
         último el que debe establecer cuales son realmente opcionales y cuales obligatorios.</p>
@@ -181,13 +184,31 @@ return array(
         la forma de manejar métodos https. el ruteador verificara que existan dentro del controlador métodos con el mismo 
         nombre de su contraparte en http, de no ser así se denerara un error 405.</p>
         <p class="doc-alert">Desde la version <code>0.5.6</code> no se usa el signo <code>:</code> para separar controlador
-        de método, en su lugar se creo la propiedad <i>methods</i>.</p>
+        de método, en su lugar se creo la propiedad <i>methods</i>. En la versión 0.6.1 se deprecio el uso de methods, así
+        solo son permitidos métodos HTTP.</p>
 
 <pre class="prettyprint">
 return array(
     'user' => array(
         'url' => '/user/&#123;var&#125;/',
         'controller' => 'Controller\User'
+    )
+);
+</pre>
+
+        <p class="doc-alert">Desde la version <code>0.6.1</code> es posible separar los métodos HTTP en diferentes controladores,
+        esto beneficia el principio de single responsability.</p>
+
+        <pre class="prettyprint">
+return array(
+    'user' => array(
+        'url' => '/user/&#123;var&#125;/',
+        'controller' => array(
+            'get' => 'Controller\UserReader',
+            'post' => 'Controller\UserCreator',
+            'put' => 'Controller\UserUpdater',
+            'delete' => 'Controller\UserRemover'
+        )
     )
 );
 </pre>
@@ -201,7 +222,7 @@ return array(
 <pre class="prettyprint">
 return array(
     'user' => array(
-        'url' => '/user/&#123;var&#125;/',
+        'url' => '/user/{var}/',
         'proxy' => 'App\Interceptor\Verify'
     ),
     'home' => array(
@@ -210,7 +231,7 @@ return array(
     )
 );
 </pre>
-        <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento la ruta interceptada
+        <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento petición interceptada,
         en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de 
         <code>App\Interceptor\Verify</code>. Vale la pena mencionar que un Proxy no puede devolver ningún valor para su 
         encadenamiento, simplemente lanzar excepciones o redirigir peticiones.</p>
@@ -218,9 +239,9 @@ return array(
 
     <li><h3>routes</h3>
         <p>El sistema de enrutamiento que maneja scoop es fragmentado al igual que sucede con el archivo de configuración.
-        Para hacer uso de este sistema se debe establecer la propiedad routes y dentro un areglo que se encargará decontinuar
-        el ruteo de la aplicación, para obtener el array se puede hacer uso de las mismas tecnicas de require, file_gets_content
-        o carga peresoza que en el archivo de configuración. CAbe mencionar que aunque sea posible realizar la carga peresoza desde
+        Para hacer uso de este sistema se debe establecer la propiedad routes y dentro un areglo que se encargará de continuar
+        el ruteo de la aplicación, para obtener el array se puede hacer uso de las mismas tecnicas de require
+        o carga peresoza que en el archivo de configuración. Cabe mencionar que aunque sea posible realizar la carga peresoza desde
         la propiedad route no es una practica recomendable dado que desde el principio se deberan cargar todas las rutas y
         de esta manera la carga peresoza perdera toda su utilidad.</p>
 
@@ -238,7 +259,8 @@ return array(
     <code>/documentation/routes/</code>.</p>
     </li>
 
-    <li><h3>methods</h3>
+    <li><h3 class="deprecated">methods</h3>
+        <p class="doc-danger">La propiedad methods ha sido declara @deprecated desde la versión 0.6.1</p>
         <p>Finalmente tenemos la configuración de métodos, esta es opcional ya que como se menciono anteriormente si no se
         especifica ningún método el router intentara encontrar uno que se llame igual que el método http ejecutado. En caso
         de querer enmascarar el nombre del método o que varias peticiones compartan un controlador, se debe especificar en un
@@ -262,11 +284,8 @@ return array(
     'home' => array(
         'url' => '/',
         'controller' => 'Controller\Home:get',
-        'interceptor' => 'App\Interceptor\Test',
-        'routes' => require 'routes/main.php',
-        'method' => array(
-            'get' => 'auth'
-        )
+        'proxy' => 'App\Interceptor\Test',
+        'routes' => require 'routes/main.php'
     )
 );
 </pre>
@@ -283,13 +302,13 @@ implementaciones, para esto scoop usa el método <code>bind</code> de la clase
 la interface y el segundo el nombre de la clase que implementa dicha interface.</p>
 
 <pre class="prettyprint">
-\Scoop\IoC\Injector::bind('\App\Repository\Quote', '\App\Repository\QuoteArray');
+\Scoop\Context::getInjector()->bind('\App\Repository\Quote', '\App\Repository\QuoteArray');
 </pre>
 
 <p>De esta manera cada vez que se use la interface <code>\App\Repository\Quote</code> dentro de un entorno
 IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Aunque esta manera 
 de enlazar interfaces es funcional se recomienda el uso de archivos para separar logica de configuración, 
-para tal fin se puede usar establecer un key providers cuyo valor sea un par clave valor [inteface => class].</p>
+para tal fin se puede establecer un key providers cuyo valor sea un par clave valor [inteface => class].</p>
 
 <pre class="prettyprint">
 return array(
@@ -302,14 +321,18 @@ return array(
 <p>Finalmente para hacer uso de la dependencia, esta se debe recibir como argumento del contructor en la clase que
 se desee.</p>
 
-<h2>
+<h2 class="deprecated">
     <a href="#services">Servicios</a>
     <span class="anchor" id="services">...</span>
 </h2>
-
+<p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
+de inyección de dependencias.</p>
 <p>Los servicios no se deben confundir con las dependencias, una dependecia se debe inyectar a la clase mediante
 el contructor, en cambio un servicio es nombrado y es posible acceder a este desde cualquier parte del sistema 
 (incluso las vistas).</p>
+
+<p class="doc-alert">Desde la versión 0.6.2 se pueden inyectar dependencias en las vistas mediante el uso de la notación
+<code>&#64;inject \App\Service\Provider#provider</code></p>
 
 <pre class="prettyprint">
 \Scoop\IoC\Service::register('auth', '\App\Controller\Auth');
@@ -343,4 +366,4 @@ return array(
 );
 </pre>
 
-<p>Para usar un componente dentro de la vista se debe usa el método <code>compose</code> del servicio <code>view</code>.</p>
+<p>Para usar un componente dentro de la vista se debe usa el método <code>compose{ComponentName}</code> del servicio <code>view</code>.</p>
