@@ -13,6 +13,10 @@ abstract class Heritage {
     {
         self::$footer = '';
         self::$data = $data;
+        if (ob_get_length()) {
+            ob_flush();
+        }
+        ob_start();
     }
 
     /**
@@ -21,7 +25,8 @@ abstract class Heritage {
      */
     public static function extend($parent)
     {
-        Template::parse($parent, self::$data);
+        extract(self::$data);
+        require Template::parse($parent);
         self::$footer = trim(ob_get_contents()).self::$footer;
         ob_end_clean();
     }
@@ -30,9 +35,9 @@ abstract class Heritage {
      * Incluye un template dentro de otro.
      * @param string $path Ruta donde se ubica la vista a ser incluida.
      */
-    public static function import($path)
+    public static function getCompilePath($path)
     {
-        Template::parse($path, self::$data);
+        return Template::parse($path);
     }
 
     /**

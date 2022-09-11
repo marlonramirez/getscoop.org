@@ -8,10 +8,10 @@ no convencionales de la aplicación que se deben especificar y es aqui donde ent
     <span class="anchor" id="routes-config">...</span>
 </h2>
 
-<p>Si nos fijamos una de las primeras cosas que realiza el sistema es establecer un entorno de ejecución, 
+<p>Si nos fijamos una de las primeras cosas que realiza el sistema es establecer un entorno de ejecución,
 este no se instancia directamente si no que se carga mediante un contexto <code>\Scoop\Context</code>, el contexto
 no solo genera el entorno si no el cargador de namespaces y el injector de dependencias, se debe pasar la ruta
-del archivo de configuración al momento de cargar el contexto. Una vez definido el contexto se puede instanciar 
+del archivo de configuración al momento de cargar el contexto. Una vez definido el contexto se puede instanciar
 la aplicación.</p>
 
 <pre class="prettyprint">
@@ -25,10 +25,13 @@ echo $app->run();
  al inyector de dependencias mediante <code>\Scoop\Context::getInjector()</code>, tambien se pueden establecer
  conexiones a la base de datos mediante <code>\Scoop\Context::connect()</code>.</p>
 
+ <p class="doc-danger">Desde la versión 6.4 el método <code>getInjector</code> se encuentra @deprecated en
+ favor del método <code>inject</code>.</p>
+
 <h2>Configuraciones básicas</h2>
 
-<p>El archivo de configuración establece los ajustes para el correcto funcionamiento de la aplicación, 
-aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mensajes de error, entre muchos más. 
+<p>El archivo de configuración establece los ajustes para el correcto funcionamiento de la aplicación,
+aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mensajes de error, entre muchos más.
 Se pueden extender a otros archivos mediante <code>require</code> o carga perezosa.</p>
 
 <pre class="prettyprint">
@@ -37,7 +40,7 @@ return array(
 );
 </pre>
 
-<h3>Carga peresoza</h3>
+<h3 id="lazy-loading">Carga peresoza</h3>
 
 <p>Otra posibilidad de extender la configuración es mediante la carga peresoza de archivos, esta en vez de usar directamente
 un  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
@@ -56,8 +59,8 @@ mientras import hará lo mismo con los archivos .php.</p>
 
 <h3>app</h3>
 
-<p>dentro de app se pueden establecer todas las variables de entorno a las que puede acceder la aplicación, aqui se 
-encuentran variables como name y version, una tecnica que utiliza scoop para establecer variables es usar 
+<p>dentro de app se pueden establecer todas las variables de entorno a las que puede acceder la aplicación, aqui se
+encuentran variables como name y version, una tecnica que utiliza scoop para establecer variables es usar
 package.json como archivo de configuración.</p>
 
 <pre class="prettyprint">
@@ -98,7 +101,7 @@ los suministrados por PDO.</p>
 
 <h3>messages</h3>
 
-<p>Por defecto scoop mostrara un mensaje si este no se encuentra dentro del archivo de configuración, se pueden 
+<p>Por defecto scoop mostrara un mensaje si este no se encuentra dentro del archivo de configuración, se pueden
 manejar técnicas de internacionalización realizando la respectiva separación de mensajes por idioma, este tema
 escapa al manejo de la herramienta, pero presta las condiciones para su implementación.</p>
 
@@ -119,9 +122,9 @@ return array(
 
 <h3>asset</h3>
 
-<p>Finalmente se tiene la configuración de assets, estos se usan principalmente en las vistas para ubicar los recursos 
-publicos de la aplicación (Archivos css, javascript, imagenes, etc). El uso de asset dentro de scoop es muy sencillo, 
-la ruta principal de los archivos se ubica en <code>asset.path</code>, el resto de parametros son rutas relativas que 
+<p>Finalmente se tiene la configuración de assets, estos se usan principalmente en las vistas para ubicar los recursos
+publicos de la aplicación (Archivos css, javascript, imagenes, etc). El uso de asset dentro de scoop es muy sencillo,
+la ruta principal de los archivos se ubica en <code>asset.path</code>, el resto de parametros son rutas relativas que
 parten de esta ruta principal.</p>
 
 <pre class="prettyprint">
@@ -147,9 +150,9 @@ return array(
 <p class="doc-alert">Desde la version <code>0.2.2</code> cambio drasticamente el sistema de enrutamiento
 del bootstrap, para favorecer la inclusión de proxies y alias en las rutas.</p>
 
-<p>Dentro del archivo de rutas se establecen las propiedades que definen una URL, no es un sistema de ruteo 
-simple como en anteriores versiones, si no que establece una serie de caracteristicas como la interceptación 
-de peticiones y generación de rutas dinamicamente, sin sacrificar en ningún momento la funcionalidad y caracteristicas 
+<p>Dentro del archivo de rutas se establecen las propiedades que definen una URL, no es un sistema de ruteo
+simple como en anteriores versiones, si no que establece una serie de caracteristicas como la interceptación
+de peticiones y generación de rutas dinamicamente, sin sacrificar en ningún momento la funcionalidad y caracteristicas
 que tenia el anterior sistema.</p>
 
 <p class="doc-alert">Desde la version <code>0.5.4</code> Las rutas hacen parte integral del archivo de configuración
@@ -181,7 +184,7 @@ return array(
 
     <li><h3>controller</h3>
         <p>Establece el controlador hacia el cual debe apuntar la ruta. En caso que no especifique de manera explicita
-        la forma de manejar métodos https. el ruteador verificara que existan dentro del controlador métodos con el mismo 
+        la forma de manejar métodos https. el ruteador verificara que existan dentro del controlador métodos con el mismo
         nombre de su contraparte en http, de no ser así se denerara un error 405.</p>
         <p class="doc-alert">Desde la version <code>0.5.6</code> no se usa el signo <code>:</code> para separar controlador
         de método, en su lugar se creo la propiedad <i>methods</i>. En la versión 0.6.1 se deprecio el uso de methods, así
@@ -232,8 +235,8 @@ return array(
 );
 </pre>
         <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento petición interceptada,
-        en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de 
-        <code>App\Interceptor\Verify</code>. Vale la pena mencionar que un Proxy no puede devolver ningún valor para su 
+        en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de
+        <code>App\Interceptor\Verify</code>. Vale la pena mencionar que un Proxy no puede devolver ningún valor para su
         encadenamiento, simplemente lanzar excepciones o redirigir peticiones.</p>
     </li>
 
@@ -306,8 +309,8 @@ la interface y el segundo el nombre de la clase que implementa dicha interface.<
 </pre>
 
 <p>De esta manera cada vez que se use la interface <code>\App\Repository\Quote</code> dentro de un entorno
-IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Aunque esta manera 
-de enlazar interfaces es funcional se recomienda el uso de archivos para separar logica de configuración, 
+IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Aunque esta manera
+de enlazar interfaces es funcional se recomienda el uso de archivos para separar logica de configuración,
 para tal fin se puede establecer un key providers cuyo valor sea un par clave valor [inteface => class].</p>
 
 <pre class="prettyprint">
@@ -328,11 +331,10 @@ se desee.</p>
 <p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
 de inyección de dependencias.</p>
 <p>Los servicios no se deben confundir con las dependencias, una dependecia se debe inyectar a la clase mediante
-el contructor, en cambio un servicio es nombrado y es posible acceder a este desde cualquier parte del sistema 
+el constructor, en cambio un servicio es nombrado y es posible acceder a este desde cualquier parte del sistema
 (incluso las vistas).</p>
 
-<p class="doc-alert">Desde la versión 0.6.2 se pueden inyectar dependencias en las vistas mediante el uso de la notación
-<code>&#64;inject \App\Service\Provider#provider</code></p>
+<p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc-view')}}#services">inyectar dependencias en las vistas</a>.</p>
 
 <pre class="prettyprint">
 \Scoop\IoC\Service::register('auth', '\App\Controller\Auth');
@@ -353,9 +355,9 @@ return array(
     <span class="anchor" id="components">...</span>
 </h2>
 
-<p>Los componentes en scoop son simples bloques de codigos HTML reutilizables y variables que se gestionan mediante 
-el uso de clases, cada componente tiene un nombre asociado dentro de la vista y un handler PHP, este par 
-[name => classHandler] se puede usar dentro de un archivo de configuración asociado mediante la clase de entorno o el uso 
+<p>Los componentes en scoop son simples bloques de codigos HTML reutilizables y variables que se gestionan mediante
+el uso de clases, cada componente tiene un nombre asociado dentro de la vista y un handler PHP, este par
+[name => classHandler] se puede usar dentro de un archivo de configuración asociado mediante la clase de entorno o el uso
 directo del método <code>registerComponents</code> de la clase <code>\Scoop\View</code>.</p>
 
 <pre class="prettyprint">

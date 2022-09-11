@@ -1,0 +1,2 @@
+@extends 'layers/docs'
+

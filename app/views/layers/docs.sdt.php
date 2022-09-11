@@ -14,9 +14,9 @@
                     Configuración del entorno <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
-            <li{{#view->isCurrentRoute('doc-model') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-model')}}">
-                    Diseño del dominio <i class="fa fa-angle-double-right"></i>
+            <li{{#view->isCurrentRoute('doc-folder') ? ' class="active"' : ''}}>
+                <a href="{{#view->route('doc-folder')}}">
+                    Estructura de carpetas <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
             <li{{#view->isCurrentRoute('doc-view') ? ' class="active"' : ''}}>
@@ -24,29 +24,29 @@
                     Plantillas dinámicas <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
-            <li{{#view->isCurrentRoute('doc-controller') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-controller')}}">
-                    Inversión de control <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
             <li{{#view->isCurrentRoute('doc-model') ? ' class="active"' : ''}}>
                 <a href="{{#view->route('doc-model')}}">
-                    Frontend <i class="fa fa-angle-double-right"></i>
+                    Diseño del dominio <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
             <li{{#view->isCurrentRoute('doc-controller') ? ' class="active"' : ''}}>
                 <a href="{{#view->route('doc-controller')}}">
-                    API REST <i class="fa fa-angle-double-right"></i>
+                    Ciclo de vida <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
-            <li{{#view->isCurrentRoute('doc-view') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-view')}}">
-                    Validaciones <i class="fa fa-angle-double-right"></i>
+            <li{{#view->isCurrentRoute('doc-resources') ? ' class="active"' : ''}}>
+                <a href="{{#view->route('doc-resources')}}">
+                    Recursos <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
-            <li{{#view->isCurrentRoute('doc-view') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-view')}}">
-                    Tareas automatizadas <i class="fa fa-angle-double-right"></i>
+            <li{{#view->isCurrentRoute('doc-monitoring') ? ' class="active"' : ''}}>
+                <a href="{{#view->route('doc-monitoring')}}">
+                    Monitoreo <i class="fa fa-angle-double-right"></i>
+                </a>
+            </li>
+            <li{{#view->isCurrentRoute('doc-ice') ? ' class="active"' : ''}}>
+                <a href="{{#view->route('doc-ice')}}">
+                    CLI/ICE <i class="fa fa-angle-double-right"></i>
                 </a>
             </li>
         </ul>

@@ -4,22 +4,19 @@ namespace Scoop\Storage\SQO;
 class Filter
 {
     protected $from = array();
-    protected $params = array();
-    protected $query = '';
-    protected $order = array();
-    protected $group = array();
-    protected $con;
-    private $rules = array();
-    private $orderType = ' ASC';
-    private $limit = '';
+    protected $sqo;
+    private $filters = array();
+    private $restrictions = array();
     private $connector = 'AND';
+    private $query;
+    private $params;
     private $type;
 
-    public function __construct($query, $type, $params, $connection)
+    public function __construct($query, $type, $sqo, $params = array())
     {
         $this->query = $query;
         $this->type = $type;
-        $this->con = $connection;
+        $this->sqo = $sqo;
         $this->params = $params;
     }
 
@@ -28,13 +25,13 @@ class Filter
         return $this->type;
     }
 
-    public function bind($key, $value = null)
+    public function bind($key, $value = 0)
     {
-        if ($value) {
-            $this->params[$key] = $value;
+        if (is_array($key)) {
+            $this->params += $key;
             return $this;
         }
-        $this->params += $key;
+        $this->params[$key] = $value;
         return $this;
     }
 
@@ -46,45 +43,27 @@ class Filter
 
     public function filter($rule)
     {
-        $this->rules[] = $rule;
+        $this->filters[] = $rule;
         return $this;
     }
 
-    public function order()
+    public function restrict($rule)
     {
-        $numArgs = func_num_args();
-        if (!$numArgs) {
-            throw new \InvalidArgumentException('Unsoported number of arguments');
-        }
-        $args = func_get_args();
-        $type = strtoupper($args[$numArgs - 1]);
-        if ($type === 'ASC' || $type === 'DESC') {
-            $this->orderType = ' '.$type;
-            array_pop($args);
-        }
-        $this->order += $args;
-        return $this;
-    }
-
-    public function group()
-    {
-        $this->group += func_get_args();
-        return $this;
-    }
-
-    public function limit($offset, $limit = null)
-    {
-        $this->limit = ' LIMIT '.($limit === null ? $offset : $limit.' OFFSET '.$offset);
+        $this->restrictions[] = $rule;
         return $this;
     }
 
     public function run($params = null)
     {
-        if ($params !== null) {
+        if (is_array($params)) {
             $this->params += $params;
         }
         $sql = $this->__toString();
-        $statement = $this->con->prepare($sql);
+        $con = $this->sqo->getConnection();
+        $statement = $con->prepare($sql);
+        if ($this->type !== \Scoop\Storage\SQO::READ) {
+            $con->beginTransaction();
+        }
         $statement->execute($this->getParamsAllowed($sql));
         return $statement;
     }
@@ -93,10 +72,7 @@ class Filter
     {
         return $this->query
             .implode('', $this->from)
-            .$this->getRules()
-            .$this->getGroup()
-            .$this->getOrder()
-            .$this->limit;
+            .$this->getRules();
     }
 
     protected function getParamsAllowed($sql)
@@ -112,7 +88,7 @@ class Filter
 
     private function getRules()
     {
-        $rules = $this->rules;
+        $rules = $this->filters;
         foreach ($rules as $key => $rule) {
             preg_match_all('/:[\w_]+/', $rule, $matches);
             foreach ($matches[0] as $match) {
@@ -126,6 +102,7 @@ class Filter
                 }
             }
         }
+        $rules = array_merge($this->restrictions, $rules);
         if (empty($rules)) return '';
         return ' WHERE ('.implode(') '.$this->connector.' (', $rules).')';
     }
@@ -139,17 +116,5 @@ class Filter
         }
         unset($this->params[$name]);
         return substr($rule, 0, -1);
-    }
-
-    private function getOrder()
-    {
-        if (empty($this->order)) return '';
-        return ' ORDER BY '.implode(', ', $this->order).$this->orderType;
-    }
-
-    private function getGroup()
-    {
-        if (empty($this->group)) return '';
-        return ' GROUP BY '.implode(', ', $this->group);
     }
 }

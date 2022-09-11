@@ -1,5 +1,5 @@
 <?php
-namespace Scoop\IoC;
+namespace Scoop\Container;
 
 class Router
 {
@@ -42,9 +42,8 @@ class Router
     public function intercept($request)
     {
         $matches = $this->filterProxy($request->getURL());
-        $injector = \Scoop\Context::getInjector();
         foreach ($matches as $route) {
-            $proxy = $injector->getInstance($route['proxy']);
+            $proxy = \Scoop\Context::inject($route['proxy']);
             $proxy->execute($request);
         }
     }
@@ -74,7 +73,7 @@ class Router
         $queryString = '';
         foreach ($query AS $name => $value) {
             if ($value) {
-                $queryString .= '&'.$name.'='.$value;
+                $queryString .= '&'.htmlentities($name, ENT_QUOTES | ENT_HTML5, 'UTF-8').'='.htmlentities($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             }
         }
         return $queryString ? '?'.substr($queryString, 1) : '';
@@ -93,11 +92,14 @@ class Router
             };
             $controller = $controller[$method];
         }
-        $classController = '\Scoop\Controller';
-        if (!is_subclass_of($controller, $classController)) {
-            throw new \UnexpectedValueException($controller.' not implement '.$classController);
+        if (!class_exists($controller)) {
+            throw new \Scoop\Http\NotFoundException('Class '.$controller.' not found');
         }
-        return \Scoop\Context::getInjector()->getInstance($controller);
+        $baseController = '\Scoop\Controller';
+        if (!is_subclass_of($controller, $baseController)) {
+            throw new \UnexpectedValueException($controller.' not implement '.$baseController);
+        }
+        return \Scoop\Context::inject($controller);
     }
 
     private function getRoute($url)
@@ -171,7 +173,7 @@ class Router
 
     private static function sortByURL($a, $b)
     {
-        return strcasecmp($a['url'], $b['url']) < 0;
+        return strcasecmp($b['url'], $a['url']);
     }
 
     private static function normalizeURL($url)

@@ -6,11 +6,9 @@ class DBC extends \PDO
     private $db;
     private $engine;
     private $host;
-    private $eventManager;
 
     public function __construct($db, $user, $pass, $host, $engine)
     {
-        $this->eventManager = \Scoop\Context::getInjector()->getInstance('Scoop\Storage\EventManager');
         $this->db = $db;
         $this->engine = $engine;
         $this->host = $host;
@@ -18,15 +16,22 @@ class DBC extends \PDO
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
         ));
-        parent::beginTransaction();
-        $this->eventManager->connect($this);
+        \Scoop\Context::dispatchEvent(new Event\Opened($this));
     }
 
     public function __destruct()
     {
-        parent::commit();
-        $this->eventManager->disconnect($this);
-        gc_collect_cycles();
+        if (parent::inTransaction()) {
+            parent::commit();
+        }
+        \Scoop\Context::dispatchEvent(new Event\Closed($this));
+    }
+
+    public function beginTransaction()
+    {
+        if (!parent::inTransaction()) {
+            return parent::beginTransaction();
+        }
     }
 
     private function __clone() {}
@@ -36,9 +41,9 @@ class DBC extends \PDO
         return $this->db;
     }
 
-    public function getEngine()
+    public function is($engine)
     {
-        return $this->engine;
+        return $this->engine === $engine;
     }
 
     public function getHost()

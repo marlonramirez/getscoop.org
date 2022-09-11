@@ -1,7 +1,8 @@
 @extends 'layers/docs'
 <p>Las vistas contienen el HTML de la aplicación y funcionan como aislante entre la presentación y la logica
 que maneja el resto de la aplicación. Un <i>Scoop Dynamic Template</i>(sdt) no es más que un archivo php 
-con extensión .sdt.php por lo cual es posible incrustar etiquetas <code>&lt;?php ?&gt;</code></p>
+con extensión .sdt.php por lo cual es posible incrustar etiquetas <code>&lt;?php ?&gt;</code> o usar la nomenclatura
+de template <code>&#91;php</code> <code>php&#93;</code></p>
 
 <p class="doc-alert">aunque sea posible usar código php directamente sobre la plantilla no es un uso aconsejable.</p>
 
@@ -99,7 +100,7 @@ signo <code>:&lt;end&gt;</code>.</p>
 &lt;/header&gt;
 </pre>
 
-<h3>&#64;ifelse</h3>
+<h3>&#64;elseif</h3>
 
 <pre class="prettyprint">
 &lt;header&gt;
@@ -152,4 +153,9 @@ signo <code>:&lt;end&gt;</code>.</p>
 <h2>
     <a href="#cache">Cache y minificación</a>
     <span class="anchor" id="cache">...</span>
+</h2>
+
+<h2>
+    <a href="#components">Componentes</a>
+    <span class="anchor" id="components">...</span>
 </h2>

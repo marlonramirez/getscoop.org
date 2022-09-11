@@ -75,6 +75,6 @@
         <p>Scoop es un proyecto relativamente nuevo, así que tanto su base de usuarios como colaboradores
         es muy reducida. Si hasta ahora estas empezando en PHP o ya eres un experto ZEND acreditado,
         discute tús ideas en el foro, reporta errores o implementa nuevas funcionalidades mediante
-        github.</p>
+        <a href="https://github.com/marlonramirez/scoop" rel="external">github</a>.</p>
     </div>
 </div>

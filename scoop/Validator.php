@@ -6,11 +6,12 @@ class Validator
     const SIMPLE_VALIDATION = 0;
     const FULL_VALIDATION = 1;
     const DEFAULT_MSG = 'Invalid field';
-    private $data;
-    private $errors;
     private $typeValidation;
-    private static $msg = array();
+    private $errors;
+    private $data;
+    private $includes = array();
     private $rules = array();
+    private static $msg = array();
     private static $customRules = array(
         'required' => '\Scoop\Validation\Required',
         'length' => '\Scoop\Validation\Length',
@@ -45,21 +46,31 @@ class Validator
      */
     public function validate($data)
     {
-        $this->data = $data;
+        $this->data = array_filter($data, array($this, 'filterData'), ARRAY_FILTER_USE_KEY);
         $this->errors = array();
         foreach ($this->rules as $rule) {
             $fields = $rule->getFields();
             if (is_array($fields)) {
                 foreach ($fields as $key => $field) {
                     $params = array('label' => $field);
-                    $this->executeRule($rule, is_numeric($key) ? $field : $key, $params);
+                    $this->executeRule($rule, is_numeric($key) ? $field : $key, $params, $data);
                 }
             } else {
                 $params = array('label' => $fields);
-                $this->executeRule($rule, $fields, $params);
+                $this->executeRule($rule, $fields, $params, $data);
             }
         }
         return $this->errors;
+    }
+
+    public function included()
+    {
+        $this->includes = func_get_args();
+    }
+
+    public function getData()
+    {
+        return $this->data;
     }
 
     /**
@@ -86,7 +97,7 @@ class Validator
      * Registra o modifica una regla dentro de $customRules.
      * @param array<string> $rules Identificadores de la clase que se encargara de resolver la regla.
      */
-    public static function addRule($rules)
+    public static function addRules($rules)
     {
         foreach ($rules as $className) {
             $classRule = '\Scoop\Validation\Rule';
@@ -106,17 +117,23 @@ class Validator
         self::$msg = (array) $messages;
     }
 
+    private function filterData($key)
+    {
+        return in_array($key, $this->includes);
+    }
+
     /**
      * Según los datos suministrados se encarga de ejecutar las reglas pertinentes a cada uno.
      * @param  mixed $rule   Nombre de la regla que sera ejecutada.
      * @param  string $field  Nombre del campo que sera validado
      * @param  array<mixed> $params Parametros pasados a la regla (max, min, etc).
+     * @param  array<mixed> $data Datos a validar
      */
-    private function executeRule($rule, $field, $params)
+    private function executeRule($rule, $field, $params, $data)
     {
-        $value = isset($this->data[$field]) ? $this->data[$field] : null;
+        $value = isset($data[$field]) ? $data[$field] : null;
         if (method_exists($rule, 'setValues')) {
-            $rule->setValues($this->data);
+            $rule->setValues($data);
         }
         if ($this->typeValidation === self::SIMPLE_VALIDATION) {
             if (!isset($this->errors[$field]) && !$rule->validate($value)) {
@@ -125,6 +142,7 @@ class Validator
         } elseif (!$rule->validate($value)) {
             $this->errors[$field][] = $this->getMessage($rule, $params, $value);
         }
+        $this->data[$field] = $value;
     }
 
     /**

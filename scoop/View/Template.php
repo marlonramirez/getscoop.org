@@ -13,7 +13,7 @@ final class Template
      * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
      * @throws \UnderflowException No se puede generar la vista, pues no existe template.
      */
-    public static function parse($templatePath, $viewData)
+    public static function parse($templatePath)
     {
         $template = 'app/views/'.$templatePath.'.sdt.php';
         $view = 'app/cache/views/'.$templatePath.'.php';
@@ -26,8 +26,7 @@ final class Template
         } else {
             throw new \UnderflowException('Unable to load view or template '.$templatePath);
         }
-        extract($viewData);
-        require $view;
+        return $view;
     }
 
     /**
@@ -40,7 +39,7 @@ final class Template
         $blockElements = array(
             'div', 'main', 'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'dl', 'dt', 'fieldset',
             'figcaption', 'figure', 'footer', 'form', 'h\d', 'header', 'hr', 'li', 'nav', 'noscript', 'ol', 'p',
-            'pre', 'section', 'table', 'tfoot', 'ul', 'video', 'script', 'style'
+            'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
         );
         preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
         if (isset($matches[0])) {
@@ -52,7 +51,7 @@ final class Template
             array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<'), $html
         );
         foreach ($blockElements as $element) {
-            $html = preg_replace('/\s*(<'.$element.'[^>]*>)\s*(.*?)\s*(<\/'.$element.'>)\s*/', '${1}${2}${3}', $html);
+            $html = preg_replace('/[\s\r\n]*(<\/?'.$element.'[^>]*>)[\s\r\n]*/is', '${1}', $html);
         }
         return $html;
     }
@@ -99,23 +98,23 @@ final class Template
             '/@foreach (('.$vars.')+\s+as\s+('.$vars.')+(\s*=>\s*('.$vars.')+)?)/',
             '/@for (('.$vars.'|'.$safeChars.'|'.$quotes.'|,|'.$fn.')*;('.$conditional.')+;('.$vars.'|'.$safeChars.')*)/'
         ), array(
-            '<?php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') ?>',
-            '<?php '.self::HERITAGE.'::extend(\'${1}\') ?>',
-            '<?php '.self::HERITAGE.'::import(\'${1}\') ?>',
-            '<?php if(${1}): ?>',
-            '<?php elseif(${1}): ?>',
-            '<?php while(${1}): ?>',
-            '<?php foreach(${1}): ?>',
-            '<?php for(${1}): ?>'
+            '[php '.self::SERVICE.'::inject(\'${2}\',\'${1}\') php]',
+            '[php '.self::HERITAGE.'::extend(\'${1}\') php]',
+            '[php require '.self::HERITAGE.'::getCompilePath(\'${1}\') php]',
+            '[php if(${1}): php]',
+            '[php elseif(${1}): php]',
+            '[php while(${1}): php]',
+            '[php foreach(${1}): php]',
+            '[php for(${1}): php]'
         ), $line, 1, $count);
         if ($count !== 0) return $line;
         $line = str_replace(
             array(':if', ':foreach', ':for', ':while', '@else', '@sprout'),
-            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>', '<?php '.self::HERITAGE.'::sprout() ?>'),
+            array('[php endif php]', '[php endforeach php]', '[php endfor php]', '[php endwhile php]', '[php else: php]', '[php '.self::HERITAGE.'::sprout() php]'),
             $line, $count
         );
         if ($count !== 0) return $line;
-        return str_replace(array('{{', '}}'), array('<?php echo ', ' ?>'), $line, $count);
+        return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line, $count);
     }
 
     private static function convertViewServices($line)
@@ -138,6 +137,7 @@ final class Template
         $matches = $matches[0];
         $content = self::clearHTML($content);
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
+        $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
         $search += array(': ?><?php ', ' ?><?php ');
         $matches += array(':', ';');
         $content = str_replace($search, $matches, $content);

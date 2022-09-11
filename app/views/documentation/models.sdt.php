@@ -65,8 +65,10 @@ la base de datos.</p>
 <code>new \Scoop\Storage\SQO('book')</code>, si es necesario colocar un alias o manejar una conexión 
 diferente a <i>default</i> se pueden usar dos argumentos más.</p>
 <pre class="prettyprint">
-$bookSQO = new \Scoop\Storage\SQO('book', 'b', DBC::get('auth'));
+$bookSQO = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');
 </pre>
+
+<p class="doc-alert">A partir de la versión 5.6 se envia el nombre de la conexión y no la conexión como en anteriores versiones</p>
 
 <p>A partir de acá es posible usar los métodos de SQO: create, update, read, delete y getLastId. Los cuatro primeros
 pertenecen al CRUD y cada uno devuelve un objeto DML especifico para cada caso, mientras  <code>getLastId</code> retorna 
@@ -82,10 +84,28 @@ $bookSQO->create([
 </pre>
 
 <h3>Lectura</h3>
+<pre class="prettyprint">
+$bookSQO->read()
+    ->filter('name like %:name%')}
+    ->restrict('year = 2009')
+    ->run();
+</pre>
 
 <h3>Actualización</h3>
+<pre class="prettyprint">
+$bookSQO->update([
+    'name' => 'Angels & demons',
+    'author' => 'Dan Brown',
+    'year' => '2009'
+])->restrict('id = :id')->run();
+</pre>
 
 <h3>Eliminación</h3>
+<pre class="prettyprint">
+$bookSQO->delete()
+    ->restrict('id = :id')
+    ->run();
+</pre>
 
 <h3>Paginación</h3>
 <p>De manera sencilla es posible paginar el resultado de una consulta mediante SQO, lo que se debe tener en cuenta

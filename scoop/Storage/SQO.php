@@ -8,17 +8,20 @@ class SQO
     const DELETE = 3;
     private $table;
     private $aliasTable;
-    private $con;
+    private $connectionName;
+    private $isReader;
 
-    public function __construct($table, $alias = '', $connection = null)
+    public function __construct($table, $alias = '', $connectionName = 'default')
     {
-        $this->table = $table;
-        $this->aliasTable = $table.' '.$alias;
-        $this->con = $connection === null ? \Scoop\Context::connect() : $connection;
+        $this->isReader = is_a($table, '\Scoop\Storage\SQO\Reader');
+        $this->table = $this->isReader ? '('.$table.')' : $table;
+        $this->aliasTable = $this->table.' '.$alias;
+        $this->connectionName = $connectionName;
     }
 
     public function create($fields, SQO\Reader $select = null)
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support CREATE');
         $query = 'INSERT INTO '.$this->table;
         $values = $select;
         if (array_keys($fields) !== range(0, count($fields) - 1)) {
@@ -26,7 +29,7 @@ class SQO
             $fields = array_keys($fields);
         }
         $query .= ' ('.implode(',', $fields).') VALUES ';
-        return new SQO\Factory($query, $values, $fields, $this->con);
+        return new SQO\Factory($query, $values, $fields, $this);
     }
 
     public function read()
@@ -34,12 +37,14 @@ class SQO
         $args = func_get_args();
         $fields = isset($args[0]) ? implode(',', self::getFields($args)) : '*';
         $query = 'SELECT '.$fields.' FROM '.$this->aliasTable;
-        return new SQO\Reader($query, SQO::READ, array(), $this->con);
+        return new SQO\Reader($query, $this);
     }
 
     public function update($fields)
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support UPDATE');
         $operators = array('+', '-', '/', '*', '%');
+        $fields = $this->nullify($fields);
         $query = 'UPDATE '.$this->table.' SET ';
         foreach ($fields as $key => $value) {
             $lastChar = substr($key, -1);
@@ -52,18 +57,33 @@ class SQO
                 $query .= $key.' = :'.$key.', ';
             }
         }
-        return new SQO\Filter(substr($query, 0, -2), SQO::UPDATE, $fields, $this->con);
+        return new SQO\Filter(substr($query, 0, -2), self::UPDATE, $this, $fields);
     }
 
     public function delete()
     {
+        if ($this->isReader) throw new \DomainException('Subquery on FROM clausule not support DELETE');
         $query = 'DELETE FROM '.$this->table;
-        return new SQO\Filter($query, SQO::DELETE, array(), $this->con);
+        return new SQO\Filter($query, self::DELETE, $this);
     }
 
     public function getLastId($nameSeq = null)
     {
-        return $this->con->lastInsertId($nameSeq);
+        return $this->getConnection()->lastInsertId($nameSeq);
+    }
+
+    public function getConnection()
+    {
+        return \Scoop\Context::connect($this->connectionName);
+    }
+
+    public function nullify($parameters)
+    {
+        $result = array();
+        foreach ($parameters as $key => $value) {
+            $result[$key] = $value === '' ? null : $value;
+        }
+        return $result;
     }
 
     private static function getFields($args)

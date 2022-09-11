@@ -8,6 +8,7 @@ class Context
     private static $service;
     private static $injector;
     private static $environment;
+    private static $dispatcher;
 
     /**
      * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
@@ -31,24 +32,19 @@ class Context
             self::$loader->register(true);
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        $injector = self::$environment->getConfig('injector', '\Scoop\IoC\BasicInjector');
-        $baseInjector = '\Scoop\IoC\Injector';
-        if (!is_subclass_of($injector, $baseInjector)) {
-            throw new \UnexpectedValueException($injector.' not implement '.$baseInjector);
-        }
-        self::$injector = new $injector();
+        self::configureInjector();
+        self::configureDispatcher();
     }
 
     /**
      * Conecta a una base de datos
-     * @param string|array<mixed> $bundle El nombre del configuration bundle (EJ: default)
-     *  o un array con los datos de configuración necesaria para la creación (database, user).
+     * @param string $bundle El nombre del configuration bundle (EJ: default)
+     * @param array<mixed> $options Un array con los datos de configuración necesaria para la creación (database, user).
      * @return \Scoop\Storage\DBC La conexión establecida con el servidor.
      */
-    public static function connect($bundle = null)
+    public static function connect($bundle = 'default', $options = array())
     {
-        $config = self::getDBConfig($bundle);
-        $config = self::normalizeDBConfig($config);
+        $config = self::normalizeConnection($bundle, $options);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
             self::$connections[$key] = new Storage\DBC(
@@ -60,6 +56,12 @@ class Context
             );
         }
         return self::$connections[$key];
+    }
+
+    public static function disconnect($bundle = 'default', $options = array())
+    {
+        $key = implode('', self::normalizeConnection($bundle, $options));
+        unset(self::$connections[$key]);
     }
 
     public static function getLoader()
@@ -74,11 +76,22 @@ class Context
 
     /**
      * Obtiene la instancia del injector según las capacidades del servidor.
-     * @return \Scoop\IoC\Injector El injector apropiado para el servidor.
+     * @return \Scoop\Container\Injector El injector apropiado para el servidor.
+     * @deprecated
      */
     public static function getInjector()
     {
         return self::$injector;
+    }
+
+    public static function inject($id)
+    {
+        return self::$injector->get($id);
+    }
+
+    public static function dispatchEvent($event)
+    {
+        return self::$dispatcher->dispatch($event);
     }
 
     /**
@@ -107,35 +120,14 @@ class Context
     public static function registerService($key, $callback, $params = array())
     {
         if (!self::$service) {
-            self::$service = new \Scoop\IoC\Service();
+            self::$service = new \Scoop\Container\Service();
         }
         self::$service->register($key, $callback, $params);
     }
 
-    /**
-     * Obtiene la configuración de la base de datos establecida en /app/config::db
-     * Tambien puede mezclar los datos del array con los de la configuración por defecto.
-     * @param string|array<array<string>> $bundle El nombre del configuration bundle (EJ: default)
-     *  o un array con los datos de configuración necesaria para la creación (database, user).
-     * @return array<array<string>> Array de configuración.
-     */
-    private static function getDBConfig($bundle)
+    private static function normalizeConnection($bundle, $options)
     {
-        if (is_string($bundle)) return self::$environment->getConfig('db'.$bundle);
-        $config = self::$environment->getConfig('db.default');
-        if (is_array($bundle)) {
-            $config += $bundle;
-        }
-        return $config;
-    }
-
-    /**
-     * Agrega los datos por defecto para ejecutar la configuración.
-     * @param array<array<string>> $config Array de configuración.
-     * @return array<array<string>> Configuración normalizada.
-     */
-    private static function normalizeDBConfig($config)
-    {
+        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {
@@ -148,5 +140,22 @@ class Context
             'host' => '127.0.0.1',
             'driver' => 'pgsql'
         ), $config);
+    }
+
+    private static function configureInjector()
+    {
+        $injector = self::$environment->getConfig('injector', '\Scoop\Container\BasicInjector');
+        $baseInjector = '\Scoop\Container\Injector';
+        self::$injector = new $injector(self::$environment);
+        if (!(self::$injector instanceof $baseInjector)) {
+            throw new \UnexpectedValueException($injector.' not implement '.$baseInjector);
+        }
+    }
+
+    private static function configureDispatcher()
+    {
+        $listeners = (Array) self::$environment->getConfig('events');
+        $eventBus = new \Scoop\Event\Bus($listeners);
+        self::$dispatcher = new \Scoop\Event\Dispatcher($eventBus);
     }
 }

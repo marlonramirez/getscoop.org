@@ -14,6 +14,7 @@ class Application
     public function run()
     {
         $response = \Scoop\Context::getEnvironment()->route($this->request);
+        gc_collect_cycles();
         return $this->formatResponse($response);
     }
 
@@ -23,7 +24,7 @@ class Application
             if ($this->request->isAjax()) {
                 $ex->addHeader('Content-Type: application/json');
             }
-            return $this->formatResponse($ex->handler());
+            return $this->formatResponse($ex->handle());
         } catch (\UnderflowException $ex) {}
     }
 

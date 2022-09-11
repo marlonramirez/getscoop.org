@@ -4,6 +4,10 @@ namespace Scoop\Bootstrap;
 class Environment
 {
     private static $sessionInit = false;
+    private static $loaders = array(
+        'import' => '\Scoop\Bootstrap\Loader\Import',
+        'json' => '\Scoop\Bootstrap\Loader\Json'
+    );
     private $router;
     private $config;
 
@@ -16,8 +20,10 @@ class Environment
             'base' => require $configPath.'.php',
             'data' => array()
         );
-        $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
-        define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
+            define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
+        }
     }
 
     public function getConfig($name, $default = null)
@@ -40,15 +46,13 @@ class Environment
 
     public function loadLazily($path)
     {
-        $index = strpos($path, ':') + 1;
+        $index = strpos($path, ':');
         if ($index !== -1) {
             $method = substr($path, 0, $index);
-            $url = substr($path, $index);
-            if ($method === 'json:') {
-                return json_decode(file_get_contents($url . '.json'), true);
-            }
-            if ($method === 'import:') {
-                return require $url . '.php';
+            if (isset(self::$loaders[$method])) {
+                $url = substr($path, $index + 1);
+                $loader = \Scoop\Context::inject(self::$loaders[$method]);
+                return $loader->load($url);
             }
         }
         return $path;
@@ -71,52 +75,39 @@ class Environment
         }
         if (empty($args)) {
             $currentPath = '//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-            if ($query) {
-                return $this->mergeQuery($currentPath, $query);
-            }
-            return $currentPath;
+            if (!$query) $query = array();
+            return $this->mergeQuery($currentPath, $query);
         }
         return $this->router->getURL(array_shift($args), $args, $query);
     }
 
-    public function isCurrentRoute($route)
+    public function getCurrentRoute()
     {
-        return $this->router->getCurrentRoute() === $route;
+        return $this->router->getCurrentRoute();
     }
 
     protected function configure($request) {
-        \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
-        \Scoop\Validator::addRule((Array) $this->getConfig('validators'));
-        $this->bind((Array) $this->getConfig('providers'));
-        $this->registerComponents((Array) $this->getConfig('components'));
-        $this->registerServices(array('config' => $this, 'request' => $request));
-        $this->router = new \Scoop\IoC\Router((Array) $this->getConfig('routes'));
-        return $this;
-    }
-
-    protected function bind($interfaces)
-    {
-        $injector = \Scoop\Context::getInjector();
-        foreach ($interfaces as $interface => $class) {
-            $injector->bind($interface, $class);
+        $loaders = (Array) $this->getConfig('loaders');
+        foreach ($loaders as $name => $className) {
+            self::$loaders[strtolower($name)] = $className;
         }
+        \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
+        \Scoop\Validator::addRules((Array) $this->getConfig('validators'));
+        \Scoop\View::registerComponents((Array) $this->getConfig('components'));
+        $this->registerServices(array('config' => $this, 'request' => $request));
+        $this->router = new \Scoop\Container\Router((Array) $this->getConfig('routes'));
         return $this;
     }
 
+    /**
+     * @deprecated
+     */
     protected function registerServices($services)
     {
         foreach ($services as $name => $service) {
             is_array($service) ?
                 \Scoop\Context::registerService($name, array_shift($service), $service) :
                 \Scoop\Context::registerService($name, $service);
-        }
-        return $this;
-    }
-
-    protected function registerComponents($components)
-    {
-        foreach ($components as $name => $component) {
-            \Scoop\View::registerComponent($name, $component);
         }
         return $this;
     }

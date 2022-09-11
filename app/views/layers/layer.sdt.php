@@ -38,7 +38,7 @@
         <nav data-attr="style.display:showNav">
             <ul>
                 <li><a href="{{#view->route('doc')}}">Documentación</a></li>
-                <li><a href="{{ROOT}}api/">API</a></li>
+                <li><a href="{{ROOT}}api/">Ecosistema</a></li>
                 <li><a href="{{#view->route('services')}}">Servicios</a></li>
                 <li><a href="{{#view->route('about')}}">Acerca</a></li>
             </ul>
