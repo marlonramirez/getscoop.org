@@ -8,6 +8,7 @@ class Environment
         'import' => '\Scoop\Bootstrap\Loader\Import',
         'json' => '\Scoop\Bootstrap\Loader\Json'
     );
+    private static $version;
     private $router;
     private $config;
 
@@ -24,6 +25,7 @@ class Environment
             $protocol = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
             define('ROOT', $protocol.'//'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\').'/');
         }
+        self::$loaders += $this->getConfig('loaders', array());
     }
 
     public function getConfig($name, $default = null)
@@ -36,6 +38,9 @@ class Environment
         foreach ($data as $key) {
             if (!isset($res[$key])) return $default;
             if (is_string($res[$key])) {
+                if ($key === 'providers') {
+                    throw new \UnexpectedValueException('it is not possible to perform lazy loading on providers');
+                }
                 $res[$key] = $this->loadLazily($res[$key]);
             }
             $res = $res[$key];
@@ -60,7 +65,8 @@ class Environment
 
     public function route($request)
     {
-        $this->configure($request);
+        $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
+        $this->registerServices(array('config' => $this, 'request' => $request));
         \Scoop\Controller::setRequest($request);
         \Scoop\View::setRequest($request);
         return $this->router->route($request);
@@ -86,17 +92,14 @@ class Environment
         return $this->router->getCurrentRoute();
     }
 
-    protected function configure($request) {
-        $loaders = (Array) $this->getConfig('loaders');
-        foreach ($loaders as $name => $className) {
-            self::$loaders[strtolower($name)] = $className;
+    public function getVersion()
+    {
+        if (!self::$version) {
+            $index = file_get_contents('index.php');
+            preg_match_all('# @version\s+(.*?)\n#s', $index, $annotations);
+            self::$version = $annotations[1][0];
         }
-        \Scoop\Validator::setMessages((Array) $this->getConfig('messages.error'));
-        \Scoop\Validator::addRules((Array) $this->getConfig('validators'));
-        \Scoop\View::registerComponents((Array) $this->getConfig('components'));
-        $this->registerServices(array('config' => $this, 'request' => $request));
-        $this->router = new \Scoop\Container\Router((Array) $this->getConfig('routes'));
-        return $this;
+        return self::$version;
     }
 
     /**

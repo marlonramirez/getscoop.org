@@ -25,7 +25,7 @@ echo $app->run();
  al inyector de dependencias mediante <code>\Scoop\Context::getInjector()</code>, tambien se pueden establecer
  conexiones a la base de datos mediante <code>\Scoop\Context::connect()</code>.</p>
 
- <p class="doc-danger">Desde la versión 6.4 el método <code>getInjector</code> se encuentra @deprecated en
+ <p class="doc-danger">Desde la versión 0.6.4 el método <code>getInjector</code> se encuentra @deprecated en
  favor del método <code>inject</code>.</p>
 
 <h2>Configuraciones básicas</h2>
@@ -83,6 +83,7 @@ return array(
             'user' => 'scoop',
             'password' => '1s4Gr34tB00t5tr4p',
             'host' => 'localhost',
+            'port' => 5432,
             'driver' => 'pgsql'
         ),
         'auth' => array(
@@ -90,6 +91,7 @@ return array(
             'user' => 'scoop',
             'password' => 'myS1st3m4uth',
             'host' => 'localhost',
+            'port' => 3306,
             'driver' => 'mysql'
         )
     )
@@ -307,6 +309,8 @@ la interface y el segundo el nombre de la clase que implementa dicha interface.<
 <pre class="prettyprint">
 \Scoop\Context::getInjector()->bind('\App\Repository\Quote', '\App\Repository\QuoteArray');
 </pre>
+
+<p class="doc-danger">Este método se encuentra @deprecated desde la versión 0..6.1 en favor del siguiente.</p>
 
 <p>De esta manera cada vez que se use la interface <code>\App\Repository\Quote</code> dentro de un entorno
 IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Aunque esta manera

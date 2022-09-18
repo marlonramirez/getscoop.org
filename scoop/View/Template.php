@@ -43,7 +43,8 @@ final class Template
         );
         preg_match('/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s', $html, $matches);
         if (isset($matches[0])) {
-            $head = preg_replace('/>\s+</', '><', $matches[2]);
+            $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
+            $head = preg_replace('/>\s+</', '><', $head);
             $html = str_replace($matches[0], '<html'.$matches[1].'><head>'.$head.'</head><body>', $html);
         }
         $html = preg_replace(
@@ -114,16 +115,17 @@ final class Template
             $line, $count
         );
         if ($count !== 0) return $line;
-        return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line, $count);
+        return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line);
     }
 
-    private static function convertViewServices($line)
+    private static function convertViewServices($content)
     {
-        preg_match_all('/#(\w*)->/is', $line, $servicesFound);
-        for ($i = 0; isset($servicesFound[0][$i]); $i++) {
-            $line = str_replace($servicesFound[0][$i], self::SERVICE.'::get(\''.$servicesFound[1][$i].'\')->', $line);
+        preg_match_all('/\[php.*?php\]/is', $content, $tagsFound);
+        foreach ($tagsFound[0] as $search) {
+            $replace = preg_replace('/#(\w*)->/is', self::SERVICE.'::get(\'${1}\')->', $search);
+            $content = str_replace($search, $replace, $content);
         }
-        return $line;
+        return $content;
     }
 
     /**

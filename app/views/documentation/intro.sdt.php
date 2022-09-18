@@ -22,7 +22,7 @@ cuenta los principios <a href="http://es.wikipedia.org/wiki/Principio_KISS" rel=
 <a href="https://es.wikipedia.org/wiki/SOLID" rel="external">SOLID</a> y
 <a href="http://es.wikipedia.org/wiki/No_te_repitas" rel="external">DRY</a>. Scoop intenta que el
 proceso de desarrollar aplicaciones web orientadas a objetos con PHP no duela, facilitando algunas tareas
-propias de la arquitectura MVC como el enrutamiento, inyección de dependencias y manejo de plantillas.</p>
+propias de una arquitectura por capas como el enrutamiento, inyección de dependencias y manejo de plantillas.</p>
 
 <p>Scoop es simple; pero potente y flexible, proporciona poderosas herramientas para la creación de
 frameworks o aplicaciones robustas, siempre teniendo en cuenta la comodidad del desarrollador.</p>
@@ -55,14 +55,14 @@ la configuración del archivo nginx.conf.</p>
 <pre class="prettyprint lang-html">
 merge_slashes off;
 rewrite (.*)//+(.*) $1/$2 permanent;
-location /scoop {
+location / {
     root html;
     index index.html index.htm index.php;
-    try_files $uri $uri/ /scoop/?$args @rw-scoop;
+    try_files $uri $uri/ /?$args @rw-scoop;
     expires max;
 }
 location @rw-scoop {
-    rewrite ^/scoop/(.*)(/?)$ /scoop/index.php?route=$1&$args? last;
+    rewrite ^/(.*)(/?)$ /index.php?route=$1&$args? last;
 }
 if ($host ~* ^www\.(.*)) {
     set $host_without_www $1;
@@ -74,7 +74,7 @@ location ~ ^([^.\?]*[^/])$ {
 location @addslash {
    return 301 $uri/;
 }
-location scoop/(app|vendor|scoop|resources)/ {
+location /(app|vendor|scoop|resources)/ {
     deny all;
 }
 location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
@@ -174,6 +174,7 @@ orientado a objetos.</p>
 
 <ul>
     <li style="text-decoration:line-through">Parametrizar los <a href="{{#view->route('doc-config')}}#lazy-loading">cargadores de configuración</a></li>
-    <li>Crear el sistema de logs</li>
-    <li>Usar vistas dentro de la <a href="{{#view->route('doc-view')}}#components">generación de componentes</a></li>
+    <li style="text-decoration:line-through">Crear el sistema de logs</li>
+    <li style="text-decoration:line-through">Usar vistas dentro de la <a href="{{#view->route('doc-view')}}#components">generación de componentes</a></li>
+    <li>Crear las bases del método de persistencia de entidades(EPM "Entity persistence Method"")</li>
 </ul>

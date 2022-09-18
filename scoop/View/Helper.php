@@ -22,7 +22,7 @@ class Helper
         $this->request = $request;
         $this->components = $components;
         $this->environment = \Scoop\Context::getEnvironment();
-        self::$assets = (array) $this->environment->getConfig('assets') + self::$assets;
+        self::$assets = $this->environment->getConfig('assets', array()) + self::$assets;
     }
 
     /**
@@ -107,14 +107,12 @@ class Helper
             $component = lcfirst(substr($method, 7));
             if (isset($this->components[$component])) {
                 $component = new \ReflectionClass($this->components[$component]);
-                if ($component->hasMethod('setRequest')) {
-                    $requestMethod = $component->getMethod('setRequest');
-                    if ($requestMethod->isStatic()) {
-                        $requestMethod->invoke($component, $this->request);
-                    }
-                }
                 $component = $component->newInstanceArgs($args);
-                return Template::clearHTML($component->render());
+                $component = $component->render();
+                if ($component instanceof \Scoop\View) {
+                    return $component->render();
+                }
+                return $component;
             }
             throw new \BadMethodCallException('Component '.$component.' unregistered');
         }

@@ -7,7 +7,7 @@ abstract class Injector
 
     public function __construct($environment)
     {
-        $this->bind((Array) $environment->getConfig('providers'));
+        $this->bind($environment->getConfig('providers', array()));
     }
 
     public static function formatClassName($className)
@@ -29,27 +29,26 @@ abstract class Injector
             if (isset($this->rules[$id])) {
                 return $this->get($this->rules[$id]);
             }
-            $this->setInstance($id, $this->create($id));
+            $this->create($id);
         }
         return $this->getInstance($id);
     }
 
     public function create($className, $args = array())
     {
-        try {
-            $class = new \ReflectionClass($className);
-            if (!$class->isInstantiable()) {
-                throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
-            }
-            $constructor = $class->getConstructor();
-            if ($constructor) {
-                $args = array_merge($this->getArguments($constructor->getParameters()), $args);
-                return $class->newInstanceArgs($args);
-            }
-            return $class->newInstanceWithoutConstructor();
-        } catch (\ReflectionException $ex) {
-            throw new \Scoop\Http\NotFoundException($className.' not found', $ex);
+        $class = new \ReflectionClass($className);
+        if (!$class->isInstantiable()) {
+            throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
         }
+        $constructor = $class->getConstructor();
+        if ($constructor) {
+            $args = $this->getArguments($constructor->getParameters(), $args);
+            $instance = $class->newInstanceArgs($args);
+        } else {
+            $instance = $class->newInstanceWithoutConstructor();
+        }
+        $this->setInstance($className, $instance);
+        return $instance;
     }
 
     private function bind($interfaces)
@@ -61,13 +60,15 @@ abstract class Injector
         }
     }
 
-    private function getArguments($params)
+    private function getArguments($params, $definitions)
     {
         $args = array();
         foreach ($params as $param) {
-            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-            if ($class) {
-                $args[] = $this->get($class->getName());
+            if (isset($definitions[$param->getName()])) {
+                $args[] = $definitions[$param->getName()];
+            } else {
+                $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
+                if ($class) $args[] = \Scoop\Context::inject($class->getName());
             }
         }
         return $args;

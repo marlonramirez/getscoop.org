@@ -4,16 +4,12 @@ namespace Scoop;
 class Context
 {
     private static $connections = array();
+    private static $configParameters = array();
     private static $loader;
     private static $service;
     private static $injector;
     private static $environment;
-    private static $dispatcher;
 
-    /**
-     * Ejecuta la carga automatica de clases mediante Composer o con una clase propia.
-     * @return vendor|\Scoop\Bootstrap\Loader El cargador usado para ejecutar la carga.
-     */
     public static function load($configPath)
     {
         if (isset(self::$loader)) {
@@ -32,16 +28,9 @@ class Context
             self::$loader->register(true);
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        self::configureInjector();
-        self::configureDispatcher();
+        self::configure();
     }
 
-    /**
-     * Conecta a una base de datos
-     * @param string $bundle El nombre del configuration bundle (EJ: default)
-     * @param array<mixed> $options Un array con los datos de configuración necesaria para la creación (database, user).
-     * @return \Scoop\Storage\DBC La conexión establecida con el servidor.
-     */
     public static function connect($bundle = 'default', $options = array())
     {
         $config = self::normalizeConnection($bundle, $options);
@@ -52,6 +41,7 @@ class Context
                 $config['user'],
                 $config['password'],
                 $config['host'],
+                $config['port'],
                 $config['driver']
             );
         }
@@ -86,12 +76,10 @@ class Context
 
     public static function inject($id)
     {
+        if (!self::$injector->has($id) && isset(self::$configParameters[$id])) {
+            return self::$injector->create($id, self::$configParameters[$id]);
+        }
         return self::$injector->get($id);
-    }
-
-    public static function dispatchEvent($event)
-    {
-        return self::$dispatcher->dispatch($event);
     }
 
     /**
@@ -127,7 +115,7 @@ class Context
 
     private static function normalizeConnection($bundle, $options)
     {
-        $config = (array) self::$environment->getConfig('db.'.$bundle) + $options;
+        $config = self::$environment->getConfig('db.'.$bundle, array()) + $options;
         $requireds = array('database', 'user');
         foreach ($requireds as $required) {
             if (!isset($config[$required])) {
@@ -138,8 +126,21 @@ class Context
         return array_merge(array(
             'password' => '',
             'host' => '127.0.0.1',
+            'port' => null,
             'driver' => 'pgsql'
         ), $config);
+    }
+
+    private static function configure()
+    {
+        self::configureInjector();
+        self::configureLogger();
+        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.error', array()));
+        \Scoop\Validator::addRules(self::$environment->getConfig('validators', array()));
+        \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
+        self::$configParameters['Scoop\Event\Bus'] = array(
+            'providers' => self::$environment->getConfig('events', array())
+        );
     }
 
     private static function configureInjector()
@@ -152,10 +153,18 @@ class Context
         }
     }
 
-    private static function configureDispatcher()
+    private static function configureLogger()
     {
-        $listeners = (Array) self::$environment->getConfig('events');
-        $eventBus = new \Scoop\Event\Bus($listeners);
-        self::$dispatcher = new \Scoop\Event\Dispatcher($eventBus);
+        $loggers = self::$environment->getConfig('loggers', array());
+        $handlers = array();
+        foreach ($loggers as $level => $value) {
+            if (isset($value['handler'])) {
+                $handler = $value['handler'];
+                unset($value['handler']);
+                $handlers[$level] = $handler;
+                self::$configParameters[$handler] = $value;
+            }
+        }
+        self::$configParameters['Scoop\Log\Logger'] = compact('handlers');
     }
 }
