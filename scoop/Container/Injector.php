@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Container;
 
 abstract class Injector
@@ -12,15 +13,17 @@ abstract class Injector
 
     public static function formatClassName($className)
     {
-        if (strpos($className, '\\') === 0) return substr($className, 1);
+        if (strpos($className, '\\') === 0) {
+            return substr($className, 1);
+        }
         return $className;
     }
 
-    public abstract function has($id);
+    abstract public function has($id);
 
-    protected abstract function getInstance($id);
+    abstract protected function getInstance($id);
 
-    protected abstract function setInstance($id, $instance);
+    abstract protected function setInstance($id, $instance);
 
     public function get($id)
     {
@@ -34,11 +37,13 @@ abstract class Injector
         return $this->getInstance($id);
     }
 
-    public function create($className, $args = array())
+    public function create($id, $args = array())
     {
+        $index = strpos($id, ':');
+        $className = $index === false ? $id : substr($id, 0, $index);
         $class = new \ReflectionClass($className);
         if (!$class->isInstantiable()) {
-            throw new \Exception('Cannot inject '.$className.' because it cannot be instantiated');
+            throw new \Exception('Cannot inject ' . $className . ' because it cannot be instantiated');
         }
         $constructor = $class->getConstructor();
         if ($constructor) {
@@ -47,7 +52,7 @@ abstract class Injector
         } else {
             $instance = $class->newInstanceWithoutConstructor();
         }
-        $this->setInstance($className, $instance);
+        $this->setInstance($id, $instance);
         return $instance;
     }
 
@@ -68,7 +73,9 @@ abstract class Injector
                 $args[] = $definitions[$param->getName()];
             } else {
                 $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-                if ($class) $args[] = \Scoop\Context::inject($class->getName());
+                if ($class) {
+                    $args[] = \Scoop\Context::inject($class->getName());
+                }
             }
         }
         return $args;

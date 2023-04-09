@@ -2,7 +2,8 @@
 use App\Controller\{
     Index,
     Service,
-    About
+    About,
+    Documentation
 };
 
 return array(
@@ -19,8 +20,7 @@ return array(
         'url' => '/services/'
     ),
     'doc' => array(
-        'url' => '/docs/',
-        'controller' => 'App\Controller\Documentation\Index',
-        'routes' => require 'routes/documentation.php'
+        'controller' => Documentation::class,
+        'url' => '/docs/{var}'
     )
 );

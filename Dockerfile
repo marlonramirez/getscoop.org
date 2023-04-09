@@ -1,14 +1,15 @@
-FROM node:16-alpine AS node
-FROM webdevops/php-dev:8.0-alpine
-
-COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
-
+FROM node:18-alpine AS node
 WORKDIR /app
 COPY . .
-RUN composer install -d /app && npm install && echo 'display_errors = 1' > /opt/docker/etc/php/php.ini
-EXPOSE 8001 8000
+RUN npm install && npm start
 
+FROM webdevops/php-apache:8.0-alpine
+WORKDIR /app
+COPY --from=node /app/public/ ./public/
+COPY . .
 COPY --chown=application:application . .
-ENTRYPOINT ["npm", "run", "dev"]
+RUN composer install --optimize-autoloader --no-dev &&\
+app/ice dbup &&\
+rm gulpfile.js &&\
+rm composer* &&\
+rm package-lock.json

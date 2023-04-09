@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\View;
 
 class Helper
@@ -32,7 +33,7 @@ class Helper
      */
     public function asset($resource)
     {
-        return ROOT.self::$assets['path'].$resource;
+        return ROOT . self::$assets['path'] . $resource;
     }
 
     /**
@@ -42,7 +43,7 @@ class Helper
      */
     public function img($image)
     {
-        return $this->asset(self::$assets['img'].$image);
+        return $this->asset(self::$assets['img'] . $image);
     }
 
     /**
@@ -52,7 +53,7 @@ class Helper
      */
     public function css($styleSheet)
     {
-        return $this->asset(self::$assets['css'].$styleSheet);
+        return $this->asset(self::$assets['css'] . $styleSheet);
     }
 
     /**
@@ -62,7 +63,7 @@ class Helper
      */
     public function js($javaScript)
     {
-        return $this->asset(self::$assets['js'].$javaScript);
+        return $this->asset(self::$assets['js'] . $javaScript);
     }
 
     /**
@@ -103,19 +104,16 @@ class Helper
      */
     public function __call($method, $args)
     {
-        if (strpos($method, 'compose') === 0) {
-            $component = lcfirst(substr($method, 7));
-            if (isset($this->components[$component])) {
-                $component = new \ReflectionClass($this->components[$component]);
-                $component = $component->newInstanceArgs($args);
-                $component = $component->render();
-                if ($component instanceof \Scoop\View) {
-                    return $component->render();
-                }
-                return $component;
-            }
-            throw new \BadMethodCallException('Component '.$component.' unregistered');
+        if (strpos($method, 'compose') !== 0) {
+            trigger_error('Call to undefined method ' . __CLASS__ . '::' . $method . '()', E_USER_ERROR);
         }
-        trigger_error('Call to undefined method '.__CLASS__.'::'.$method.'()', E_USER_ERROR);
+        $component = lcfirst(substr($method, 7));
+        if (isset($this->components[$component])) {
+            $component = new \ReflectionClass($this->components[$component]);
+            $component = $component->newInstanceArgs($args);
+            $component = $component->render();
+            return ($component instanceof \Scoop\View) ? $component->render() : $component;
+        }
+        throw new \BadMethodCallException('Component ' . $component . ' unregistered');
     }
 }

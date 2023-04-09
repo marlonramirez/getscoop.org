@@ -1,6 +1,5 @@
-@extends 'layers/docs'
 <p>Las vistas contienen el HTML de la aplicación y funcionan como aislante entre la presentación y la logica
-que maneja el resto de la aplicación. Un <i>Scoop Dynamic Template</i>(sdt) no es más que un archivo php 
+que maneja el resto de la aplicación. Un <i>Scoop Dynamic Template</i>(sdt) no es más que un archivo php
 con extensión .sdt.php por lo cual es posible incrustar etiquetas <code>&lt;?php ?&gt;</code> o usar la nomenclatura
 de template <code>&#91;php</code> <code>php&#93;</code></p>
 
@@ -11,7 +10,7 @@ de template <code>&#91;php</code> <code>php&#93;</code></p>
     <span class="anchor" id="interpolation">...</span>
 </h2>
 
-<p>La forma más basica de enlazar datos en scoop es con el uso de interpolaciones, usando la sintaxis de dobles llaves 
+<p>La forma más basica de enlazar datos en scoop es con el uso de interpolaciones, usando la sintaxis de dobles llaves
 &#123;{$var}&#125;. Internamente scoop lee y compila la plantilla combirtiendo las llaves en sentencias echo que
 volcaran la información hacia el buffer de salida.</p>
 

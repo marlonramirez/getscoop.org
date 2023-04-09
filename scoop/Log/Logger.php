@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop\Log;
 
 class Logger
@@ -53,12 +54,14 @@ class Logger
 
     public function log($level, $message, $context = array())
     {
-        $levelClass = '\Scoop\Log\Level::'.strtoupper($level);
-        if (!defined($levelClass)) throw new \InvalidArgumentException($level.' not support level');
+        $levelClass = '\Scoop\Log\Level::' . strtoupper($level);
+        if (!defined($levelClass)) {
+            throw new \InvalidArgumentException($level . ' not support level');
+        }
         if (isset($this->handlers[$level])) {
             $handler = \Scoop\Context::inject($this->handlers[$level]);
-            $handler->handle(array(
-                'message' => self::interpolate((string)$message, $context),
+            return $handler->handle(array(
+                'message' => self::interpolate(var_export($message, true), $context),
                 'level' => $level,
                 'timestamp' => (new \DateTimeImmutable())->format(self::DEFAULT_DATETIME_FORMAT)
             ));
@@ -69,8 +72,10 @@ class Logger
     {
         $replace = array();
         foreach ($context as $key => $value) {
-            if (is_string($value) || method_exists($value, '__toString')) {
-                $replace['{'.$key.'}'] = $value;
+            if (!is_object($value)) {
+                $replace['{' . $key . '}'] = var_export($value, true);
+            } elseif (method_exists($value, '__toString')) {
+                $replace['{' . $key . '}'] = $value;
             }
         }
         return strtr($message, $replace);

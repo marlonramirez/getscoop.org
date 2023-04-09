@@ -1,4 +1,5 @@
 <?php
+
 namespace Scoop;
 
 final class View
@@ -68,7 +69,7 @@ final class View
         View\Service::inject('config', \Scoop\Context::getEnvironment());
         View\Heritage::init($this->viewData);
         extract($this->viewData);
-        require View\Template::parse($this->viewPath);
+        require View\Heritage::getCompilePath($this->viewPath);
         return View\Heritage::getContent();
     }
 
@@ -100,7 +101,7 @@ final class View
             $method = implode('', $array);
             return call_user_func_array(array(self::$components[$component], $method), $args);
         }
-        throw new \BadMethodCallException('Component '.$component.' unregistered');
+        throw new \BadMethodCallException('Component ' . $component . ' unregistered');
     }
 
     /**
@@ -113,7 +114,7 @@ final class View
         foreach ($components as $name => $className) {
             $componentInterface = 'Scoop\View\Component';
             if (!is_subclass_of($className, $componentInterface)) {
-                throw new \UnexpectedValueException($className.' not implement '.$componentInterface);
+                throw new \InvalidArgumentException($className . ' not implement ' . $componentInterface);
             }
             self::$components[strtolower($name)] = $className;
         }

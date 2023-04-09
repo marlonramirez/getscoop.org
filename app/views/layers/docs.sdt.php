@@ -4,54 +4,17 @@
     <nav id="nav-docs" data-attr="style.marginLeft: marginMenu">
         <a href="#menu" id="menu-list" title="menú"></a>
         <ul>
-            <li{{#view->isCurrentRoute('doc') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc')}}">
-                    Iniciando con scoop <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-config') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-config')}}">
-                    Configuración del entorno <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-folder') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-folder')}}">
-                    Estructura de carpetas <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-view') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-view')}}">
-                    Plantillas dinámicas <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-model') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-model')}}">
-                    Diseño del dominio <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-controller') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-controller')}}">
-                    Ciclo de vida <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-resources') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-resources')}}">
-                    Recursos <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-monitoring') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-monitoring')}}">
-                    Monitoreo <i class="fa fa-angle-double-right"></i>
-                </a>
-            </li>
-            <li{{#view->isCurrentRoute('doc-ice') ? ' class="active"' : ''}}>
-                <a href="{{#view->route('doc-ice')}}">
-                    CLI/ICE <i class="fa fa-angle-double-right"></i>
-                </a>
+            @foreach $menu as $name => $item
+                <li{{$view === $item['view'] ? ' class="active"' : ''}}>
+                    <a href="{{#view->route('doc', $name ? $name : null)}}">
+                        {{$item['title']}} <i class="fa fa-angle-double-right"></i>
+                    </a>
+                </li>
+            :foreach
             </li>
         </ul>
     </nav>
     <section id="content-docs" data-attr="style:contentStyle">
-        @sprout
+        @import "documentation/$view"
     </section>
 </div>

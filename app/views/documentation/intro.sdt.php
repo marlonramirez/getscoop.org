@@ -1,4 +1,3 @@
-@extends 'layers/docs'
 <p>Esta es la documentación oficial de scoop y puede convertirte de un principiante
 a un experto en el manejo de la herramienta, se encuentra diseñada para empezar desde los conceptos más
 básicos hasta llegar a los más complejos. Antes de entrar en materia se van a aclarar algunas cosas
@@ -156,25 +155,16 @@ a un host diferente se debe configurara la variables <code>PHP_HOST</code>.</p>
 <p>para probar que todo ha salido bien ingresa a <code>http://localhost:8000/</code>, ya
 deberias tener instalada en tú maquina toda la estructura para usar scoop.</p>
 
-<h2><a href="#apologies">Roadmap</a><span class="anchor" id="apologies">...</span></h2>
+<h2><a href="#apologies">Plan de trabajo</a><span class="anchor" id="apologies">...</span></h2>
 
 <p>Aún no se encuentra elaborada toda la documentación de scoop, mientras esto sucede voy a intentar
 suministrar el ABC o primeros pasos para comprender como funciona este bootstrap enfocado a PHP
 orientado a objetos.</p>
 
 <ul>
-    <li><a href="{{#view->route('doc-config')}}">Configuración del entorno</a></li>
-    <li><a href="{{#view->route('doc-model')}}">Diseño del dominio</a></li>
-    <li><a href="{{#view->route('doc-view')}}">Plantillas dinámicas</a></li>
+    <li><a href="{{#view->route('doc', 'configure')}}">Configuración del entorno</a></li>
+    <li><a href="{{#view->route('doc', 'ddd')}}">Diseño del dominio</a></li>
+    <li><a href="{{#view->route('doc', 'templates')}}">Plantillas dinámicas</a></li>
 </ul>
 
 <p>Cualquier ayuda en la documentación sera bien recibida mediante <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.</p>
-
-<p>A parte de la documentación se deben desarrollar las features para:</p>
-
-<ul>
-    <li style="text-decoration:line-through">Parametrizar los <a href="{{#view->route('doc-config')}}#lazy-loading">cargadores de configuración</a></li>
-    <li style="text-decoration:line-through">Crear el sistema de logs</li>
-    <li style="text-decoration:line-through">Usar vistas dentro de la <a href="{{#view->route('doc-view')}}#components">generación de componentes</a></li>
-    <li>Crear las bases del método de persistencia de entidades(EPM "Entity persistence Method"")</li>
-</ul>

@@ -1,4 +1,3 @@
-@extends 'layers/docs'
 <p>Scoop se basa en el paradigma de convención sobre configuración, lo que busca minimizar el número de decisiones que
 un desarrollador necesita hacer ganando simplicidad preo sin abandonar flexibilidad. Lamentablemente existen aspectos
 no convencionales de la aplicación que se deben especificar y es aqui donde entra el sistema de configuración.</p>
@@ -338,7 +337,7 @@ de inyección de dependencias.</p>
 el constructor, en cambio un servicio es nombrado y es posible acceder a este desde cualquier parte del sistema
 (incluso las vistas).</p>
 
-<p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc-view')}}#services">inyectar dependencias en las vistas</a>.</p>
+<p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc', 'templates')}}#services">inyectar dependencias en las vistas</a>.</p>
 
 <pre class="prettyprint">
 \Scoop\IoC\Service::register('auth', '\App\Controller\Auth');
