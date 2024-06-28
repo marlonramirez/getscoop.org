@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Storage;
+namespace Scoop\Persistence;
 
-class Crypt
+class Vault
 {
     private $secret;
     private $encoding;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Scoop\Storage;
+namespace Scoop\Persistence;
 
 class DBC extends \PDO
 {
@@ -16,7 +16,7 @@ class DBC extends \PDO
         $this->host = $host;
         $this->dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
         parent::__construct(
-            $engine . ': host = ' . $host . ' dbname = ' . $db . ($port ? ' port=' . $port : ''),
+            $engine . ':host=' . $host . ';dbname=' . $db . ($port ? ';port=' . $port : ''),
             $user,
             $pass,
             array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION, \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC)
@@ -32,6 +32,7 @@ class DBC extends \PDO
         $this->dispatcher->dispatch(new Event\Closed($this));
     }
 
+    #[\ReturnTypeWillChange]
     public function beginTransaction()
     {
         if (!parent::inTransaction()) {

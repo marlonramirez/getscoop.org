@@ -3,7 +3,8 @@
 **/node_modules/
 **/vendor/
 Dockerfile
-Dockerfile.dev
+.devcontainer/*
+!.devcontainer/php.ini
 app/storage/*
 README.md
 .DS_Store

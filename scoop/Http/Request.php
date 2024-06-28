@@ -45,13 +45,17 @@ class Request
     public function isAjax()
     {
         return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest');
+            $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
+            (isset($_SERVER['HTTP_ACCEPT']) && $_SERVER['HTTP_ACCEPT'] === 'application/json');
     }
 
     private function getByIndex($name, $res)
     {
         if (!$name) {
             return $res;
+        }
+        if ($name instanceof \Scoop\Validator) {
+            return $this->validate($name, $res);
         }
         $name = explode('.', $name);
         foreach ($name as $key) {
@@ -66,7 +70,11 @@ class Request
     private function purge($array)
     {
         foreach ($array as $key => $value) {
-            $array[$key] = is_array($value) ? $this->purge($value) : $this->filterXSS($value);
+            if (is_array($value)) {
+                $array[$key] = $this->purge($value);
+            } elseif (is_string($value)) {
+                $array[$key] = $this->filterXSS($value);
+            }
         }
         return $array;
     }
@@ -155,5 +163,24 @@ class Request
             $data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
         } while ($old_data !== $data);
         return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    }
+
+    private function validate($validator, $data)
+    {
+        if ($validator->validate($data)) {
+            return $validator->getData();
+        }
+        $errors = $validator->getErrors();
+        header('HTTP/1.0 400 Bad Request');
+        if ($this->isAjax()) {
+            header('Content-Type: application/json');
+            exit (json_encode(array('code' => 400, 'message' => $errors)));
+        }
+        $_SESSION['data-scoop'] += array(
+            'body' => $this->getBody(),
+            'query' => $this->getQuery(),
+            'error' => $errors
+        );
+        \Scoop\Controller::goBack();
     }
 }

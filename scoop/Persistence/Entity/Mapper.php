@@ -1,17 +1,20 @@
 <?php
 
-namespace Scoop\Storage\Entity;
+namespace Scoop\Persistence\Entity;
 
-class Collector extends Mapper
+class Mapper
 {
     private $entities;
     private $persisted;
     private $removed;
     private $statements;
+    private $entityMap;
+    private $valueMap;
 
-    public function __construct($map)
+    public function __construct($entityMap, $valueMap)
     {
-        parent::__construct($map);
+        $this->entityMap = $entityMap;
+        $this->valueMap = $valueMap;
         $this->entities = new \SplObjectStorage();
         $this->persisted = array();
         $this->removed = array();
@@ -28,7 +31,6 @@ class Collector extends Mapper
     {
         if (isset($this->entities[$entity])) {
             $key = $this->entities[$entity];
-            unset($this->entities[$entity]);
             if (isset($this->persisted[$key])) {
                 $this->removed[$key] = $entity;
             }
@@ -40,7 +42,7 @@ class Collector extends Mapper
         foreach ($this->entities as $entity) {
             $object = new \ReflectionObject($entity);
             $className = $object->getName();
-            $fields = $this->getFields($entity, $this->map[$className], $object->getProperties());
+            $fields = $this->getFields($entity, $this->entityMap[$className], $object->getProperties());
             $this->execute($entity, $fields);
             $key = $this->updateKey($entity, $className);
             $this->persisted[$key] = $entity;
@@ -69,31 +71,70 @@ class Collector extends Mapper
             $prop->setValue($entity, $value);
         }
         $this->entities[$entity] = $key;
+        $this->persisted[$key] = $entity;
         return $entity;
+    }
+
+    public function getIdName($className)
+    {
+        return isset($this->entityMap[$className]['id']) ? $this->entityMap[$className]['id'] : 'id';
+    }
+
+    public function getTableId($className)
+    {
+        $idName = 'id';
+        if (isset($this->entityMap[$className]['id'])) {
+            $idName = $this->entityMap[$className]['id'];
+        }
+        if (isset($this->entityMap[$className]['properties'][$idName]['name'])) {
+            return $this->entityMap[$className]['properties'][$idName]['name'];
+        }
+        return strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $idName));
     }
 
     private function getFields($entity, $mapper, $properties)
     {
         $fields = array();
         foreach ($properties as $prop) {
-            $name = $prop->getName();
-            if (!isset($mapper['properties'][$name])) {
+            $propName = $prop->getName();
+            $fieldName = isset($mapper['properties'][$propName]['name']) ?
+            $mapper['properties'][$propName]['name'] :
+            strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $propName));
+            if (!isset($mapper['properties'][$propName])) {
                 continue;
             }
             $prop->setAccessible(true);
             $value = $prop->getValue($entity);
-            if (isset($mapper['relations'][$name])) {
-                $relation = $mapper['relations'][$name];
+            if (isset($mapper['relations'][$propName]) && is_object($value)) {
+                $relation = $mapper['relations'][$propName];
                 $idName = $this->getIdName($relation[0]);
                 $object = new \ReflectionObject($value);
                 $relationProp = $object->getProperty($idName);
                 $relationProp->setAccessible(true);
                 $value = $relationProp->getValue($value);
             }
-            if (isset($mapper['properties'][$name]['name'])) {
-                $name = $mapper['properties'][$name]['name'];
+            if (isset($this->valueMap[$mapper['properties'][$propName]['type']])) {
+                $valueObject = $mapper['properties'][$propName]['type'];
+                $valueMap = $this->valueMap[$valueObject];
+                if (!is_a($value, $valueObject)) {
+                    throw new \UnexpectedValueException(gettype($value) . ' not is a ' . $valueObject);
+                }
+                $object = new \ReflectionObject($value);
+                $size = count($valueMap);
+                foreach ($valueMap as $name => $prop) {
+                    $fName = isset($prop['name']) ?
+                    $prop['name'] : (
+                        $size > 1 ?
+                        $fieldName . '_' . strtolower(preg_replace("/([a-z])([A-Z])/", "$1_$2", $name)) :
+                        $fieldName
+                    );
+                    $relationProp = $object->getProperty($name);
+                    $relationProp->setAccessible(true);
+                    $fields[$fName] = $relationProp->getValue($value);
+                }
+            } else {
+                $fields[$fieldName] = $value;
             }
-            $fields[$name] = $value;
         }
         return $fields;
     }
@@ -103,19 +144,20 @@ class Collector extends Mapper
         $key = strval($this->entities[$entity]);
         $index = strpos($key, ':');
         $className = substr($key, 0, $index);
-        if (!isset($this->map[$className]['table'])) {
+        if (!isset($this->entityMap[$className]['table'])) {
             throw new \RuntimeException($className . ' not mapper configured');
         }
         if (!isset($this->statements[$className])) {
-            $this->statements[$className] = new \Scoop\Storage\SQO($this->map[$className]['table']);
+            $this->statements[$className] = new \Scoop\Persistence\SQO($this->entityMap[$className]['table']);
         }
         if (isset($this->persisted[$key])) {
             $statement = $this->statements[$className];
             $params = array('id' => substr($key, $index + 1));
+            $idName = $this->getTableId($className);
             if (isset($this->removed[$key])) {
-                return $statement->delete()->restrict('id = :id')->run($params);
+                return $statement->delete()->restrict($idName . ' = :id')->run($params);
             }
-            return $statement->update($fields)->restrict('id = :id')->run($params);
+            return $statement->update($fields)->restrict($idName . ' = :id')->run($params);
         }
         $fields = $this->clearNulls($fields);
         return $this->statements[$className]->create($fields)->run();
@@ -151,8 +193,8 @@ class Collector extends Mapper
     private function updateKey($entity, $className)
     {
         $idName = $this->getIdName($className);
-        if (isset($this->map[$className]['properties'][$idName]['type'])) {
-            $type = explode(':', $this->map[$className]['properties'][$idName]['type']);
+        if (isset($this->entityMap[$className]['properties'][$idName]['type'])) {
+            $type = explode(':', $this->entityMap[$className]['properties'][$idName]['type']);
             $isAuto = array_pop($type) === 'SERIAL';
             if ($isAuto) {
                 $id = $this->statements[$className]->getLastId();

@@ -1,15 +1,24 @@
-FROM node:18-alpine AS node
+FROM node:20-alpine AS node
 WORKDIR /app
-COPY . .
-RUN npm install && npm start
+COPY ["gulpfile.js", "jsconfig.json", "package.json", "package-lock.json", "./"]
+RUN npm install
+COPY app/styles/. app/styles/
+COPY app/scripts/. app/scripts/
+RUN npm start
 
-FROM webdevops/php-apache:8.0-alpine
+FROM webdevops/php-apache:8.1-alpine
 WORKDIR /app
+COPY .devcontainer/php.ini /opt/docker/etc/php/php.ini
+COPY ["composer.json", "composer.lock", "./"]
+RUN composer install --optimize-autoloader --no-dev
 COPY --from=node /app/public/ ./public/
-COPY . .
 COPY --chown=application:application . .
-RUN composer install --optimize-autoloader --no-dev &&\
-app/ice dbup &&\
-rm gulpfile.js &&\
-rm composer* &&\
-rm package-lock.json
+RUN rm -rf \
+app/styles \
+app/scripts \
+.devcontainer \
+gulpfile.js \
+jsconfig.json \
+package-lock.json \
+composer.json \
+composer.lock

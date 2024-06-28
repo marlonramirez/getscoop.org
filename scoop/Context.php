@@ -36,7 +36,7 @@ class Context
         $config = self::normalizeConnection($bundle, $options);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
-            self::$connections[$key] = new Storage\DBC(
+            self::$connections[$key] = new Persistence\DBC(
                 $config['database'],
                 $config['user'],
                 $config['password'],
@@ -94,15 +94,15 @@ class Context
     {
         self::configureInjector();
         self::configureLogger();
-        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.error', array()));
-        \Scoop\Validator::addRules(self::$environment->getConfig('validators', array()));
+        $lang = self::$environment->getConfig('language', 'es');
+        \Scoop\Validator::setMessages(self::$environment->getConfig('messages.' . $lang . '.fail', array()));
         \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
-        self::$configParameters['Scoop\Storage\Crypt'] = self::$environment->getConfig('crypt', array());
+        self::$configParameters['Scoop\Persistence\Vault'] = self::$environment->getConfig('vault', array());
         self::$configParameters['Scoop\Event\Bus'] = array(
             'providers' => self::$environment->getConfig('events', array())
         );
-        self::$configParameters['Scoop\Storage\Entity\Manager'] = array(
-            'map' => self::$environment->getConfig('entities', array())
+        self::$configParameters['Scoop\Persistence\Entity\Manager'] = array(
+            'map' => self::$environment->getConfig('model', array())
         );
     }
 

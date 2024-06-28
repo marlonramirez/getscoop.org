@@ -30,15 +30,20 @@
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.7",
         "phpcompatibility/php-compatibility": "^9.3",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "zircote/swagger-php": "^4.8"
     },
     "scripts": {
+        "pre-install-cmd": [
+            "Composer\\Config::disableProcessTimeout"
+        ],
         "test": [
             "./vendor/bin/phpcs -p ./src --standard=app/phpcs.xml",
             "./vendor/bin/phpunit tests --colors=always"
         ],
         "test:config": "./vendor/bin/phpunit --generate-configuration < CON",
         "fix": "./vendor/bin/phpcbf -p ./src --standard=app/phpcs.xml",
-        "dbup": "@php app/ice dbup"
+        "dbup": "@php app/ice dbup",
+        "api": "./vendor/bin/openapi src -o openapi.yaml"
     }
 }

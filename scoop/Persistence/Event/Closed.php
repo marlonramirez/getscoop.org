@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Storage\Event;
+namespace Scoop\Persistence\Event;
 
-class Opened extends \Scoop\Event
+class Closed
 {
     private $connection;
 

@@ -1,8 +1,12 @@
 label
     position relative
-    text-align right
-    margin-right .5em
     cursor pointer
+    &.out
+        margin-right -.5em
+        margin-left .5em
+
+input[type="currency"]
+    text-align right
 
 .btn
     background $color-main
@@ -19,45 +23,49 @@ label
     position relative
     text-shadow 0 -1px 1px rgba(0, 0 , 0, .25)
     &.success
-        background-color $color-green-normal
+        background-color $color-green-main
         &:hover
-            background-color $color-green-hover
+        &:disabled
+            background-color $color-green-strong
     &.error
-        background-color $color-red-normal
+        background-color $color-red-main
         &:hover
-            background-color $color-red-hover
+        &:disabled
+            background-color $color-red-main
     &.warning
-        background-color $color-yellow-normal
+        background-color $color-yellow-main
         &:hover
-            background-color $color-yellow-hover
+        &:disabled
+            background-color $color-yellow-strong
     &.info
-        background-color $color-blue-normal
+        background-color $color-blue-main
         &:hover
-            background-color $color-blue-hover
+        &:disabled
+            background-color $color-blue-strong
     &:hover
-        background-color $color-main
     &:disabled
-        background-color $color-bg-disable
-        color $color-gray-normal
+        background-color $color-strong
+    &:disabled
         cursor not-allowed
-        &:hover
-            background-color $color-bg-disable
 
-input:read-only
-    cursor not-allowed
+input:not([type=submit]):not([type=button]):not([type=file])
+    &:not([type=reset]):not([type=color]):not([type=image])
+        &:not([type=radio]):not([type=checkbox]):not([type=range])
+        /textarea
+            &:read-only
+                cursor not-allowed
 
 .input
     border-radius .3em
     border solid 1px $color-border-text
     padding .5em
-    padding-right 1.5em
     margin .5em 0
     vertical-align middle
     max-width 100%
     box-sizing border-box
     &:disabled
         cursor not-allowed
-        background-color lighten($color-bg-disable, 60%)
+        background-color $color-bg-disabled
 
 .custom-input-file
     overflow hidden
@@ -84,35 +92,71 @@ input:read-only
         padding 0
         .input
             width 100%
+            &.number-short
+                width 6em
         &.group
             display flex
+        .icon
+            right -.8em
+        &[data-tooltip]:focus-within::before
+            right 0
+            left 0
+        em
+            right -.5em
+    &.block
+        display block
+        margin .5em 0 1.2em 0
 
 .input-box
+    position relative
     display inline-block
     padding 0 .5em
+    em
+        color $color-red-main
+        position absolute
+        top 0
+        right 0
     .icon
+        position absolute
+        right -.3em
+        top 30%
         vertical-align middle
         fa-icon "circle"
         visibility hidden
         font 1em FontAwesome
-        margin 0 0 0 -1.1em
         width auto !important
+    &[data-tooltip]:focus-within::before
+        content attr(data-tooltip)
+        position absolute
+        text-align center
+        top 100%
+        margin-top -.8em
+        right .5em
+        left .5em
+        display inline-block
+        padding .3em .5em
+        border-radius 0 0 .5em .5em
+        background $color-gray-strong
+        color #FFF
+        font .9em sans-serif
+        z-index 1
     &.error
-        alert-box "times-circle" $color-red-normal
+        alert-box "times-circle" $color-red-main
     &.success
-        alert-box "check-circle" $color-green-normal
+        alert-box "check-circle" $color-green-main
     &.warning
-        alert-box "exclamation-circle" $color-yellow-normal
+        alert-box "exclamation-circle" $color-yellow-main
     &.group
         display inline-flex
         *
             border-radius 0
         :first-child
-            border-radius .5em 0 0 .5em
+            border-top-left-radius .3em
+            border-bottom-left-radius .3em
+        .last
         :last-child
-            border-radius 0 .5em .5em 0
-        .icon
-            padding 1em 0
+            border-top-right-radius .3em
+            border-bottom-right-radius .3em
         .badge
             background #eee
             color #777
@@ -120,12 +164,27 @@ input:read-only
             margin .4em 0
             border 1px solid #ddd
             vertical-align middle
+    &.password
+        .raw
+            font 1em FontAwesome
+            position absolute
+            right 1em
+            top 30%
+            vertical-align middle
+            width auto !important
+            background #fff
+            &.show
+                fa-icon "eye"
+            &.hide
+                fa-icon "eye-slash"
 
 .radio
 .checkbox
     input[type=radio]
     input[type=checkbox]
         display none
+        & + label
+            margin-left 1em
         & + label:before
             display inline-block
             color $color-border-text
@@ -133,7 +192,8 @@ input:read-only
             font-style normal
             font-weight normal
             line-height 1
-            padding-right .5em
+            margin-left -1.2em
+            padding-right .2em
             width 1em
             text-align left
         &:checked + label:before
@@ -151,5 +211,3 @@ input:read-only
             fa-icon "square-o"
         &:checked + label
             fa-icon "check-square-o"
-    label
-        padding-left 0
