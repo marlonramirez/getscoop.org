@@ -13,40 +13,41 @@ en búsqueda del modelamiento de los nuevos requerimientos y de las funcionalida
 <p>Scoop ayuda en la parte táctica del proyecto pero se declara agnostica al modelo del negocio, lo cual significa que
 deja definir una estrategía propia al momento de usar una arquitectura(Hexagonal, Clear, Onion, etc).</p>
 
-<h2><a href="#agnosticism">Agnosticismo sobre el modelo</a><span class="anchor" id="agnosticism">...</span></h2>
-<p>El agnosticismo se define como la postura que considera que los valores de verdad de ciertas afirmaciones
-son desconocidas o inherentemente incognoscibles, el agnosticismo es la mera suspensión de la creencia.</p>
+<ul>
+    <li><a href="#dbc">Data Base Connection</a></li>
+    <li><a href="#structs">structs</a></li>
+    <li><a href="#sqo">Query Objects (SQO)</a></li>
+    <li><a href="#epm">Entity Persistence Manager (EPM)</a></li>
+    <li><a href="#repository">Repositorios</a></li>
+</ul>
 
-<p>Se dice que scoop es agnostica por que no tiene una creencia ferrea  en como debe ser implementado el dominio del
-negocio, esto quiere decir que se pueden usar diferentes técnicas, patrones de diseño y arquitecturas, al igual que
-el enfoque que mejor se ajuste al diseño del  modelo (TDD, DDD, ATDD, BDD). Pero el agnosticismo se aplica solo a la
-definición del domino ya que scoop cuenta con diversas herramientas para facilitar el procesamiento de datos e
-implementación de técnicas.</p>
-
-<h2><a href="#dbc">Data Base Conection</a><span class="anchor" id="dbc">...</span></h2>
+<h2>
+    <a href="#dbc">Data Base Conection</a>
+    <span class="anchor" id="dbc">...</span>
+</h2>
 <p>Cualquier tipo de base de datos se debe conectar mediante un driver PDO, ya que este se encarga de administrar las
 conexiones, esto garantiza la homogeniedad en el tratamiento de datos. El uso y configuración de la conexión se manejea
 mediante la clase DBC acronimo de Data Base Connection y que se provee mediante los archivo de configuración.</p>
 
 <pre class="prettyprint">
-return array(
-    'db' => array(
-        'default' => array(
+[
+    'db' => [
+        'default' => [
             'database' => 'scoop',
             'user' => 'scoop',
             'password' => '1s4Gr34tB00t5tr4p',
             'host' => 'localhost',
             'driver' => 'pgsql'
-        ),
-        'auth' => array(
+        ],
+        'auth' => [
             'database' => 'auth',
             'user' => 'scoop',
             'password' => 'myS1st3m4uth',
             'host' => 'localhost',
             'driver' => 'mysql'
-        )
-    )
-);
+        ]
+    ]
+]
 </pre>
 
 <p>En el ejemplo anterior se proveen dos conexiones diferentes, cada una empaquetada con un nombre clave;
@@ -54,7 +55,23 @@ para usar alguna conexión se debe hacer uso de la clase <code>\Scoop\Context</c
 <code>connect</code>, cuando no se envia ningún parametro al método este toma la conexión default, para escoger
 otro tipo de conexión diferente se debe enviar la clave de la conexión <code>\Scoop\Conext::connect('auth')</code>.</p>
 
-<h2><a href="#sqo">SQO</a><span class="anchor" id="sqo">...</span></h2>
+<h2>
+    <a href="#structs">Structs</a>
+    <span class="anchor" id="structs">...</span>
+</h2>
+
+<h3>Creación</h3>
+
+<pre  class="prettyprint">php app/ice new struct --schema=auth --name=data</pre>
+
+<h3>Ejecución</h3>
+
+<pre  class="prettyprint">php app/ice dbup --name=default --schema=auth --user=postgres --password=$POSTGRES_PASSWORD</pre>
+
+<h2>
+    <a href="#sqo">Query Objects</a>
+    <span class="anchor" id="sqo">...</span>
+</h2>
 <p>No existe nada de malo con usar SQL dentro de una aplicación, pero se pueden usar herramientas que hagan
 el manejo de las sentencias mucho más flexibles y dinamicas, el mecanismo escogido por scoop para esta labor es
 SQO(Scoop|Simple Query Object), el cual presenta una manera más sencilla y orientada a objetos de realizar consultas a
@@ -67,7 +84,7 @@ diferente a <i>default</i> se pueden usar dos argumentos más.</p>
 $bookSQO = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');
 </pre>
 
-<p class="doc-alert">A partir de la versión 5.6 se envia el nombre de la conexión y no la conexión como en anteriores versiones</p>
+<p class="doc-alert">A partir de la versión 0.5.6 se envia el nombre de la conexión y no la conexión como en anteriores versiones</p>
 
 <p>A partir de acá es posible usar los métodos de SQO: create, update, read, delete y getLastId. Los cuatro primeros
 pertenecen al CRUD y cada uno devuelve un objeto DML especifico para cada caso, mientras  <code>getLastId</code> retorna
@@ -111,27 +128,150 @@ $bookSQO->delete()
 es el arreglo que necesita el método page para funcionar.</p>
 
 <pre class="prettyprint">
-array(
+[
     'page' => 0,
     'size' => 12
-);
+]
 </pre>
 
 <p>Si no se suministra ninguno de estos valores, scoop tomara por defecto los acá descritos y retornara un arreglo asociativo
 con una estructura similar a la siguiente.</p>
 
 <pre class="prettyprint">
-array(
+[
     'page' => 0,
     'size' => 12,
     'result' => array(),
     'total' => 0
-);
+]
 </pre>
 
 <p>En donde page y size son los mismo datos enviados o colocados por defecto, mientras result y total hacen referencia a la
 consulta realizada.</p>
 
-<h2><a href="#repositories">Repositorios</a><span class="anchor" id="repositories">...</span></h2>
+<h2>
+    <a href="#epm">Entity Persistence Manager</a>
+    <span class="anchor" id="epm">...</span>
+</h2>
 
-<h2><a href="#domain-events">Eventos de dominio</a><span class="anchor" id="domain-events">...</span></h2>
+<h3>Entidades</h3>
+
+<pre class="prettyprint">
+[
+    'entities' => [
+        Invoice::class => [
+            'table' => 'public.invoices',
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'state' => ['type' => 'smallint'],
+                'number' => ['type' => 'string', 'length' => 20],
+                'customer' => ['type' => 'int', 'column' => 'customer_id']
+            ]
+        ]
+    ]
+]
+</pre>
+
+<h3>Relaciones</h3>
+
+<pre class="prettyprint">
+[
+    'entities' => [
+        Invoice::class => [
+            'table' => 'public.invoices',
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'state' => ['type' => 'smallint'],
+                'number' => ['type' => 'string', 'length' => 20],
+                'customer' => ['type' => 'int', 'column' => 'customer_id']
+            ],
+            'relations' => [
+                'items' => [Item::class, 'invoice', Relation::ONE_TO_MANY],
+                'payments' => [Payment::class, 'invoices:invoice_payments', Relation::MANY_TO_MANY],
+                'customer' => [Customer::class, 'invoices', Relation::MANY_TO_ONE]
+            ]
+        ]
+    ]
+]
+</pre>
+
+<pre class="prettyprint">
+[
+    'relations' => [
+        'invoice_payments' => [
+            'table' => 'public.payment_invoice',
+            'entities' => [
+                Invoice::class => ['type' => 'int', 'column' => 'invoice_id'],
+                Payment::class => ['type' => 'int', 'column' => 'payment_id']
+            ]
+        ]
+    ]
+]
+</pre>
+
+<h3>Value Objects</h3>
+
+<pre class="prettyprint">
+[
+    'values' => [
+        Email::class => [
+            'value' => ['type' => 'string', 'length' => 60]
+        ],
+        Address::class => [
+            'street' => ['type' => 'string'],
+            'city' => ['type' => 'string'],
+            'zip' => ['type' => 'string', 'column' => 'zip_code']
+        ]
+    ]
+]
+</pre>
+
+<h2>
+    <a href="#repositories">Repositorios</a>
+    <span class="anchor" id="repositories">...</span>
+</h2>
+
+<pre class="prettyprint">
+&lt;?php
+
+namespace App\Infrastructure\Repository;
+
+use Scoop\Persistence\Entity\Manager;
+use App\Domain\Entity\Invoice;
+use App\Domain\Value\InvoiceId;
+
+
+class InvoiceCommand implements InvoiceContract
+{
+    private Manager $em;
+
+    public function __construct(Manager $em)
+    {
+        $this->em = $em;
+    }
+    
+    public function save(Invoice $invoice): void
+    {
+        $this->em->save($invoice);
+        $this->em->flush();
+    }
+
+    public function getId(InvoiceId $id): Invoice
+    {
+        return $this->em->search(Invoice::class)
+        ->aggregate('items')
+        ->aggregate('customer')
+        ->aggregate('payments.customer')
+        ->get($id->getValue());
+    }
+
+    public function matching(): array
+    {
+        return $this->em->search(Invoice::class)
+        ->aggregate('items')
+        ->aggregate('customer')
+        ->aggregate('payments.customer')
+        ->matching('payments.customer.email:value = :name', ['name' => 'admin@sespesoft.com']);
+    }
+}
+</pre>

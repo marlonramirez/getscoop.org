@@ -1,9 +1,20 @@
-<p>Esta es la documentación oficial de scoop y puede convertirte de un principiante
-a un experto en el manejo de la herramienta, se encuentra diseñada para empezar desde los conceptos más
-básicos hasta llegar a los más complejos. Antes de entrar en materia se van a aclarar algunas cosas
-sobre el uso del bootstrap y esta guia.</p>
+<p>Esta es la documentación oficial de scoop, la cual se encuentra diseñada para empezar desde los conceptos más
+básicos hasta llegar a los más complejos. Actualmente se encuentra incompleta, si deseas ayudar realizá 
+un pull request en <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.
+Antes de entrar en materia se van a aclarar algunas cosas sobre el uso y manejo de la herramienta.</p>
 
-<h2><a href="#filosofy">Filosofía de scoop</a><span class="anchor" id="filosofy">...</span></h2>
+<ul>
+    <li><a href="#filosofy">Filosofía de scoop</a></li>
+    <li><a href="#good-practices">Buenas prácticas</a></li>
+    <li><a href="#requirements">Requisitos y herramientas</a></li>
+    <li><a href="#download">Medios de descarga</a></li>
+    <li><a href="#prev-run">Antes de empezar</a></li>
+</ul>
+
+<h2>
+    <a href="#filosofy">Filosofía de scoop</a>
+    <span class="anchor" id="filosofy">...</span>
+</h2>
 
 <p>El bootstrapping es el proceso mediante el cual se diseñan y desarrollan entornos de programación
 cada vez más complejos, partiendo de sistemas mucho más simples denominados bootstrap. Básicamente se
@@ -26,7 +37,10 @@ propias de una arquitectura por capas como el enrutamiento, inyección de depend
 <p>Scoop es simple; pero potente y flexible, proporciona poderosas herramientas para la creación de
 frameworks o aplicaciones robustas, siempre teniendo en cuenta la comodidad del desarrollador.</p>
 
-<h2><a href="#good-practices">Buenas prácticas</a><span class="anchor" id="good-practices">...</span></h2>
+<h2>
+    <a href="#good-practices">Buenas prácticas</a>
+    <span class="anchor" id="good-practices">...</span>
+</h2>
 
 <p>En ocaciones otorgar libertad y flexibilidad al desarrollador significa dejar la puerta abierta a las
 llamadas malas prácticas y como no se puede controlar todo a la vez y para mejorar la experiencia al momento
@@ -36,16 +50,19 @@ explicando para advertir al usuario de su desaconcejable uso y la buena pratica 
 <p>Cuando la mala práctica sea muy grave o no estaba claro que lo era, será establecido en la misma documentación
 para mas adelante explicarlo de la forma correcta.</p>
 
-<h2><a href="#versions">Manejo de versiones</a><span class="anchor" id="versions">...</span></h2>
+<h3>Manejo de versiones</h3>
 
 <p>Esta guia esta basada en la versión estable de scoop a la fecha, la cual es la {{#view->getConfig('app.version')}}.
 Esto es importante tenerlo en cuenta ya que algún ejemplo inicial puede no funcionar en versiones
 anteriores.</p>
 
 <p>Scoop trata de seguir el <a href="http://semver.org/lang/es/" rel="external">versionamiento semántico</a>
-propuesto por Tom Preston-Werner</p>
+propuesto por Tom Preston-Werner.</p>
 
-<h2><a href="#requirements">Requisitos y herramientas</a><span class="anchor" id="requirements">...</span></h2>
+<h2>
+    <a href="#requirements">Requisitos y herramientas</a>
+    <span class="anchor" id="requirements">...</span>
+</h2>
 
 <p>Actualmente se cuenta con soporte para servidores apache y nginx, es necesario tener activo el modulo rewrite
 de apache para el enrutamiento, algunas caracteristicas SEO y de seguridad. Para el caso de nginx se debe realizar
@@ -84,11 +101,28 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 <p class="doc-alert">Desde la versión 0.6.1 se incluye un servidor integrado, este se ejecuta automaticamente al ejecutar el entorno
 de desarrollo.</p>
 
-<p>Scoop ha sido desarrollado con <i>PHP 7.3</i> con soporte desde <i>PHP 5.3</i> hasta <i>PHP 8</i>. La percistencia
+<p>Scoop ha sido desarrollado con <i>PHP 8.1</i> con soporte desde <i>PHP 5.3</i>. La percistencia
 se puede manejar con MySQL, postgreSQL, SQLServer o cualquier motor de base de datos con soporte para PDO.</p>
 
 <p>Es recomendable aunque no obligatorio instalar algunas de las herramientas que usa scoop para la
 automatización de procesos, esto garantiza una mayor productividad en el desarrollo de aplicaciones.</p>
+
+<ul>
+    <li>
+        <h3>Docker</h3>
+        <p>Para simplificar el uso de la herramienta se usa <a href="https://docs.docker.com/get-docker/">docker</a> para el manejo de infraestructura.</p>
+        <p>Si se desea
+        realizar algún cambio de configuración se debe modificar el directorio <code>.devcontainer/etc</code>.</p>
+        <p>La imagen de producción se basa en <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html">webdevops/php-apache</a>.</p>
+    </li>
+    <li>
+        <h3>Dev containers</h3>
+        <p>Para agilizar el desarrollo de aplicaciones hacemos uso de la especificación de <a href="https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers">devcontainers</a>.</p>
+        <p>La imagen de producción se basa en <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-dev.html">webdevops/php-dev</a></p>
+    </li>
+</ul>
+
+<p>En caso de no querer o poder instalar docker, se pueden manejar las herramientas de manera "manual".</p>
 
 <ul>
     <li>
@@ -102,7 +136,7 @@ automatización de procesos, esto garantiza una mayor productividad en el desarr
         con un grupo de herramientas para el manejo de assets.</p>
     </li>
     <li>
-        <h3>Gulp</h3>
+        <h3 class="deprecated">Gulp</h3>
         <p>Desde la versión 0.1.4 el bootstrap utiliza <a href="http://gulpjs.com" rel="external">gulp</a>
         como automatizador de tareas.</p>
         <pre class="prettyprint">npm install -g gulp</pre>
@@ -111,7 +145,10 @@ automatización de procesos, esto garantiza una mayor productividad en el desarr
     </li>
 </ul>
 
-<h2><a href="#download">Medios de descarga</a><span class="anchor" id="download">...</span></h2>
+<h2>
+    <a href="#download">Medios de descarga</a>
+    <span class="anchor" id="download">...</span>
+</h2>
 
 <p>Descargue las distintas versiones de scoop mediante el medio que más se ajuste a sus necesidades.
 La versión actual del bootstrap es la {{#view->getConfig('app.version')}}.</p>
@@ -136,35 +173,24 @@ La versión actual del bootstrap es la {{#view->getConfig('app.version')}}.</p>
     </li>
 </ul>
 
-<h2><a href="#prev-run">Antes de empezar</a><span class="anchor" id="prev-run">...</span></h2>
+<h2>
+    <a href="#prev-run">Antes de empezar</a>
+    <span class="anchor" id="prev-run">...</span>
+</h2>
 
-<p>Al comenzar un nuevo proyecto se deben instalar las librerias o dependencias tanto javascript como PHP ingresando los
-siguientes comandos en el directorio raíz de la aplicación.</p>
+<p>Al comenzar un nuevo proyecto sin <a href="https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers">devcontainers</a>
+se deben instalar las librerias o dependencias tanto javascript como PHP ingresando los siguientes comandos en el directorio raíz de la aplicación.</p>
 
-<pre class="prettyprint">
-npm install
-composer install
-</pre>
+<h3>Desarrollo</h3>
+<pre class="prettyprint">npm install && composer install && npm run dev</pre>
 
-<p>Cada vez que se vaya a desplegar el proyecto es recomendable usar el comando <code>npm start</code>,
-con esto se garantiza la ejecución de tareas automaticas como minificación de archivos Javascript y CSS,
+<h3>Producción</h3>
+<pre class="prettyprint">npm install &&  composer install --optimize-autoloader --no-dev && npm start</pre>
+
+<p>Al ejecutar modo producción la aplicación no se queda en escucha si no que realiza la minificación de archivos Javascript y CSS,
 para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> el comando levantara un
 proxy hot-reload que por defecto apunta a un servidor php built creado desde gulp. Para apuntar el proxy
-a un host diferente se debe configurara la variables <code>PHP_HOST</code>.</p>
+a un host diferente se debe configurara la variable de entorno <code>PHP_HOST</code>.</p>
 
-<p>para probar que todo ha salido bien ingresa a <code>http://localhost:8000/</code>, ya
+<p>Para probar que todo ha salido bien ingresa a <a href="//localhost:8001">tu entorno local</a>, ya
 deberias tener instalada en tú maquina toda la estructura para usar scoop.</p>
-
-<h2><a href="#apologies">Plan de trabajo</a><span class="anchor" id="apologies">...</span></h2>
-
-<p>Aún no se encuentra elaborada toda la documentación de scoop, mientras esto sucede voy a intentar
-suministrar el ABC o primeros pasos para comprender como funciona este bootstrap enfocado a PHP
-orientado a objetos.</p>
-
-<ul>
-    <li><a href="{{#view->route('doc', 'configure')}}">Configuración del entorno</a></li>
-    <li><a href="{{#view->route('doc', 'ddd')}}">Diseño del dominio</a></li>
-    <li><a href="{{#view->route('doc', 'templates')}}">Plantillas dinámicas</a></li>
-</ul>
-
-<p>Cualquier ayuda en la documentación sera bien recibida mediante <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.</p>

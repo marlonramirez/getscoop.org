@@ -5,8 +5,17 @@ de template <code>&#91;php</code> <code>php&#93;</code></p>
 
 <p class="doc-alert">aunque sea posible usar código php directamente sobre la plantilla no es un uso aconsejable.</p>
 
+<ul>
+    <li><a href="#interpolation">Interpolación</a></li>
+    <li><a href="#control">Estructuras de control</a></li>
+    <li><a href="#special">Estructuras especiales</a></li>
+    <li><a href="#services">Uso de servicios</a></li>
+    <li><a href="#components">Componentes</a></li>
+    <li><a href="#cache">Cache y minificación</a></li>
+</ul>
+
 <h2>
-    <a href="#iterpolation">Interpolación</a>
+    <a href="#interpolation">Interpolación</a>
     <span class="anchor" id="interpolation">...</span>
 </h2>
 
@@ -150,11 +159,11 @@ signo <code>:&lt;end&gt;</code>.</p>
 </pre>
 
 <h2>
-    <a href="#cache">Cache y minificación</a>
-    <span class="anchor" id="cache">...</span>
+    <a href="#components">Componentes</a>
+    <span class="anchor" id="components">...</span>
 </h2>
 
 <h2>
-    <a href="#components">Componentes</a>
-    <span class="anchor" id="components">...</span>
+    <a href="#cache">Cache y minificación</a>
+    <span class="anchor" id="cache">...</span>
 </h2>

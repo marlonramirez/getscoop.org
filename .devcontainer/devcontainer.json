@@ -1,0 +1,22 @@
+{
+    "name": "Simple Charectiristics of PHP Oriented Object",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "webapp",
+    "forwardPorts": [8000, 8001],
+    "workspaceFolder": "/app",
+    "shutdownAction": "stopCompose",
+    "postStartCommand": "npm install && composer install && npm run dev",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+                "devsense.intelli-php-vscode",
+                "devsense.phptools-vscode",
+                "devsense.profiler-php-vscode",
+                "devsense.composer-php-vscode",
+                "humao.rest-client",
+                "eamodio.gitlens",
+                "ms-azuretools.vscode-docker"
+            ]
+		}
+	}
+}

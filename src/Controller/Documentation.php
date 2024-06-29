@@ -4,15 +4,13 @@ namespace App\Controller;
 class Documentation extends \Scoop\Controller
 {
     private static $views = array(
-        0 => array('title' => 'Iniciando con scoop', 'view' => 'intro'),
-        'configure' => array('title' => 'Configuración del proyecto', 'view' => 'configure'),
-        'folder' => array('title' => 'Estructura de carpetas', 'view' => 'folder'),
-        'templates' => array('title' => 'Plantillas dinámicas', 'view' => 'views'),
+        0 => array('title' => 'Iniciando', 'view' => 'intro'),
+        'configure' => array('title' => 'Configuración', 'view' => 'configure'),
+        'architecture' => array('title' => 'Arquitectura', 'view' => 'architecture'),
         'ddd' => array('title' => 'Diseño de dominio', 'view' => 'models'),
-        'life-cicle' => array('title' => 'Ciclo de vida', 'view' => 'controllers'),
-        'resource' => array('title' => 'Recursos', 'view' => 'resource'),
-        'monitoring' => array('title' => 'Monitoreo', 'view' => 'monitor'),
-        'ice' => array('title' => 'CLI/ICE', 'view' => 'ice')
+        'frontend' => array('title' => 'Front-end', 'view' => 'views'),
+        'resources' => array('title' => 'Recursos', 'view' => 'resource'),
+        'deploy' => array('title' => 'Despliegue', 'view' => 'deploy')
     );
 
     public function get($name = null)

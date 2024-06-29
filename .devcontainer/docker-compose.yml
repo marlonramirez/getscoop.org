@@ -1,0 +1,19 @@
+services:
+  webapp:
+    container_name: getscoop
+    build:
+      dockerfile: Dockerfile
+    volumes:
+      - ../.:/app
+    ports:
+      - 8000:8000
+      - 8001:8001
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      PHP_DISPLAY_ERRORS: 1
+      XDEBUG_MODE: develop,coverage,debug,profile
+      #XDEBUG_SESSION_START=scoop
+      XDEBUG_IDE_KEY: scoop
+      XDEBUG_CLIENT_HOST: host.docker.internal
+    tty: true

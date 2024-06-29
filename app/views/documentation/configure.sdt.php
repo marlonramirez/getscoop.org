@@ -1,6 +1,15 @@
 <p>Scoop se basa en el paradigma de convención sobre configuración, lo que busca minimizar el número de decisiones que
-un desarrollador necesita hacer ganando simplicidad preo sin abandonar flexibilidad. Lamentablemente existen aspectos
+un desarrollador necesita hacer, ganando simplicidad pero sin abandonar flexibilidad. Lamentablemente existen aspectos
 no convencionales de la aplicación que se deben especificar y es aqui donde entra el sistema de configuración.</p>
+
+<ul>
+    <li><a href="#routes-config">Contexto y entorno</a></li>
+    <li><a href="#basic-config">Configuraciones básicas</a></li>
+    <li><a href="#routes">Rutas</a></li>
+    <li><a href="#ioc">Inversión de control</a></li>
+    <li><a href="#components">Componentes</a></li>
+</ul>
+
 
 <h2>
     <a href="#routes-config">Contexto y entorno</a>
@@ -22,21 +31,26 @@ echo $app->run();
 <p>Cuando un contexto es establecido se puede acceder al entorno mediante su método
 <code>\Scoop\Context::getEnvironment()</code>, al cargador mediante <code>\Scoop\Context::getLoader()</code> y
  al inyector de dependencias mediante <code>\Scoop\Context::getInjector()</code>, tambien se pueden establecer
- conexiones a la base de datos mediante <code>\Scoop\Context::connect()</code>.</p>
+ conexiones y desconexiones a la base de datos mediante <code>\Scoop\Context::connect()</code> y <code>\Scoop\Context::disconnect()</code>
+ respectivamente.</p>
 
  <p class="doc-danger">Desde la versión 0.6.4 el método <code>getInjector</code> se encuentra @deprecated en
- favor del método <code>inject</code>.</p>
+ favor del método <code>\Scoop\Context::inject($dependency)</code>.</p>
 
-<h2>Configuraciones básicas</h2>
+ <p>Para realizar la conexión a diferentes bases de datos se pueden enviar dos argumentos más a <code>\Scoop\Context::connect($bundle, $options)</code>,
+ lo mismo sucede con el método <code>\Scoop\Context::disconnect($bundle, $options)</code> para más información consulta <a href="{{#view->route('doc', 'ddd')}}#dbc">el uso del DBC</a>.</p>
+
+<h2>
+    <a href="#basic-config">Configuraciones básicas</a>
+    <span class="anchor" id="basic-config">...</span>
+</h2>
 
 <p>El archivo de configuración establece los ajustes para el correcto funcionamiento de la aplicación,
 aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mensajes de error, entre muchos más.
 Se pueden extender a otros archivos mediante <code>require</code> o carga perezosa.</p>
 
 <pre class="prettyprint">
-return array(
-    'routes' => require 'config/routes.php'
-);
+['routes' => require 'config/routes.php']
 </pre>
 
 <h3 id="lazy-loading">Carga peresoza</h3>
@@ -45,9 +59,7 @@ return array(
 un  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
 
 <pre class="prettyprint">
-return array(
-    'routes' => 'import:app/config/route'
-);
+['routes' => 'import:app/config/route']
 </pre>
 
 <p>Dentro de las diferencias a destacar en la carga peresoza es que se debe referenciar el archivo a cargar desde la raíz
@@ -63,9 +75,7 @@ encuentran variables como name y version, una tecnica que utiliza scoop para est
 package.json como archivo de configuración.</p>
 
 <pre class="prettyprint">
-return array(
-    'app' => 'json:package'
-);
+['app' => 'json:package']
 </pre>
 
 <h3>db</h3>
@@ -75,26 +85,26 @@ diferentes conexiones cada una de ellas debe ser establecida mediante db en el a
 se usara la conexión default.</p>
 
 <pre class="prettyprint">
-return array(
-    'db' => array(
-        'default' => array(
+[
+    'db' => [
+        'default' => [
             'database' => 'scoop',
             'user' => 'scoop',
             'password' => '1s4Gr34tB00t5tr4p',
             'host' => 'localhost',
             'port' => 5432,
             'driver' => 'pgsql'
-        ),
-        'auth' => array(
+        ],
+        'auth' => [
             'database' => 'auth',
             'user' => 'scoop',
             'password' => 'myS1st3m4uth',
             'host' => 'localhost',
             'port' => 3306,
             'driver' => 'mysql'
-        )
-    )
-);
+        ]
+    ]
+]
 </pre>
 
 <p class="doc-alert">Desde la versión <code>0.2.1</code> no se cuenta con soporte nativo para drivers diferentes a
@@ -107,18 +117,18 @@ manejar técnicas de internacionalización realizando la respectiva separación 
 escapa al manejo de la herramienta, pero presta las condiciones para su implementación.</p>
 
 <pre class="prettyprint">
-return array(
-    'messages' => array(
-        'es' => array(
+[
+    'messages' => [
+        'es' => [
             'required' => 'Complete este campo',
             'email' => 'Introduzca una dirección de correo valida'
-        ),
-        'en' => array(
+        ],
+        'en' => [
             'required' => 'Please fill out this field',
             'email' => 'Please include a valid email'
-        )
-    )
-);
+        ]
+    ]
+]
 </pre>
 
 <h3>asset</h3>
@@ -129,14 +139,14 @@ la ruta principal de los archivos se ubica en <code>asset.path</code>, el resto 
 parten de esta ruta principal.</p>
 
 <pre class="prettyprint">
-return array(
-    'asset' => array(
+[
+    'asset' => [
         'path' => 'public/',
         'css' => 'css/',
         'js' => 'js/',
         'img' => 'images/'
-    )
-);
+    ]
+]
 </pre>
 
 <p>En el anterior ejemplo para referirse al archivo stylesheet.css se debe seguir la ruta
@@ -170,11 +180,11 @@ ahora la clave es el alias de la ruta y el valor un array asociativo con las sig
         de la ruta datos como los tipos de variables que seran suministradas al controlador.</p>
 
 <pre class="prettyprint">
-return array(
-    'user' => array(
+[
+    'user' => [
         'url' => '/user/{var}/'
-    )
-);
+    ]
+]
 </pre>
 
         <p>El uso de variables se limita a dos tipo: <code>{var}</code> e <code>{int}</code>, en el
@@ -192,29 +202,29 @@ return array(
         solo son permitidos métodos HTTP.</p>
 
 <pre class="prettyprint">
-return array(
-    'user' => array(
+[
+    'user' => [
         'url' => '/user/&#123;var&#125;/',
         'controller' => 'Controller\User'
-    )
-);
+    ]
+]
 </pre>
 
-        <p class="doc-alert">Desde la version <code>0.6.1</code> es posible separar los métodos HTTP en diferentes controladores,
-        esto beneficia el principio de single responsability.</p>
+<p class="doc-alert">Desde la version <code>0.6.1</code> es posible separar los métodos HTTP en diferentes controladores,
+esto beneficia el principio de single responsability.</p>
 
-        <pre class="prettyprint">
-return array(
-    'user' => array(
+<pre class="prettyprint">
+[
+    'user' => [
         'url' => '/user/&#123;var&#125;/',
-        'controller' => array(
+        'controller' => [
             'get' => 'Controller\UserReader',
             'post' => 'Controller\UserCreator',
             'put' => 'Controller\UserUpdater',
             'delete' => 'Controller\UserRemover'
-        )
-    )
-);
+        ]
+    ]
+]
 </pre>
     </li>
 
@@ -224,16 +234,16 @@ return array(
         proxies establecidos en rutas anteriores son ejecutados en orden desde la ruta más corta hasta
         la más larga.</p>
 <pre class="prettyprint">
-return array(
-    'user' => array(
+[
+    'user' => [
         'url' => '/user/{var}/',
         'proxy' => 'App\Interceptor\Verify'
-    ),
-    'home' => array(
+    ],
+    'home' => [
         'url' => '/user',
         'proxy' => 'App\Interceptor\Auth'
-    )
-);
+    ]
+]
 </pre>
         <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento petición interceptada,
         en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de
@@ -250,12 +260,12 @@ return array(
         de esta manera la carga peresoza perdera toda su utilidad.</p>
 
 <pre class="prettyprint">
-return array(
-    'doc' => array(
+[
+    'doc' => [
         'url' => '/documentation/'
         'routes' => require 'routes/docs.php'
-    )
-);
+    ]
+]
 </pre>
 
     <p>Las url establecidas dentro de una subruta heredaran automaticamente la url de la ruta principal. De esta
@@ -271,34 +281,42 @@ return array(
         arreglo el nombre del método http (get, post, put, delete...) en minuscula y el nombre del método del controlador.</p>
 
 <pre class="prettyprint">
-return array(
-    'doc' => array(
+[
+    'doc' => [
         'url' => '/documentation/'
         'routes' => require 'routes/docs.php',
-        'methods' => array('get' => 'view')
-    )
-);
+        'methods' => ['get' => 'view']
+    ]
+]
 </pre>
     </li>
 </ul>
 
 <p>Todas estas propiedades se pueden combinar entre si, para generar un sistema robusto de enrutamiento.</p>
 <pre class="prettyprint">
-return array(
-    'home' => array(
+[
+    'home' => [
         'url' => '/',
         'controller' => 'Controller\Home:get',
         'proxy' => 'App\Interceptor\Test',
         'routes' => require 'routes/main.php'
-    )
-);
+    ]
+]
 </pre>
 
 
 <h2>
-    <a href="#inject-parameters">Inyección de dependencias</a>
-    <span class="anchor" id="inject-parameters">...</span>
+    <a href="#ioc">Inversión de control</a>
+    <span class="anchor" id="ioc">...</span>
 </h2>
+
+<p>La inversión de control (Inversion of Control, IoC) es un principio de diseño de software en el
+que el flujo de ejecución de un programa se invierte respecto a los métodos de programación tradicionales.
+En los métodos de programación tradicionales el programador especifica la secuencia de decisiones y procedimientos
+que pueden darse durante el ciclo de vida de un programa mediante llamadas a funciones. En su lugar, en la inversión
+de control se especifican respuestas deseadas a sucesos o solicitudes de datos concretas, dejando que algún tipo de
+entidad o arquitectura externa lleve a cabo las acciones de control que se requieran en el orden necesario y
+para el conjunto de sucesos que tengan que ocurrir.</p>
 
 <p>Una parte importante de usar la inversión de control es establecer como interpretar las abstracciones a
 implementaciones, para esto scoop usa el método <code>bind</code> de la clase
@@ -317,27 +335,24 @@ de enlazar interfaces es funcional se recomienda el uso de archivos para separar
 para tal fin se puede establecer un key providers cuyo valor sea un par clave valor [inteface => class].</p>
 
 <pre class="prettyprint">
-return array(
-    'providers' => array(
+[
+    'providers' => [
         'App\Repository\Quote' => 'App\Repository\QuoteArray'
-    )
-);
+    ]
+]
 </pre>
 
 <p>Finalmente para hacer uso de la dependencia, esta se debe recibir como argumento del contructor en la clase que
 se desee.</p>
 
-<h2 class="deprecated">
-    <a href="#services">Servicios</a>
-    <span class="anchor" id="services">...</span>
-</h2>
+<h3 class="deprecated">Servicios</h3>
 <p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
 de inyección de dependencias.</p>
 <p>Los servicios no se deben confundir con las dependencias, una dependecia se debe inyectar a la clase mediante
 el constructor, en cambio un servicio es nombrado y es posible acceder a este desde cualquier parte del sistema
 (incluso las vistas).</p>
 
-<p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc', 'templates')}}#services">inyectar dependencias en las vistas</a>.</p>
+<p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc', 'frontend')}}#services">inyectar dependencias en las vistas</a>.</p>
 
 <pre class="prettyprint">
 \Scoop\IoC\Service::register('auth', '\App\Controller\Auth');
@@ -346,11 +361,11 @@ el constructor, en cambio un servicio es nombrado y es posible acceder a este de
 <p>dentro del archivo de configuración se debe establecer un par [name => classService]</p>
 
 <pre class="prettyprint">
-return array(
-    'services' => array(
+[
+    'services' => [
         'auth' => '\App\Controller\Auth'
-    )
-);
+    ]
+]
 </pre>
 
 <h2>
@@ -361,14 +376,14 @@ return array(
 <p>Los componentes en scoop son simples bloques de codigos HTML reutilizables y variables que se gestionan mediante
 el uso de clases, cada componente tiene un nombre asociado dentro de la vista y un handler PHP, este par
 [name => classHandler] se puede usar dentro de un archivo de configuración asociado mediante la clase de entorno o el uso
-directo del método <code>registerComponents</code> de la clase <code>\Scoop\View</code>.</p>
+directo del método <code>\Scoop\View::registerComponents($components)</code>.</p>
 
 <pre class="prettyprint">
-return array(
-    'components' => array(
+[
+    'components' => [
         'text' => 'App\Component\InputText'
-    )
-);
+    ]
+]
 </pre>
 
-<p>Para usar un componente dentro de la vista se debe usa el método <code>compose{ComponentName}</code> del servicio <code>view</code>.</p>
+<p>Para usar un componente dentro de la vista se debe usar el método <code>&#123;{#view->compose{ComponentName}()}&#125;</code>.</p>
