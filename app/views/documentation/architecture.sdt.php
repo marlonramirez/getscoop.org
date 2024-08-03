@@ -27,18 +27,45 @@ prestablecida es la más conveniente en la mayoria de los casos. Los archivos qu
 proyecto son configuraciones de terceros o como <code>index.php</code> arraque del proyecto.</p>
 
 <h3>.devcontainers</h3>
-<p>Contiene la infraestructura de docker.</p>
+<p>Contiene los archivos de infraestructura que son utilizados tanto para configurar el entorno como para inyectar al contenedor docker;
+    como en el caso de archivos php.ini y configuraciones de apache, para esto nos basamos en el uso de la imagen 
+    <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html#customization">webdevops/php-apache</a>.
+    Cualquier carpeta o archivo generado en <code>.devcontainer/etc</code> se sincronizará con <code>/opt/docker/etc</code>.</p>
+<p>Los archivos devcontainer.json, docker-compose.yml y Dockerfile son usados para configurar el entorno de desarrollo.</p>
 
 <h3>app</h3>
 <p>Contiene todo el código diferente al core del negocio pero que igual es necesario para la ejecución de la aplicación,
-entre esto tenemos codigo javascript, css(stylus), vistas y configuraciones.</p>
+entre esto tenemos:</p>
+<ul>
+    <li><b>config/:</b> En esta carpeta es donde se deben referenciar los archivos de configuración.</li>
+    <li><b>scripts/:</b> En esta carpeta es donde se deben referenciar los archivos de javascript.</li>
+    <li><b>storage/:</b> En esta carpeta es donde se deben referenciar los archivos de cache o sin seguimiento.</li>
+    <li><b>styles/:</b> En esta carpeta es donde se deben referenciar los archivos de css (stylus).</li>
+    <li><b>views/:</b> En esta carpeta es donde se deben referenciar los archivos de templates o vistas.</li>
+    <li><b>config.php:</b> Este es el archivo principal de configuración, el cual se referencia al momento de cargar el entorno.</li>
+    <li><b>ice:</b> Este es el archivo donde se ejecutan los comandos de consola del sistema.</li>
+    <li><b>phpcs.xml:</b> En este archivo se encuentran las reglas del lintter php.</li>
+    <li><b>router.php:</b> Este archivo sirve como sistema rewrite para el servidor php standalone.</li>
+</ul>
 
 <h3>public</h3>
 <p>Contiene todo los assets compilados y listos para ser entregado al cliente, además de imagenes, archivos usados
-para la indexación en motores de busqueda y fuente de letras.</p>
+para la indexación en motores de busqueda y fuente de letras. Normalmente no deben ser modificados más que para agregar, modificar o eliminar
+assets de la aplicación.</p>
+<ul>
+    <li><b>css/:</b> En esta carpeta es donde se deben referenciar los archivos css transpilados y minificados.</li>
+    <li><b>fonts/:</b> En esta carpeta es donde se deben referenciar los archivos de fuentes de letras.</li>
+    <li><b>images/:</b> En esta carpeta es donde se deben referenciar los archivos de imagenes.</li>
+    <li><b>js/:</b> En esta carpeta es donde se deben referenciar los archivos javascript transpilados y minificados.</li>
+    <li><b>favicon:</b> Este archivo es el que se carga por defecto como icono en el template principal de la aplicación.</li>
+    <li><b>humans.txt:</b> Este archivo es el que se carga por defecto para ser leido por humanos en el template principal de la aplicación.</li>
+    <li><b>robots.txt:</b> Este archivo es el que se carga por defecto para ser leido por humanos en el template principal de la aplicación.</li>
+</ul>
 
 <h3>scoop</h3>
-<p>Carpeta principal del bootstrap, contiene todo lo necesario para arrancar el proyecto.</p>
+<p>Carpeta principal del bootstrap, contiene todo lo necesario para arrancar el proyecto. No debe ser modificada o alterada,
+    en futuras actualizaciones se planea enviar a la carpeta vendor gestionada por composer.
+</p>
 
 <h3>src</h3>
 <p>Contiene el código principal de la aplicación, su estructura depende de como el usuario desee llevar su proyectos,
@@ -70,7 +97,7 @@ class Home extends Controller
     {
         $dto = $this->getRequest()->getBody();
         $invoice = $this->useCase->execute($dto);
-        return 'Factura ' . $invoice->getId() . ' creada';
+        return 'Factura ' . $invoice['id'] . ' creada';
     }
 }
 </pre>
@@ -85,7 +112,7 @@ public function post()
 {
     $dto = $this->getRequest()->getBody($this->validation);
     $invoice = $this->useCase->execute($dto);
-    return 'Factura ' . $invoice->getId() . ' creada';
+    return 'Factura ' . $invoice['id'] . ' creada';
 }
 </pre>
 

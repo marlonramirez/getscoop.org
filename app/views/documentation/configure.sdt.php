@@ -8,6 +8,7 @@ no convencionales de la aplicación que se deben especificar y es aqui donde ent
     <li><a href="#routes">Rutas</a></li>
     <li><a href="#ioc">Inversión de control</a></li>
     <li><a href="#components">Componentes</a></li>
+    <li><a href="#exceptions">Manejo de excepciones</a></li>
 </ul>
 
 
@@ -35,7 +36,7 @@ echo $app->run();
  respectivamente.</p>
 
  <p class="doc-danger">Desde la versión 0.6.4 el método <code>getInjector</code> se encuentra @deprecated en
- favor del método <code>\Scoop\Context::inject($dependency)</code>.</p>
+ favor del método <code>\Scoop\Context::inject($dependency)</code> y desde la versión 0.7.3 el método <code>getLoader</code>.</p>
 
  <p>Para realizar la conexión a diferentes bases de datos se pueden enviar dos argumentos más a <code>\Scoop\Context::connect($bundle, $options)</code>,
  lo mismo sucede con el método <code>\Scoop\Context::disconnect($bundle, $options)</code> para más información consulta <a href="{{#view->route('doc', 'ddd')}}#dbc">el uso del DBC</a>.</p>
@@ -387,3 +388,21 @@ directo del método <code>\Scoop\View::registerComponents($components)</code>.</
 </pre>
 
 <p>Para usar un componente dentro de la vista se debe usar el método <code>&#123;{#view->compose{ComponentName}()}&#125;</code>.</p>
+
+<h2>
+    <a href="#exceptions">Manejo de excepciones</a>
+    <span class="anchor" id="exceptions">...</span>
+</h2>
+
+<p>Cualquier tipo de excepción puede ser mapeado a un error https mediante las keys <code>http.errors.${code}.exceptions</code>. Si se desea
+agregar más cabeceras se debe agregar el key headers al codigo de error.</p>
+
+<pre class="prettyprint">
+'http' => [
+    'errors' => [
+        400 => [
+            'exceptions' => [MalformedEmail::class]
+        ]
+    ]
+]
+</pre>

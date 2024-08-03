@@ -2,7 +2,6 @@ public/css/*
 public/js/*
 public/fonts/*
 app/storage/*
-!public/fonts/Chalet*
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
@@ -71,10 +70,6 @@ composer.lock
 #node
 /node_modules/
 package-lock.json
-
-#tests
-/.phpunit.cache/
-phpunit.xml
 
 *.architect~
 !.gitkeep

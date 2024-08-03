@@ -1,8 +1,12 @@
 <?php
+
 namespace App\Controller;
 
 class Index extends \Scoop\Controller
 {
+    /**
+     * @return \Scoop\View
+     */
     public function get()
     {
         $view = new \Scoop\View('home');

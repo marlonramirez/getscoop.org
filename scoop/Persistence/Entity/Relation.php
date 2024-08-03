@@ -8,14 +8,16 @@ class Relation
     const ONE_TO_MANY = 2;
     const MANY_TO_ONE = 3;
     const MANY_TO_MANY = 4;
-    private $collector;
     private $many;
+    private $mapper;
     private $relationMap;
+    private $manager;
 
-    public function __construct($map, $collector)
+    public function __construct($map, $mapper, $manager)
     {
         $this->relationMap = $map;
-        $this->collector = $collector;
+        $this->mapper = $mapper;
+        $this->manager = $manager;
         $this->many = array();
     }
 
@@ -31,29 +33,36 @@ class Relation
             }
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
+                    if ($this->mapper->isMarked($e)) continue;
                     $objectRelation = new \ReflectionObject($e);
                     $property = $objectRelation->getProperty($relationName);
                     $property->setAccessible(true);
-                    $property->setValue($e, $entity);
-                    $this->collector->add($e);
+                    $value = $entity;
+                    $this->manager->save($e);
                     if (!is_null($mapperKey)) {
                         $this->many[$mapperKey][] = array($entity, $e);
+                        $value = $property->getValue($e);
+                        if (!$value) {
+                            $value = array($entity);
+                        } elseif (!in_array($entity, $value)) {
+                            array_push($value, $entity);
+                        }
                     }
+                    $property->setValue($e, $value);
                 }
             } elseif (is_object($relationEntity)) {
+                if ($this->mapper->isMarked($relationEntity)) continue;
                 $objectRelation = new \ReflectionObject($relationEntity);
                 $property = $objectRelation->getProperty($relationName);
                 $property->setAccessible(true);
                 $value = $property->getValue($relationEntity);
-                if (is_array($value)) {
-                    if (!in_array($entity, $value)) {
-                        array_push($value, $entity);
-                    }
-                } else {
+                if (!is_array($value)) {
                     $value = $entity;
+                } elseif (!in_array($entity, $value)) {
+                    array_push($value, $entity);
                 }
                 $property->setValue($relationEntity, $value);
-                $this->collector->add($relationEntity);
+                $this->manager->save($relationEntity);
             }
         }
     }
@@ -70,7 +79,7 @@ class Relation
             }
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
-                    $this->collector->remove($e);
+                    $this->manager->remove($e);
                 }
             } elseif (is_object($relationEntity)) {
                 $objectRelation = new \ReflectionObject($relationEntity);
@@ -84,7 +93,7 @@ class Relation
                         array_splice($value, $index, 1);
                     }
                 } else {
-                    $this->collector->remove($relationEntity);
+                    $this->manager->remove($relationEntity);
                     $value = null;
                 }
                 $property->setValue($relationEntity, $value);
@@ -98,13 +107,13 @@ class Relation
             $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
             $fields = array();
             $properties = array();
-            foreach ($this->relationMap[$key]['columns'] as $name => $column) {
-                if (isset($column['foreign'])) {
-                    $fields[] = $name;
-                    $properties[] = $column['foreign'];
+            foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
+                if (isset($definition['column'])) {
+                    $fields[] = $definition['column'];
+                    $properties[] = $name;
                 }
             }
-            $idNames = array_map(array($this->collector, 'getIdName'), $properties);
+            $idNames = array_map(array($this->mapper, 'getIdName'), $properties);
             $create = $sqo->create($fields);
             foreach ($relation as $entities) {
                 $id = array();
@@ -112,6 +121,9 @@ class Relation
                     $object = new \ReflectionObject($entity);
                     $name = $object->getName();
                     $i = array_search($name, $properties);
+                    if ($i === false) {
+                        throw new \UnexpectedValueException($name . ' not is present on ' . $key . ' relation');
+                    }
                     $prop = $object->getProperty($idNames[$i]);
                     $prop->setAccessible(true);
                     $id[$i] = $prop->getValue($entity);

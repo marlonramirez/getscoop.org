@@ -19,6 +19,7 @@ deja definir una estrategía propia al momento de usar una arquitectura(Hexagona
     <li><a href="#sqo">Query Objects (SQO)</a></li>
     <li><a href="#epm">Entity Persistence Manager (EPM)</a></li>
     <li><a href="#repository">Repositorios</a></li>
+    <li><a href="#dsl">Criteria (DSL)</a></li>
 </ul>
 
 <h2>
@@ -150,9 +151,11 @@ con una estructura similar a la siguiente.</p>
 consulta realizada.</p>
 
 <h2>
-    <a href="#epm">Entity Persistence Manager</a>
+    <a href="#epm">Entity Persistence Management (EPM)</a>
     <span class="anchor" id="epm">...</span>
 </h2>
+
+<p>El mapeo se realiza desde el archivo de configuración principal bajo la key <code>model</code>.</p>
 
 <h3>Entidades</h3>
 
@@ -237,11 +240,12 @@ consulta realizada.</p>
 namespace App\Infrastructure\Repository;
 
 use Scoop\Persistence\Entity\Manager;
+use App\Domain\Repository\InvoiceCommand as InvoiceRepository;
 use App\Domain\Entity\Invoice;
 use App\Domain\Value\InvoiceId;
 
 
-class InvoiceCommand implements InvoiceContract
+class InvoiceCommand implements InvoiceRepository
 {
     private Manager $em;
 
@@ -265,13 +269,29 @@ class InvoiceCommand implements InvoiceContract
         ->get($id->getValue());
     }
 
-    public function matching(): array
+    public function searchByEmail($email): array
     {
         return $this->em->search(Invoice::class)
         ->aggregate('items')
         ->aggregate('customer')
         ->aggregate('payments.customer')
-        ->matching('payments.customer.email:value = :name', ['name' => 'admin@sespesoft.com']);
+        ->matching('payments.customer.email = :name', ['name' => $email]);
     }
+}
+</pre>
+
+<h2>
+    <a href="#dsl">Criteria (DSL)</a>
+    <span class="anchor" id="dsl">...</span>
+</h2>
+<pre class="prettyprint">
+public function search(Criteria $criteria): array
+{
+    $mapper = new CriteriaEPM($criteria);
+    return $this->em->search(Invoice::class)
+    ->aggregate('items')
+    ->aggregate('customer')
+    ->aggregate('payments.customer')
+    ->matching($mapper->getDSL(), $mapper->getFilters(), $mapper->getOrder());
 }
 </pre>

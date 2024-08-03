@@ -30,3 +30,13 @@
     <a href="#without-containers">Sin contenedores</a>
     <span class="anchor" id="without-containers">...</span>
 </h2>
+
+<p>
+    Para asgurarnos que las reglas de estilos, análisis estático y pruebas ocurran sin configurar pipelines de CI/CD 
+    o igual teniendo la configuración pero obteniendo un resultado inmediato debemos hacer uso de hooks, para esto 
+    nos podemos apoyar en grumphp.
+</p>
+
+<pre class="prettyprint">
+require --dev phpro/grumphp-shim --ignore-platform-reqs
+</pre>

@@ -1,0 +1,13 @@
+grumphp:
+    process_timeout: null
+    tasks: 
+        phpcs:
+            standard: [app/phpcs.xml]
+            whitelist_patterns:
+                - /^src\/(.*)/
+        phpstan:
+            configuration: app/phpstan.neon
+            ignore_patterns:
+                - /^scoop\/(.*)/
+        phpunit:
+            config_file: app/phpunit.xml

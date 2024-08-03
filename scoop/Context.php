@@ -12,20 +12,19 @@ class Context
 
     public static function load($configPath)
     {
-        if (isset(self::$loader)) {
-            throw new \Exception('Context loaded');
-        }
-        if (is_readable('vendor/autoload.php')) {
-            self::$loader = require 'vendor/autoload.php';
-        } else {
-            require 'scoop/Bootstrap/Loader.php';
-            self::$loader = new \Scoop\Bootstrap\Loader();
-            $conf = json_decode(file_get_contents('composer.json'), true);
-            $psr4 = $conf['autoload']['psr-4'];
-            foreach ($psr4 as $key => $value) {
-                self::$loader->setPsr4($key, $value);
+        if (!isset(self::$loader)) {
+            if (is_readable('vendor/autoload.php')) {
+                self::$loader = require 'vendor/autoload.php';
+            } else {
+                require 'scoop/Bootstrap/Loader.php';
+                self::$loader = new \Scoop\Bootstrap\Loader();
+                $conf = json_decode(file_get_contents('composer.json'), true);
+                $psr4 = $conf['autoload']['psr-4'];
+                foreach ($psr4 as $key => $value) {
+                    self::$loader->set($key, $value);
+                }
+                self::$loader->register(true);
             }
-            self::$loader->register(true);
         }
         self::$environment = new \Scoop\Bootstrap\Environment($configPath);
         self::configure();
@@ -54,6 +53,17 @@ class Context
         unset(self::$connections[$key]);
     }
 
+    public static function reset()
+    {
+        foreach (self::$connections as $connection) {
+            $connection->commit();
+        }
+        self::configureInjector();
+    }
+
+    /**
+     * @deprecated
+     */
     public static function getLoader()
     {
         return self::$loader;

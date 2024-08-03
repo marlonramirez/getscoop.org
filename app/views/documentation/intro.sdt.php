@@ -1,7 +1,25 @@
 <p>Esta es la documentación oficial de scoop, la cual se encuentra diseñada para empezar desde los conceptos más
-básicos hasta llegar a los más complejos. Actualmente se encuentra incompleta, si deseas ayudar realizá 
-un pull request en <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.
-Antes de entrar en materia se van a aclarar algunas cosas sobre el uso y manejo de la herramienta.</p>
+básicos hasta llegar a los más complejos. Actualmente existe un roadmap con varias tareas por realizar como:</p>
+
+<ul>
+    <li>Complementar esta guia, si deseas ayudar realizá un pull request en <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.</li>
+    <li><b>[v0.7]</b> Implementar el sistema de factorias.</li>
+    <li><b>[v0.7]</b> Cambiar el sistema de inyección con tags para soportar factorias.</li>
+    <li><b>[v0.7]</b> Soportar uso de herencia con discriminator map en los value objects (state pattern).</li>
+    <li><b>[v0.7]</b> Sobreescribir la configuración del entorno (testing e internacionalización).</li>
+    <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-16/" target="_blank">PSR-16</a> para almacenar en memoria las entidades (UPCu).</li>
+    <li><b>[v0.8]</b> Cambiar el sistema de empaquetado para los assets (Rolldown, <i>RSpack, Farm</i> o Mako).</li>
+    <li><b>[v0.8]</b> Iniciar con la implementación de <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a> (Response).</li>
+    <li><b>[v0.8]</b> Cambiar el sistema de controladores (Http\Controller? command\Controller).</li>
+    <li><b>[v0.8]</b> Implementar multiples bounded context.</li>
+    <li><b>[v0.8]</b> Implementar el sistema de bridges (comunicación entre bounded context).</li>
+    <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-15/" target="_blank">PSR-15</a>.</li>
+    <li><b>[v0.9]</b> Implementar completamente <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a>.</li>
+    <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-17/" target="_blank">PSR-17</a>.</li>
+    <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-18/" target="_blank">PSR-18</a>.</li>
+</ul>
+
+<p>Antes de entrar en materia se van a aclarar algunas cosas sobre el uso y manejo de la herramienta.</p>
 
 <ul>
     <li><a href="#filosofy">Filosofía de scoop</a></li>

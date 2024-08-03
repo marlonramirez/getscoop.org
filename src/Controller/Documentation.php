@@ -1,8 +1,12 @@
 <?php
+
 namespace App\Controller;
 
 class Documentation extends \Scoop\Controller
 {
+    /**
+     * @var array<string|int, array{title: string, view: string}>
+     */
     private static $views = array(
         0 => array('title' => 'Iniciando', 'view' => 'intro'),
         'configure' => array('title' => 'Configuración', 'view' => 'configure'),
