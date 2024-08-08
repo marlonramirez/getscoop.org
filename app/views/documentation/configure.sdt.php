@@ -212,7 +212,8 @@ ahora la clave es el alias de la ruta y el valor un array asociativo con las sig
 </pre>
 
 <p class="doc-alert">Desde la version <code>0.6.1</code> es posible separar los métodos HTTP en diferentes controladores,
-esto beneficia el principio de single responsability.</p>
+esto beneficia el principio de single responsability. Cada una de las clases se puede implementar con el nombre del método http
+como funciona cuando se declara un solo controlador o con el método <code>__invoke</code> o incluso declarar directamente la función</p>
 
 <pre class="prettyprint">
 [
@@ -223,6 +224,12 @@ esto beneficia el principio de single responsability.</p>
             'post' => 'Controller\UserCreator',
             'put' => 'Controller\UserUpdater',
             'delete' => 'Controller\UserRemover'
+        ]
+    ],
+    'health': [
+        'url' => '/health-check',
+        'controller' => [
+            'get' => fn() => ['status' => 'OK']
         ]
     ]
 ]
@@ -330,21 +337,37 @@ la interface y el segundo el nombre de la clase que implementa dicha interface.<
 
 <p class="doc-danger">Este método se encuentra @deprecated desde la versión 0..6.1 en favor del siguiente.</p>
 
-<p>De esta manera cada vez que se use la interface <code>\App\Repository\Quote</code> dentro de un entorno
-IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Aunque esta manera
-de enlazar interfaces es funcional se recomienda el uso de archivos para separar logica de configuración,
-para tal fin se puede establecer un key providers cuyo valor sea un par clave valor [inteface => class].</p>
+<p>De esta manera cada vez que se haga uso de la interface <code>\App\Repository\Quote</code> dentro de un entorno
+IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArray</code>. Se recomienda el uso de 
+archivos para separar logica de configuración, para tal fin se puede establecer un key providers cuyo valor sea un 
+par clave valor [inteface => class].</p>
 
 <pre class="prettyprint">
 [
     'providers' => [
-        'App\Repository\Quote' => 'App\Repository\QuoteArray'
+        'App\Repository\Quote' => 'App\Repository\QuoteArray',
+        'Scoop\Log\Logger' => 'Scoop\Log\factory\Logger:create'
     ]
 ]
 </pre>
 
-<p>Finalmente para hacer uso de la dependencia, esta se debe recibir como argumento del contructor en la clase que
-se desee.</p>
+<p>Desde la versión <code>0.7.4</code> se pueden usar factorias para la creación de los objetos, para esto se
+debe establecer el factory method mediante <b>:</b> como se observa en <code>Scoop\Log\factory\Logger:create</code>.
+Una vez establecidas las reglas de transformación de interfaces o factorias cada vez que se inyecten, el sistema de
+inversión sabra como resolverló.</p>
+
+<pre class="prettyprint">
+class Logger
+{
+    public function create()
+    {
+        $factory = new \Scoop\Log\Factory\Handler(
+            \Scoop\Context::getEnvironment()->getConfig('log', array())
+        );
+        return new \Scoop\Log\Logger($factory);
+    }
+}
+</pre>
 
 <h3 class="deprecated">Servicios</h3>
 <p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
@@ -395,13 +418,15 @@ directo del método <code>\Scoop\View::registerComponents($components)</code>.</
 </h2>
 
 <p>Cualquier tipo de excepción puede ser mapeado a un error https mediante las keys <code>http.errors.${code}.exceptions</code>. Si se desea
-agregar más cabeceras se debe agregar el key headers al codigo de error.</p>
+agregar más cabeceras se debe agregar el key headers al codigo de error, así como la configuración del titulo (en caso de manejar vistas).</p>
 
 <pre class="prettyprint">
 'http' => [
     'errors' => [
-        400 => [
-            'exceptions' => [MalformedEmail::class]
+        401 => [
+            'title' => 'User not authorized',
+            'headers' => array('WWW-Authenticate' => 'Digest realm="' . $domain . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($domain) . '"')
+            'exceptions' => [NotAuhorized::class]
         ]
     ]
 ]

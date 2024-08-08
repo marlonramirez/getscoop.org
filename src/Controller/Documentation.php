@@ -17,6 +17,11 @@ class Documentation extends \Scoop\Controller
         'deploy' => array('title' => 'Despliegue', 'view' => 'deploy')
     );
 
+    /**
+     * @param string $name
+     * @throws \Scoop\Http\Exception\NotFound
+     * @return \Scoop\View
+     */
     public function get($name = null)
     {
         $view = new \Scoop\View('layers/docs');

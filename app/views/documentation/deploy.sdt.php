@@ -1,3 +1,10 @@
+<p>
+    Scoop esta creado para realizar desde despliegues sencillos que solo implican copiar y pegar los archivos del proyecto en
+    el host, hasta despliegues mucho más avanzados como pipelines que incluyan CI/CD. De la misma manera como funciona la
+    <a href="{{#view->route('doc')}}#download">creación del proyecto</a> existen diversas formas de desplegar una aplicación y
+    de esto dependera tambien las herramientas que debemos usar.
+</p>
+
 <ul>
     <li><a href="#testing">Pruebas</a></li>
     <li><a href="#linter">Linter</a></li>
@@ -33,10 +40,10 @@
 
 <p>
     Para asgurarnos que las reglas de estilos, análisis estático y pruebas ocurran sin configurar pipelines de CI/CD 
-    o igual teniendo la configuración pero obteniendo un resultado inmediato debemos hacer uso de hooks, para esto 
+    o igual teniendo la configuración pero obteniendo un resultado inmediato; debemos hacer uso de hooks, para esto 
     nos podemos apoyar en grumphp.
 </p>
 
 <pre class="prettyprint">
-require --dev phpro/grumphp-shim --ignore-platform-reqs
+composer require --dev phpro/grumphp-shim
 </pre>
