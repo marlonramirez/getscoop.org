@@ -11,16 +11,13 @@
 
     header
         nav
-        figcaption
-            margin 0
-            display block
-            width 100%
-            text-align center
+        > i
+            font-size 1.5em
+        span
+            display none
         figcaption
             a
                 margin auto
-        nav
-        margin-bottom .2em
 
     footer
         padding 1.5em 0
@@ -69,12 +66,6 @@
         position static
         padding 0
 
-    #service
-        img
-            display none
-        div
-            width 100%
-
     body
         padding-top 80px
 
@@ -84,24 +75,6 @@
         figcaption
             display inline-block
             width auto
-        nav
-            text-align left
-            display none
-            li
-                display block
-                width 100%
-                a
-                    padding-bottom 10px
-                    transition all .5s ease-in
-                    -moz-transition all .5s ease-in
-                    -webkit-transition all .5s ease-in
-                    -o-transition width all .5s ease-in
-                    &:hover
-                        background-color #777
-                        color #FFB515
-
-    #nav-icon
-        display block
 
     #contact-project
         label

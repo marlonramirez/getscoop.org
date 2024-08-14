@@ -9,12 +9,13 @@ básicos hasta llegar a los más complejos. Actualmente existe un roadmap con va
     <li><b>[v0.7]</b> Soportar uso de herencia con discriminator map en los value objects (state pattern).</li>
     <li><b>[v0.7]</b> Ajustar que no lance excepción si no se ha definido una propiedad para la relación (EPM).</li>
     <li><b>[v0.8]</b> Modificar el sistema de excepciones, para que cada excepción pueda manejar su propia parametrización.</li>
-    <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-16/" target="_blank">PSR-16</a> para almacenar en memoria las entidades (UPCu).</li>
+    <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-16/" target="_blank">PSR-16</a> para almacenar en memoria las entidades (UPCu) y separar el sistema IoC del caché.</li>
     <li><b>[v0.8]</b> Cambiar el sistema de empaquetado para los assets (Rolldown, <i>RSpack, Farm</i> o Mako).</li>
     <li><b>[v0.8]</b> Iniciar con la implementación de <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a> (Response).</li>
     <li><b>[v0.8]</b> Implementar multiples bounded context.</li>
     <li><b>[v0.8]</b> Implementar el sistema de bridges (comunicación entre bounded context).</li>
     <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-15/" target="_blank">PSR-15</a>.</li>
+    <li><b>[v0.9]</b> Modificar el sistema de enrutamiento a un sisema de carpetas (como el de NextJS)</li>
     <li><b>[v0.9]</b> Implementar completamente <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a>.</li>
     <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-17/" target="_blank">PSR-17</a>.</li>
     <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-18/" target="_blank">PSR-18</a>.</li>

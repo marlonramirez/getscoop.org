@@ -29,17 +29,17 @@
                 <span></span>
             </a>
         </figcaption>
-
-        <div id="nav-icon" data-attr="className:classIcon">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <nav data-attr="style.display:showNav">
+        <nav  style="float:right; padding: 20px 20px 0 0">
             <ul>
-                <li><a href="{{#view->route('doc')}}">Documentación</a></li>
-                <li><a href="{{#view->route('services')}}">Servicios</a></li>
-                <li><a href="{{#view->route('about')}}">Acerca</a></li>
+                <li>
+                    <a href="{{#view->route('doc')}}">
+                        <span>Documentación</span>
+                        <i class="fa-stack" style="font-size: 1.2em;color:#ffb515;">
+                            <i class="fa fa-circle fa-stack-2x"></i>
+                            <i class="fa fa-book fa-stack-1x fa-inverse"></i>
+                        </i>
+                    </a>
+                </li>
             </ul>
         </nav>
     </header>
@@ -54,7 +54,7 @@
             </a>
             <a href="https://twitter.com/mirdware" rel="external"><i class="fa fa-twitter"></i> Twitter</a>
         </div>
-       <i>scoop</i> is a trademark of <a href="http://mirdware.com" rel="external">MirdWare</a> © 2015<br/>
+       <i>scoop</i> is a trademark of <a href="http://mirdware.com" rel="external">MirdWare</a> © 2025<br/>
         <a href="https://opensource.org/licenses/MIT">License</a>
     </footer>
 </body>
