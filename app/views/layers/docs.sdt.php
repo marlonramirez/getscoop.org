@@ -1,5 +1,5 @@
 @extends 'layers/layer'
-<h2 class="head-main">Guia de desarrollo con scoop <a href="http://mirdware.com" rel="external"><img src="{{#view->img('logo-blanco.png')}}" alt="MirdWare" title="MirdWare" /></a></h2>
+<h2 class="head-main">Guia de desarrollo con scoop</h2>
 <div id="main-docs" class="main">
     <nav id="nav-docs" data-attr="style.marginLeft: marginMenu">
         <a href="#menu" id="menu-list" title="menú"></a>

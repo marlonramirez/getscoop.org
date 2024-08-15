@@ -14,7 +14,7 @@
     se encuentra liberado bajo una <b>licencia MIT</b> por lo cual estas en la libertad de realizar cualquier
     tipo de modificación o mejora personal, pero recuerda que muchos más programadores pueden beneficiarse de
     estos cambios. Cualquier otro tipo de contribución se puede realizar mediante la contratación 
-    de <a href="{{#view->route('services')}}">servicios</a>.</p>
+    de <a href="https://sespesoft.com/#servicios" target="_blank">servicios</a>.</p>
 </div>
 
 <div class="col-3">
