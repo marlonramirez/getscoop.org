@@ -18,20 +18,23 @@ class Structure
         $creator = $this->update($name, $command->getOption('schema', ''), $con);
         if ($creator->hasData()) {
             $creator->run();
-            $this->writer->writeLine('Structure changed!', \Scoop\Command\Style\Color::BLUE);
+            $this->writer->write('<done!Structure changed!!>');
         } else {
-            $this->writer->writeLine('Nothing to do!', \Scoop\Command\Style\Color::RED);
+            $this->writer->write('<info!Nothing to do!!>');
         }
     }
 
     public function help()
     {
-        echo 'Update database with the struct files', PHP_EOL, PHP_EOL,
-        'Options:', PHP_EOL,
-        '--schema => update only structs of a specific "schema"(folder)', PHP_EOL,
-        '--name => use a diferent database connection than "default"', PHP_EOL,
-        '--user => change the user of the database connection', PHP_EOL,
-        '--password => change the password of the database connection', PHP_EOL;
+        $this->writer->write(
+            'Update database with the struct files.',
+            '',
+            'Options:',
+            '--schema => update only structs of a specific "schema"(folder)',
+            '--name => use a diferent database connection than "default"',
+            '--user => change the user of the database connection',
+            '--password => change the password of the database connection'
+        );
     }
 
     private function createTable($con)
@@ -91,14 +94,14 @@ class Structure
         foreach ($files as $file) {
             $name = basename($file);
             if (!in_array($name, $structs)) {
-                echo 'File ', $file, '... ';
+                $this->writer->write(true, "File <link!$file!> ... ");
                 $content = file_get_contents($file);
                 if ($content) {
                     $con->exec($content);
                     $creator->create(array($name));
-                    $this->writer->writeLine('updated!', \Scoop\Command\Style\Color::GREEN);
+                    $this->writer->write('<success!updated!!>');
                 } else {
-                    $this->writer->writeLine('pending!', \Scoop\Command\Style\Color::YELLOW);
+                    $this->writer->write('<alert!pending!!>');
                 }
             }
         }

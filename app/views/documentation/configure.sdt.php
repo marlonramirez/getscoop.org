@@ -51,16 +51,22 @@ aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mens
 Se pueden extender a otros archivos mediante <code>require</code> o carga perezosa.</p>
 
 <pre class="prettyprint">
-['routes' => require 'config/routes.php']
+['providers' => require 'config/providers.php']
 </pre>
 
 <h3 id="lazy-loading">Carga peresoza</h3>
 
 <p>Otra posibilidad de extender la configuración es mediante la carga peresoza de archivos, esta en vez de usar directamente
-un  método de importanción como <code>require</code> hace uso de claves como <code>import</code> o <code>json</code>.</p>
+un  método de importanción como <code>require</code> hace uso de claves como <code>import</code>, <code>instanceof</code>
+o <code>json</code>.</p>
 
 <pre class="prettyprint">
-['routes' => 'import:app/config/route']
+[
+    'messages' => [
+        'es' => 'import:app/config/lang/es',
+        'en' => 'import:app/config/lang/en'
+    ]
+]
 </pre>
 
 <p>Dentro de las diferencias a destacar en la carga peresoza es que se debe referenciar el archivo a cargar desde la raíz
@@ -68,6 +74,13 @@ del proyecto y no sobre el archivo donde se esta configurando el arreglo, la seg
 separar el método de carga con la url del archivo y la última es la ausencia de extención para el tipo de archivo, esto se
 debe a que cada método de carga tiene su propio tipo de extensión, así el método json solo cargara archivos con esta extensión,
 mientras import hará lo mismo con los archivos .php.</p>
+
+<p>El método <b>instanceof</b> lo que trata de hacer es capturar cualquier clase que implementé o extendidá la interface o clase
+especificada.</p>
+
+<pre class="prettyprint">
+['queryHandlers' => 'instanceof:App\Shared\Application\Query']
+</pre>
 
 <h3>app</h3>
 
@@ -159,8 +172,8 @@ parten de esta ruta principal.</p>
     <span class="anchor" id="routes">...</span>
 </h2>
 
-<p class="doc-alert">Desde la version <code>0.2.2</code> cambio drasticamente el sistema de enrutamiento
-del bootstrap, para favorecer la inclusión de proxies y alias en las rutas.</p>
+<p class="doc-danger">Desde la version <code>0.8</code> cambio drasticamente el sistema de enrutamiento
+hacia <a href="#app-routes">app/routes</a>.</p>
 
 <p>Dentro del archivo de rutas se establecen las propiedades que definen una URL, no es un sistema de ruteo
 simple como en anteriores versiones, si no que establece una serie de caracteristicas como la interceptación
@@ -312,6 +325,63 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
 ]
 </pre>
 
+<h2>
+    <a href="#app-routes">app/routes</a>
+    <span class="anchor" id="app-routes">...</span>
+</h2>
+
+<p>Se ha tratado de simplificar y mejorar el sistema de enrutamiento inspirados en el manejado por NextJS.
+De esta manera se basa en el sistema de archivos para la generación de las rutas lo primero es definir la carpeta 
+que servira como base del enrutamiento, por defecto es app/routes pero puede ser configurada con el key <code>routes</code>.</p>
+
+<p>Desde esta carpeta se empezaran a crear los archivos que conformaran el sistema de enrutamiento, estos son basicamente <code>endpoint.php</code>
+y <code>midlewares.php</code> cada carpeta del sistema se tomara como parte de la url, el archivo endpoint servira como enrutador hacia el controlador
+y contará con un id para continuar manejando la identificación de rutas; en caso de contar con la key id esta ruta no se indexara y no podra ser
+identificada de manera dinamica para conocer su ubicación.</p>
+
+<p>De esta manera el archivo <code>app/routes/endpoint.php</code> llevara a un contenido como el siguiente.</p>
+
+<pre class="prettyprint">
+return [
+    'id' => 'home',
+    'controller' => 'App\Infraestructure\Controller\Get'
+];
+</pre>
+
+<p>De igual manera se puede seguir usando el sistema para dividir peticiones en diferentes controladores.</p>
+
+<pre class="prettyprint">
+return [
+    'controller' => [
+        'get' => 'Controller\UserReader',
+        'post' => 'Controller\UserCreator',
+        'put' => 'Controller\UserUpdater',
+        'delete' => 'Controller\UserRemover'
+    ]
+];
+</pre>
+
+<p>El otro archivo es midlewares que a diferencia de los proxies manejados en anteriores versiones si usa el standard
+<a href="https://www.php-fig.org/psr/psr-15/">PSR15</a>.</p>
+
+<pre class="prettyprint">
+return [
+    '*' => ['App\Infraestructure\Midleware\Auth']
+];
+</pre>
+
+<p>Como se puede observar no es una simple lista de midleware a ejecutar dentro de la ruta indicada, si no que tiene una key
+para identificar a que sub-rutas se les debe aplicar los midlewares; usando el comodin <b>*</b> se puede aplicar a todas. En caso de
+agrupar varias rutas se puede hacer con el separador pipe(|).</p>
+
+<pre class="prettyprint">
+return [
+    'admin|secret' => ['App\Infraestructure\Midleware\Auth']
+];
+</pre>
+
+<p>Con estas simples instrucciones se modifica el sistema antiguo de configuración mediante arrays, facilitando tanto el uso como la
+organización, ya que ahora no sera posible crear en un solo array todo el sistema de rutas.</p>
 
 <h2>
     <a href="#ioc">Inversión de control</a>

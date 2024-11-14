@@ -6,8 +6,9 @@ class Environment
 {
     private static $sessionInit = false;
     private static $loaders = array(
-        'import' => '\Scoop\Bootstrap\Loader\Import',
-        'json' => '\Scoop\Bootstrap\Loader\Json'
+        'import' => 'Scoop\Bootstrap\Loader\Importer',
+        'json' => 'Scoop\Bootstrap\Loader\JsonParser',
+        'instanceof' => 'Scoop\Bootstrap\Loader\TypeMapper'
     );
     private static $version;
     private $router;
@@ -23,11 +24,12 @@ class Environment
             'data' => array()
         );
         if (isset($_SERVER['HTTP_HOST'])) {
-            $http = !empty($_SERVER['HTTPS']) &&
-                $_SERVER['HTTPS'] !== 'off' ||
-                $_SERVER['SERVER_PORT'] == 443 ? 'https:' : 'http:';
+            $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
+            (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
             define('ROOT', $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
+        define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
         self::$loaders += $this->getConfig('loaders', array());
     }
 

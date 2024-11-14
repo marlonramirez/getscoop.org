@@ -5,7 +5,7 @@
     "forwardPorts": [8000, 8001],
     "workspaceFolder": "/app",
     "shutdownAction": "stopCompose",
-    "postStartCommand": "npm install && composer install && npm run dev",
+    "postStartCommand": "npm install && composer install && php app/ice dbup && npm run dev",
 	"customizations": {
 		"vscode": {
 			"extensions": [

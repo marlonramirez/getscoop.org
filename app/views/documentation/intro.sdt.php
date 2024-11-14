@@ -8,14 +8,19 @@ básicos hasta llegar a los más complejos. Actualmente existe un roadmap con va
     <li><b>[v0.7]</b> Sobreescribir la configuración del entorno (testing e internacionalización).</li>
     <li><b>[v0.7]</b> Soportar uso de herencia con discriminator map en los value objects (state pattern).</li>
     <li><b>[v0.7]</b> Ajustar que no lance excepción si no se ha definido una propiedad para la relación (EPM).</li>
+    <li><s><b>[v0.7]</b> Crear nuevo cargador tipo <i>instanceOf</i> para cargar automaticamente las clases que implementen una interface o extienden una clase.</s></li>
+    <li><b>[v0.7]</b> Implementación de customTypes para el mapeo de entidades (EPM).</li>
+    <li><b>[v0.8]</b> Cambiar la creación de componentes para hacerlo más usable estilo &lt;s-message /&gt;.</li>
     <li><b>[v0.8]</b> Modificar el sistema de excepciones, para que cada excepción pueda manejar su propia parametrización.</li>
+    <li><b>[v0.8]</b> Cambiar la ejecución de dbup para que implemente RecursiveDirectoryIterator + RegexIterator en vez de glob y que ejecute solo la raz s no se pasa schema.</li>
     <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-16/" target="_blank">PSR-16</a> para almacenar en memoria las entidades (UPCu) y separar el sistema IoC del caché.</li>
     <li><b>[v0.8]</b> Cambiar el sistema de empaquetado para los assets (Rolldown, <i>RSpack, Farm</i> o Mako).</li>
+    <li><b>[v0.8]</b> Obtener un objeto tipado desde el Payload (request) <code>$request->getBody($validator)->to(\App\Aplication\DTO::class)</code>.</li>
     <li><b>[v0.8]</b> Iniciar con la implementación de <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a> (Response).</li>
     <li><b>[v0.8]</b> Implementar multiples bounded context.</li>
     <li><b>[v0.8]</b> Implementar el sistema de bridges (comunicación entre bounded context).</li>
     <li><b>[v0.8]</b> Implementar <a href="https://www.php-fig.org/psr/psr-15/" target="_blank">PSR-15</a>.</li>
-    <li><b>[v0.9]</b> Modificar el sistema de enrutamiento a un sisema de carpetas (como el de NextJS)</li>
+    <li><b>[v0.8]</b> Modificar el sistema de enrutamiento a un sisema de carpetas (similar a NextJS)</li>
     <li><b>[v0.9]</b> Implementar completamente <a href="https://www.php-fig.org/psr/psr-7/" target="_blank">PSR-7</a>.</li>
     <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-17/" target="_blank">PSR-17</a>.</li>
     <li><b>[v0.9]</b> Implementar <a href="https://www.php-fig.org/psr/psr-18/" target="_blank">PSR-18</a>.</li>
@@ -205,10 +210,10 @@ se deben instalar las librerias o dependencias tanto javascript como PHP ingresa
 <pre class="prettyprint">npm install && composer install && npm run dev</pre>
 
 <h3>Producción</h3>
-<pre class="prettyprint">npm install &&  composer install --optimize-autoloader --no-dev && npm start</pre>
+<pre class="prettyprint">npm install && composer install --optimize-autoloader --no-dev && npm start</pre>
 
-<p>Al ejecutar modo producción la aplicación no se queda en escucha si no que realiza la minificación de archivos Javascript y CSS,
-para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> el comando levantara un
+<p>Al ejecutar modo producción la aplicación no se queda en escucha si no que realiza la minificación de archivos Javascript y CSS.
+Para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> el comando levantara un
 proxy hot-reload que por defecto apunta a un servidor php built creado desde gulp. Para apuntar el proxy
 a un host diferente se debe configurara la variable de entorno <code>PHP_HOST</code>.</p>
 

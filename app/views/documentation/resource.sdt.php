@@ -59,7 +59,7 @@
 
 <pre class='prettyprint'>
 [
-    'valut' => ['secret' => 'myP4ssw0rd', 'encoding' => 'hex']
+    'vault' => ['secret' => 'myP4ssw0rd', 'encoding' => 'hex']
 ]
 </pre>
 
