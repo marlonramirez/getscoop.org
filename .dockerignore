@@ -2,6 +2,7 @@
 .git
 **/node_modules/
 **/vendor/
+!app/vendor
 Dockerfile
 .devcontainer/
 !.devcontainer/etc/

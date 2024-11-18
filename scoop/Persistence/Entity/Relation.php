@@ -24,13 +24,13 @@ class Relation
     public function add($entity, $object, $relations)
     {
         foreach ($relations as $name => $relation) {
+            if (!$object->hasProperty($name)) continue;
             $property = $object->getProperty($name);
+            if (!$property->isInitialized($entity)) continue;
             $property->setAccessible(true);
             $relationEntity = $property->getValue($entity);
             list($relationName, $mapperKey) = $this->getPropertyRelation($relation);
-            if (!$relationEntity) {
-                continue;
-            }
+            if (!$relationEntity) continue;
             if (is_array($relationEntity)) {
                 foreach ($relationEntity as $e) {
                     if ($this->mapper->isMarked($e)) continue;
