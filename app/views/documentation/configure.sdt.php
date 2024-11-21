@@ -167,6 +167,14 @@ parten de esta ruta principal.</p>
 <code>public/css/stylesheeet.css</code> y para acceder a esta desde una vista basta con solo colocar
 <code>&#123;{#view->css('stylesheet.css')}&#125;</code>, por defecto se usa la configuración de ejemplo para ubicar los assets.</p>
 
+<h3>Lenguaje</h3>
+
+<p>Para configurar un idioma por defecto diferente al español se debe crear una key <code>lang</code> con valor del idioma a cargar en messages.</p>
+
+<pre class="prettyprint">
+['lang' => 'es']
+</pre>
+
 <h2>
     <a href="#routes">Rutas</a>
     <span class="anchor" id="routes">...</span>

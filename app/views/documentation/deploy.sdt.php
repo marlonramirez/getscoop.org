@@ -39,11 +39,29 @@
 </h2>
 
 <p>
-    Para asgurarnos que las reglas de estilos, análisis estático y pruebas ocurran sin configurar pipelines de CI/CD 
+    Para asegurarnos que las reglas de estilos, análisis estático y pruebas ocurran sin configurar pipelines de CI/CD 
     o igual teniendo la configuración pero obteniendo un resultado inmediato; debemos hacer uso de hooks, para esto 
     nos podemos apoyar en grumphp.
 </p>
 
 <pre class="prettyprint">
 composer require --dev phpro/grumphp-shim
+</pre>
+
+<p>Luego configuramos el archivo <code>grumphp.yml</code></p>
+
+<pre class="prettyprint">
+grumphp:
+    process_timeout: null
+    tasks: 
+        phpcs:
+            standard: [app/phpcs.xml]
+            whitelist_patterns:
+                - /^src\/(.*)/
+        phpstan:
+            configuration: app/phpstan.neon
+            ignore_patterns:
+                - /^scoop\/(.*)/
+        phpunit:
+            config_file: app/phpunit.xml
 </pre>

@@ -113,3 +113,10 @@ class Creator
     }
 }
 </pre>
+
+<h2>
+    <a href='#i18n'>Internacionalización</a>
+    <span class='anchor' id='i18n'>...</span>
+</h2>
+
+

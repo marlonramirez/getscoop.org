@@ -159,6 +159,27 @@ consulta realizada.</p>
 
 <h3>Entidades</h3>
 
+<p>Dentro del key <code>entities</code> se debe generar el mapeo con cada una de las clases que representa la entidad
+dentro de la aplicación, las keys principales en esta configuración son <code>table</code> y <code>properties</code>. Dentro
+de table se coloca el nombre de la tabla, este valor es obligatorio para realizar el correcto mapeo de entidades.</p>
+
+<p>Dentro de properties defino cada propiedad de la entidad, el unico valor obligatorio en este punto es el tipo, como tipo
+se puede definir los siguientes:</p>
+
+<ul>
+    <li>string</li>
+    <li>int</li>
+    <li>numeric</li>
+    <li>date</li>
+    <li>bool</li>
+    <li>serial</li>
+</ul>
+
+<p>Si se coloca un tipo de dato diferente a los especificados o a un custom type el sistema tratara de inferir el tipo. El resto de elementos
+para la definición de properties como la columna(column) son opcionales y/o dependen del tipo que se esta asignanado. En el caso de
+column si se establece este sera el nombre que buscara dentro de la base de datos, en caso de no definirse se convertira en snake case
+la propiedad y este sera el nombre que buscará</p>
+
 <pre class="prettyprint">
 [
     'entities' => [
@@ -166,7 +187,6 @@ consulta realizada.</p>
             'table' => 'public.invoices',
             'properties' => [
                 'id' => ['type' => 'serial'],
-                'state' => ['type' => 'smallint'],
                 'number' => ['type' => 'string', 'length' => 20],
                 'customer' => ['type' => 'int', 'column' => 'customer_id']
             ]
@@ -175,7 +195,55 @@ consulta realizada.</p>
 ]
 </pre>
 
+<p>Las entidades por defecto esperan que exista una propiedad id, de no ser así se debe especificar cual de todas las propiedades
+va a funir como identificar de la entidad, esto se realiza mediante el key <code>id</code>.</p>
+
+<pre class="prettyprint">
+[
+    'entities' => [
+        Invoice::class => [
+            'table' => 'public.invoices',
+            'id' => 'invoiceId'
+            'properties' => [
+                'invoiceId' => ['type' => 'serial']
+            ]
+        ]
+    ]
+]
+</pre>
+
+<p>Si se ve en la necesidad de distinguir clases que implementen herencia se debe configurar un <code>discriminator</code>, este
+es una columna dentro de la tabla que no carga en la entida pero que indica que tipo de clase debe generarse. El map como
+debo mapear el valor e la base de datos a la clase que debo instanciar, en caso que el dato guardado no corresponda a ninguno de
+los mapeados se tratara de instanciar una clase del tipo especificado, en el caso presentacod a continuación esta clase sería
+<code>Invoice</code>.</p>
+
+<pre class="prettyprint">
+[
+    'entities' => [
+        Customer::class => [
+            'table' => 'public.customers',
+            'discriminator' => [
+                'column' => 'type',
+                'map' => [
+                    PremiumCustomer::class => 1
+                ]
+            ],
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'name' => ['type' => 'string', 'length' => 20]
+            ]
+        ]
+    ]
+]
+</pre>
+
 <h3>Relaciones</h3>
+
+<p>Otra key que se debe configurar dentro de la entidad es <code>relations</code>, esta me define todas las entiades que maneja esa entidad
+en concreto como key de la relación se debe colocar el mismo nombre de la propiedad y como valor un array de tres pocisiones en el cual
+la primera posición representa la clase con la cual se relaciona, la seguna el campo que recibe la relación en la otra entidad (en caso de existir),
+la última posición representa el tipo de relacvión que se establece: ONE_TO_MANY, MANY_TO_MANY y MANY_TO_ONE.</p>
 
 <pre class="prettyprint">
 [
@@ -198,6 +266,12 @@ consulta realizada.</p>
 ]
 </pre>
 
+<p>Caso aparte merecen las relaciones MANY_TO_MANY, pues estas deben ser definidas fuera de la entidad en su propia key <code>relations</code>
+en estas se deben definir el nombre de la relación que luego debera ser usada dentro de la relación e la entiad despues del caracter <code>:</code>
+en el segundo parametro de la misma. Una vez definida la key de la relación deben estabecer las key <code>table</code> y <code>entities</code>
+en la primera se coloca la tabla que sirve como tabla de "rompomiento" en la base de datos, en a segunda key se definen las entidades que se relacionan,
+cada una definiendo su tipo(type) y columna(column).</p>
+
 <pre class="prettyprint">
 [
     'relations' => [
@@ -212,10 +286,70 @@ consulta realizada.</p>
 ]
 </pre>
 
-<h3>Value Objects</h3>
+<h3>Custom types</h3>
 
 <pre class="prettyprint">
 [
+    'entities' => [
+        Customer::class => [
+            'table' => 'public.customers',
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'name' => ['type' => 'string', 'length' => 20],
+                'state' => ['type' => 'state']
+            ]
+        ]
+    ],
+    'types' => ['state' => State::class]
+]
+</pre>
+
+<pre class="prettyprint">
+class State extends Integer
+{
+    public function disassemble(mixed $value): int
+    {
+        if (is_int($value)) {
+            return $value;
+        }
+        return match (true) {
+            $value instanceof ActiveState => 0,
+            $value instanceof InactiveState => 1,
+            default => 1
+        };
+    }
+
+    public function assemble(mixed $value): StateValue
+    {
+        return match ($value) {
+            0 => new ActiveState(),
+            1 => new InactiveState(),
+            default => new ActiveState()
+        };
+    }
+}
+</pre>
+
+<h3>Value Objects</h3>
+
+<p>A parte de los tipos predefinidos para cada entidad o los custom types tambien se puede usar los value objects como tipo de una
+propiedad, para esto se debe definir dentro del grupo de <code>values</code> con las propiedades del value object que continenen a
+su vez el tipo y la columna (de ser necesaria).</p>
+
+<pre class="prettyprint">
+[
+    'properties' => [
+        Customer::class => [
+            'table' => 'public.customers',
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'name' => ['type' => 'string', 'length' => 20],
+                'address' => ['type' => Address::class],
+                'email' => ['type' => Email::class],
+                'state' => ['type' => 'state']
+            ]
+        ]
+    ],
     'values' => [
         Email::class => [
             'value' => ['type' => 'string', 'length' => 60]
