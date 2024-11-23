@@ -2,6 +2,7 @@
     <li><a href='#monitoring'>Monitoreo</a></li>
     <li><a href='#crypt'>Sistema de encriptación</a></li>
     <li><a href='#ice'>Interface Command Environment (ICE)</a></li>
+    <li><a href='#i18n'>Internacionalización</a></li>
 </ul>
 
 <h2>
@@ -119,4 +120,34 @@ class Creator
     <span class='anchor' id='i18n'>...</span>
 </h2>
 
+<p>El idioma de la aplicación se puede configurar por defecto desde el <a href="{{#view->route('doc', 'configuration')}}#basic-config">array de configuración</a>.
+Si se desea realizar modificaciones del idioma de manera dinámica se puede hacer uso del método <code>useLenguage</code> del contexto;
+para esto se pueden usar técnicas como el uso de midlewares.</p>
 
+<p class="doc-danger">El siguiente ejemplo simula el uso de midlewares seún <a href="https://www.php-fig.org/psr/psr-15/">PSR-15</a>
+que aún no ha sido implementado y puede ser suceptible a cambios.</p>
+
+<pre class="prettyprint">
+class Midleware
+{
+    public function __construct(
+        private \Scoop\Bootstrap\Configuration $conf
+    ) {
+    }
+
+    public function process($request, $handler)
+    {
+        $this->conf->setLenguage($request->getVariable('lang'));
+        $handler->handle($request);
+    }
+}
+</pre>
+
+<p>Las traducciones que maneja el sistema son:</p>
+
+<ul>
+    <li>Mensajes de error en la clase <code>\Scoop\Validator</code>, para esto se hace uso de la clase que realiza la validación.</li>
+    <li>Campos de los mensajes en la clase <code>\Scoop\Validator</code>, para esto se hace uso del nombre del campo.</li>
+    <li>Excepciones lanzadas y no controladas, para esto se hace uso del codigo de la excepción.</li>
+    <li>Mensajes en las vistas mediante el helper <code>#view->translate($msg)</code></li>
+</ul>

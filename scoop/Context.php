@@ -25,8 +25,10 @@ class Context
                 self::$loader->register(true);
             }
         }
-        self::$environment = new \Scoop\Bootstrap\Environment($configPath);
-        self::configure();
+        self::configureInjector(
+            new \Scoop\Bootstrap\Environment($configPath)
+        );
+        self::inject('Scoop\Bootstrap\Configuration')->setUp();
     }
 
     public static function connect($bundle = 'default', $options = array())
@@ -57,7 +59,9 @@ class Context
         foreach (self::$connections as $connection) {
             $connection->rollBack();
         }
-        self::configureInjector();
+        self::configureInjector(
+            self::inject('Scoop\Bootstrap\Environment')
+        );
     }
 
     /**
@@ -69,6 +73,7 @@ class Context
     }
 
     /**
+     * @deprecated [7.4] Inject \Scoop\Bootstrap\Environment
      * @return \Scoop\Bootstrap\Environment
      */
     public static function getEnvironment()
@@ -99,24 +104,14 @@ class Context
         ), $config);
     }
 
-    private static function configure()
+    private static function configureInjector($environment)
     {
-        self::configureInjector();
-        $lang = self::$environment->getConfig('language', 'es');
-        \Scoop\Validator::setMessages(
-            self::$environment->getConfig('messages.' . $lang . '.fail', array()),
-            self::$environment->getConfig('messages.' . $lang . '.fields', array())
-        );
-        \Scoop\View::registerComponents(self::$environment->getConfig('components', array()));
-    }
-
-    private static function configureInjector()
-    {
-        $injector = self::$environment->getConfig('injector', '\Scoop\Container\BasicInjector');
+        $injector = $environment->getConfig('injector', '\Scoop\Container\BasicInjector');
         $baseInjector = '\Scoop\Container\Injector';
-        self::$injector = new $injector(self::$environment);
+        self::$environment = $environment;
+        self::$injector = new $injector($environment);
         if (!(self::$injector instanceof $baseInjector)) {
-            throw new \UnexpectedValueException($injector . ' not implement ' . $baseInjector);
+            throw new \UnexpectedValueException("$injector not implement $baseInjector");
         }
     }
 }

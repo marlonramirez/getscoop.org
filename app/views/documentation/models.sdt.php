@@ -18,7 +18,7 @@ deja definir una estrategía propia al momento de usar una arquitectura(Hexagona
     <li><a href="#structs">structs</a></li>
     <li><a href="#sqo">Query Objects (SQO)</a></li>
     <li><a href="#epm">Entity Persistence Manager (EPM)</a></li>
-    <li><a href="#repository">Repositorios</a></li>
+    <li><a href="#repositories">Repositorios</a></li>
     <li><a href="#dsl">Criteria (DSL)</a></li>
 </ul>
 
@@ -103,7 +103,7 @@ $bookSQO->create([
 <h3>Lectura</h3>
 <pre class="prettyprint">
 $bookSQO->read()
-    ->filter('name like %:name%')}
+    ->filter('name like %:name%')
     ->restrict('year = 2009')
     ->run();
 </pre>
@@ -212,32 +212,6 @@ va a funir como identificar de la entidad, esto se realiza mediante el key <code
 ]
 </pre>
 
-<p>Si se ve en la necesidad de distinguir clases que implementen herencia se debe configurar un <code>discriminator</code>, este
-es una columna dentro de la tabla que no carga en la entida pero que indica que tipo de clase debe generarse. El map como
-debo mapear el valor e la base de datos a la clase que debo instanciar, en caso que el dato guardado no corresponda a ninguno de
-los mapeados se tratara de instanciar una clase del tipo especificado, en el caso presentacod a continuación esta clase sería
-<code>Invoice</code>.</p>
-
-<pre class="prettyprint">
-[
-    'entities' => [
-        Customer::class => [
-            'table' => 'public.customers',
-            'discriminator' => [
-                'column' => 'type',
-                'map' => [
-                    PremiumCustomer::class => 1
-                ]
-            ],
-            'properties' => [
-                'id' => ['type' => 'serial'],
-                'name' => ['type' => 'string', 'length' => 20]
-            ]
-        ]
-    ]
-]
-</pre>
-
 <h3>Relaciones</h3>
 
 <p>Otra key que se debe configurar dentro de la entidad es <code>relations</code>, esta me define todas las entiades que maneja esa entidad
@@ -282,11 +256,16 @@ cada una definiendo su tipo(type) y columna(column).</p>
                 Payment::class => ['type' => 'int', 'column' => 'payment_id']
             ]
         ]
-    ]
+        ]
 ]
 </pre>
 
 <h3>Custom types</h3>
+
+<p>Como se menciono anteriormente existen <a href="#epm">tipos definido</a> para las entidades, ero esto en ocaciones puede
+llegar a no ser suficiente por lo cual se pueden crear tipos personalizados. Para esto lo primero que se debe hacer es
+registrar el tipo en el key correspondiente colocando el nombre del tipo y la clase que lo implementa, ara hacer uso del tipo
+se debe usar con el nombre dentro e la entiad.</p>
 
 <pre class="prettyprint">
 [
@@ -303,6 +282,13 @@ cada una definiendo su tipo(type) y columna(column).</p>
     'types' => ['state' => State::class]
 ]
 </pre>
+
+<p>Implementar un tipo es crear una clase con los métodos <code>assemble</code> y <code>disassemble</code>; el primero
+es para ingresar el dato desde la tabla a la entidad y el segundo para enviar el dato a la tabla; en este último
+se debe tener especial cuidado ues no solo viene el dato desde la entidad, el sistema usa este método de igual manera
+para saber que dato se encuentra ersistido y realizar la comparación al momento de generar actualizaciones, esto
+quiere decir que disassemble se usa tanto para guardar de la entidad a la tabla como para normalizar los datos que se sacan
+de la tabla.</p>
 
 <pre class="prettyprint">
 class State extends Integer
@@ -337,7 +323,7 @@ propiedad, para esto se debe definir dentro del grupo de <code>values</code> con
 su vez el tipo y la columna (de ser necesaria).</p>
 
 <pre class="prettyprint">
-[
+    [
     'properties' => [
         Customer::class => [
             'table' => 'public.customers',
@@ -347,21 +333,59 @@ su vez el tipo y la columna (de ser necesaria).</p>
                 'address' => ['type' => Address::class],
                 'email' => ['type' => Email::class],
                 'state' => ['type' => 'state']
-            ]
+                ]
         ]
     ],
     'values' => [
         Email::class => [
             'value' => ['type' => 'string', 'length' => 60]
-        ],
-        Address::class => [
+            ],
+            Address::class => [
             'street' => ['type' => 'string'],
             'city' => ['type' => 'string'],
             'zip' => ['type' => 'string', 'column' => 'zip_code']
         ]
     ]
+    ]
+</pre>
+
+<h3>Herencia</h3>
+
+<p>La forma recomendable para el manejo de herencia es crear una tabla por subclase (Class Table Inheritance), para esto solo basta
+con mapear cada una de las tablas a cada clase y el sistema cuando halla la herencia sabe a que clase debe mapear cada propiedad.</p>
+
+<p class="doc-alert">Se debe tener en cuenta que usar discriminator no es lo más recomendado dado que el sistema debe conocer el valor
+de cada columna para saber que clase instanciar, esto hace que se realicen consultas extras a la base de datos. Una vez mencionado esto
+se puede decir que existen casos de uso interesantes para ente enfoque como el implementar el mapeo en una sola tabla (Single Table Inheritance)
+esto permite tener el discriminator sin la desventaja de realizar multiples consultas a la base de datos.</p>
+
+<p>Si se ve en la necesidad de distinguir clases que implementen herencia se debe configurar un <code>discriminator</code>, este
+es una columna dentro de la tabla que no carga en la entida pero que indica que tipo de clase debe generarse. El map como
+debo mapear el valor e la base de datos a la clase que debo instanciar, en caso que el dato guardado no corresponda a ninguno de
+los mapeados se tratara de instanciar una clase del tipo especificado, en el caso presentacod a continuación esta clase sería
+<code>Invoice</code>.</p>
+
+<pre class="prettyprint">
+[
+    'entities' => [
+        Customer::class => [
+            'table' => 'public.customers',
+            'discriminator' => [
+                'column' => 'type',
+                'map' => [
+                    PremiumCustomer::class => 1
+                ]
+            ],
+            'properties' => [
+                'id' => ['type' => 'serial'],
+                'name' => ['type' => 'string', 'length' => 20]
+            ]
+        ]
+    ]
 ]
 </pre>
+
+<p class="doc-danger">En futuras versiones se puede implementar una única tabla por subclase (Concrete Table Inheritance).</p>
 
 <h2>
     <a href="#repositories">Repositorios</a>

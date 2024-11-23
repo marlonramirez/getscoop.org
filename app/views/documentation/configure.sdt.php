@@ -127,7 +127,7 @@ los suministrados por PDO.</p>
 <h3>messages</h3>
 
 <p>Por defecto scoop mostrara un mensaje si este no se encuentra dentro del archivo de configuración, se pueden
-manejar técnicas de internacionalización realizando la respectiva separación de mensajes por idioma, este tema
+manejar técnicas de <a href="{{#view->route('doc', 'resources')}}#i18n">internacionalización</a> realizando la respectiva separación de mensajes por idioma, este tema
 escapa al manejo de la herramienta, pero presta las condiciones para su implementación.</p>
 
 <pre class="prettyprint">

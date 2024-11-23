@@ -38,8 +38,8 @@ terneario.</p>
 </pre>
 
 <h2>
-    <a href="#control-structure">Estructuras de control</a>
-    <span class="anchor" id="control-structure">...</span>
+    <a href="#control">Estructuras de control</a>
+    <span class="anchor" id="control">...</span>
 </h2>
 <p>Existen diferentes estructuras de control que pueden ser usadas desde una vista, estas no difieren mucho de las que se pueden
 manejar directamente desde PHP, pero si se diferencian en su forma de uso, de esta manera cada apertura o cierre de la
@@ -123,8 +123,8 @@ signo <code>:&lt;end&gt;</code>.</p>
 </pre>
 
 <h2>
-    <a href="#special-structure">Estructuras especiales</a>
-    <span class="anchor" id="special-structure">...</span>
+    <a href="#special">Estructuras especiales</a>
+    <span class="anchor" id="special">...</span>
 </h2>
 
 <h3>&#64;extends</h3>

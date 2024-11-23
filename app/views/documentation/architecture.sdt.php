@@ -73,7 +73,7 @@ desde división por infraestructura y dominio, como por separación de artefacto
 
 <h2>
     <a href="#lifecycle">Ciclo de vida de una petición</a>
-    <span class="anchor" id="#lifecycle">...</span>
+    <span class="anchor" id="lifecycle">...</span>
 </h2>
 
 <pre class="prettyprint">
@@ -104,13 +104,27 @@ class Home extends Controller
 
 <h2>
     <a href="#validations">Validaciones</a>
-    <span class="anchor" id="#lifecycle">...</span>
+    <span class="anchor" id="validations">...</span>
 </h2>
+
+<pre class="prettyprint">
+class UserValidator extends \Scoop\Validator
+{
+    public function validate($data): bool
+    {
+        $required = new Required();
+        $this->add('name', $required, new MinLength(8), new MaxLength(40))
+        ->add('password', $required, new Same('password2'));
+        ->add('password2', $required);
+        return parent::validate($data);
+    }
+}
+</pre>
 
 <pre  class="prettyprint">
 public function post()
 {
-    $dto = $this->getRequest()->getBody($this->validation);
+    $dto = $this->getRequest()->getBody($this->userValidator);
     $invoice = $this->useCase->execute($dto);
     return 'Factura ' . $invoice['id'] . ' creada';
 }
@@ -118,20 +132,20 @@ public function post()
 
 <h2>
     <a href="#inject">Inyección de dependencias</a>
-    <span class="anchor" id="#lifecycle">...</span>
+    <span class="anchor" id="inject">...</span>
 </h2>
 
 <pre class="prettyprint">
-public function __construct(CreateInvoiceUseCase $useCase, InvoiceValidator $validator)
-{
-    $this->useCase = $useCase;
-    $this->validator = $validator;
+public function __construct(
+    private CreateInvoiceUseCase $useCase,
+    private InvoiceValidator $validator
+) {
 }
 </pre>
 
 <h2>
     <a href="#events">Eventos</a>
-    <span class="anchor" id="#lifecycle">...</span>
+    <span class="anchor" id="events">...</span>
 </h2>
 
 <pre class="prettyprint">

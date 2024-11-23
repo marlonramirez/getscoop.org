@@ -3,13 +3,6 @@ básicos hasta llegar a los más complejos. Actualmente existe un roadmap con va
 
 <ul>
     <li>Complementar esta guia, si deseas ayudar realizá un pull request en <a href="https://github.com/marlonramirez/getscoop.org" target="_blank">github</a>.</li>
-    <li><s><b>[v0.7]</b> Cambiar el sistema de controladores (Http\Controller? command\Controller).</s></li>
-    <li><s><b>[v0.7]</b> Implementar el sistema de factorias (se eliminaron los tags, ya que no tenian sentido con las factorias).</s></li>
-    <li><b>[v0.7]</b> La configuración interna debe ser inmutable, pero se debe configurar el idioma desde otra parte como el contexto.</li>
-    <li><s><b>[v0.7]</b> Soportar uso de herencia con discriminator map (solo entidades), los value objects (state pattern) usan Types.</s></li>
-    <li><s><b>[v0.7]</b> Ajustar que no lance excepción si no se ha definido una propiedad para la relación (EPM).</s></li>
-    <li><s><b>[v0.7]</b> Crear nuevo cargador tipo <i>instanceOf</i> para cargar automaticamente las clases que implementen una interface o extienden una clase.</s></li>
-    <li><s><b>[v0.7]</b> Implementación de customTypes para el mapeo de entidades (EPM).</s></li>
     <li><b>[v0.8]</b> Cambiar la creación de componentes para hacerlo más usable estilo &lt;sc-message /&gt;.</li>
     <li><b>[v0.8]</b> Modificar el sistema de enrutamiento a un sisema de carpetas (similar a NextJS)</li>
     <li><b>[v0.8]</b> Modificar el sistema de excepciones, para que cada excepción pueda manejar su propia parametrización.</li>
