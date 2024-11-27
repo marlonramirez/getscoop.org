@@ -23,11 +23,10 @@ no solo genera el entorno si no el cargador de namespaces y el injector de depen
 del archivo de configuración al momento de cargar el contexto. Una vez definido el contexto se puede instanciar
 la aplicación.</p>
 
-<pre class="prettyprint">
-\Scoop\Context::load('app/config');
+<pre><code class="language-php">\Scoop\Context::load('app/config');
 $app = new \Scoop\Bootstrap\Application();
 echo $app->run();
-</pre>
+</code></pre>
 
 <p>Cuando un contexto es establecido se puede acceder al entorno mediante su método
 <code>\Scoop\Context::getEnvironment()</code>, al cargador mediante <code>\Scoop\Context::getLoader()</code> y
@@ -50,9 +49,7 @@ echo $app->run();
 aquí se encuentran datos para el acceso al sistema de persistencia, rutas, mensajes de error, entre muchos más.
 Se pueden extender a otros archivos mediante <code>require</code> o carga perezosa.</p>
 
-<pre class="prettyprint">
-['providers' => require 'config/providers.php']
-</pre>
+<pre><code class="language-php">['providers' => require 'config/providers.php']</code></pre>
 
 <h3 id="lazy-loading">Carga peresoza</h3>
 
@@ -60,14 +57,13 @@ Se pueden extender a otros archivos mediante <code>require</code> o carga perezo
 un  método de importanción como <code>require</code> hace uso de claves como <code>import</code>, <code>instanceof</code>
 o <code>json</code>.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'messages' => [
         'es' => 'import:app/config/lang/es',
         'en' => 'import:app/config/lang/en'
     ]
 ]
-</pre>
+</code></pre>
 
 <p>Dentro de las diferencias a destacar en la carga peresoza es que se debe referenciar el archivo a cargar desde la raíz
 del proyecto y no sobre el archivo donde se esta configurando el arreglo, la segunda es el uso de <code>:</code> para
@@ -78,9 +74,7 @@ mientras import hará lo mismo con los archivos .php.</p>
 <p>El método <b>instanceof</b> lo que trata de hacer es capturar cualquier clase que implementé o extendidá la interface o clase
 especificada.</p>
 
-<pre class="prettyprint">
-['queryHandlers' => 'instanceof:App\Shared\Application\Query']
-</pre>
+<pre><code class="language-php">['queryHandlers' => 'instanceof:App\Shared\Application\Query']</code></pre>
 
 <h3>app</h3>
 
@@ -88,9 +82,7 @@ especificada.</p>
 encuentran variables como name y version, una tecnica que utiliza scoop para establecer variables es usar
 package.json como archivo de configuración.</p>
 
-<pre class="prettyprint">
-['app' => 'json:package']
-</pre>
+<pre><code class="language-php">['app' => 'json:package']</code></pre>
 
 <h3>db</h3>
 
@@ -98,8 +90,7 @@ package.json como archivo de configuración.</p>
 diferentes conexiones cada una de ellas debe ser establecida mediante db en el archivo de configuración, por defecto
 se usara la conexión default.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'db' => [
         'default' => [
             'database' => 'scoop',
@@ -119,7 +110,7 @@ se usara la conexión default.</p>
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <p class="doc-alert">Desde la versión <code>0.2.1</code> no se cuenta con soporte nativo para drivers diferentes a
 los suministrados por PDO.</p>
@@ -130,8 +121,7 @@ los suministrados por PDO.</p>
 manejar técnicas de <a href="{{#view->route('doc', 'resources')}}#i18n">internacionalización</a> realizando la respectiva separación de mensajes por idioma, este tema
 escapa al manejo de la herramienta, pero presta las condiciones para su implementación.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'messages' => [
         'es' => [
             'required' => 'Complete este campo',
@@ -143,7 +133,7 @@ escapa al manejo de la herramienta, pero presta las condiciones para su implemen
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <h3>asset</h3>
 
@@ -152,8 +142,7 @@ publicos de la aplicación (Archivos css, javascript, imagenes, etc). El uso de 
 la ruta principal de los archivos se ubica en <code>asset.path</code>, el resto de parametros son rutas relativas que
 parten de esta ruta principal.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'asset' => [
         'path' => 'public/',
         'css' => 'css/',
@@ -161,7 +150,7 @@ parten de esta ruta principal.</p>
         'img' => 'images/'
     ]
 ]
-</pre>
+</code></pre>
 
 <p>En el anterior ejemplo para referirse al archivo stylesheet.css se debe seguir la ruta
 <code>public/css/stylesheeet.css</code> y para acceder a esta desde una vista basta con solo colocar
@@ -171,9 +160,7 @@ parten de esta ruta principal.</p>
 
 <p>Para configurar un idioma por defecto diferente al español se debe crear una key <code>lang</code> con valor del idioma a cargar en messages.</p>
 
-<pre class="prettyprint">
-['lang' => 'es']
-</pre>
+<pre><code class="language-php">['lang' => 'es']</code></pre>
 
 <h2>
     <a href="#routes">Rutas</a>
@@ -201,13 +188,12 @@ ahora la clave es el alias de la ruta y el valor un array asociativo con las sig
         Se ha abandonado la idea de un enrutamiento hibrido o compartido por lo cual se deben especificar dentro
         de la ruta datos como los tipos de variables que seran suministradas al controlador.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'user' => [
         'url' => '/user/{var}/'
     ]
 ]
-</pre>
+</code></pre>
 
         <p>El uso de variables se limita a dos tipo: <code>{var}</code> e <code>{int}</code>, en el
         primero se puede suministrar cualquier tipo de dato consistente con el formato url y el segundo filtra solo
@@ -223,21 +209,19 @@ ahora la clave es el alias de la ruta y el valor un array asociativo con las sig
         de método, en su lugar se creo la propiedad <i>methods</i>. En la versión 0.6.1 se deprecio el uso de methods, así
         solo son permitidos métodos HTTP.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'user' => [
         'url' => '/user/&#123;var&#125;/',
         'controller' => 'Controller\User'
     ]
 ]
-</pre>
+</code></pre>
 
 <p class="doc-alert">Desde la version <code>0.6.1</code> es posible separar los métodos HTTP en diferentes controladores,
 esto beneficia el principio de single responsability. Cada una de las clases se puede implementar con el nombre del método http
 como funciona cuando se declara un solo controlador o con el método <code>__invoke</code> o incluso declarar directamente la función</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'user' => [
         'url' => '/user/&#123;var&#125;/',
         'controller' => [
@@ -254,7 +238,7 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         ]
     ]
 ]
-</pre>
+</code></pre>
     </li>
 
     <li><h3>proxy</h3>
@@ -262,8 +246,7 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         controlador, la interceptación de la petición es acumulativa, lo que quiere decir que todos los
         proxies establecidos en rutas anteriores son ejecutados en orden desde la ruta más corta hasta
         la más larga.</p>
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'user' => [
         'url' => '/user/{var}/',
         'proxy' => 'App\Interceptor\Verify'
@@ -273,7 +256,7 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         'proxy' => 'App\Interceptor\Auth'
     ]
 ]
-</pre>
+</code></pre>
         <p>Un proxy debe implementar el método <code>execute</code> al cual se le pasará como argumento petición interceptada,
         en el ejemplo anterior se ejecutara primero el Proxy <code>/App/Interceptor/Auth</code> seguido de
         <code>App\Interceptor\Verify</code>. Vale la pena mencionar que un Proxy no puede devolver ningún valor para su
@@ -288,14 +271,13 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         la propiedad route no es una practica recomendable dado que desde el principio se deberan cargar todas las rutas y
         de esta manera la carga peresoza perdera toda su utilidad.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'doc' => [
         'url' => '/documentation/'
         'routes' => require 'routes/docs.php'
     ]
 ]
-</pre>
+</code></pre>
 
     <p>Las url establecidas dentro de una subruta heredaran automaticamente la url de la ruta principal. De esta
     manera una url <code>routes/</code> dentro de la subruta <code>routes/docs</code> se accedera como
@@ -309,21 +291,19 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         de querer enmascarar el nombre del método o que varias peticiones compartan un controlador, se debe especificar en un
         arreglo el nombre del método http (get, post, put, delete...) en minuscula y el nombre del método del controlador.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'doc' => [
         'url' => '/documentation/'
         'routes' => require 'routes/docs.php',
         'methods' => ['get' => 'view']
     ]
 ]
-</pre>
+</code></pre>
     </li>
 </ul>
 
 <p>Todas estas propiedades se pueden combinar entre si, para generar un sistema robusto de enrutamiento.</p>
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'home' => [
         'url' => '/',
         'controller' => 'Controller\Home:get',
@@ -331,7 +311,7 @@ como funciona cuando se declara un solo controlador o con el método <code>__inv
         'routes' => require 'routes/main.php'
     ]
 ]
-</pre>
+</code></pre>
 
 <h2>
     <a href="#app-routes">app/routes</a>
@@ -349,17 +329,15 @@ identificada de manera dinamica para conocer su ubicación.</p>
 
 <p>De esta manera el archivo <code>app/routes/endpoint.php</code> llevara a un contenido como el siguiente.</p>
 
-<pre class="prettyprint">
-return [
+<pre><code class="language-php">return [
     'id' => 'home',
     'controller' => 'App\Infraestructure\Controller\Get'
 ];
-</pre>
+</code></pre>
 
 <p>De igual manera se puede seguir usando el sistema para dividir peticiones en diferentes controladores.</p>
 
-<pre class="prettyprint">
-return [
+<pre><code class="language-php">return [
     'controller' => [
         'get' => 'Controller\UserReader',
         'post' => 'Controller\UserCreator',
@@ -367,26 +345,24 @@ return [
         'delete' => 'Controller\UserRemover'
     ]
 ];
-</pre>
+</code></pre>
 
 <p>El otro archivo es midlewares que a diferencia de los proxies manejados en anteriores versiones si usa el standard
 <a href="https://www.php-fig.org/psr/psr-15/">PSR15</a>.</p>
 
-<pre class="prettyprint">
-return [
+<pre><code class="language-php">return [
     '*' => ['App\Infraestructure\Midleware\Auth']
 ];
-</pre>
+</code></pre>
 
 <p>Como se puede observar no es una simple lista de midleware a ejecutar dentro de la ruta indicada, si no que tiene una key
 para identificar a que sub-rutas se les debe aplicar los midlewares; usando el comodin <b>*</b> se puede aplicar a todas. En caso de
 agrupar varias rutas se puede hacer con el separador pipe(|).</p>
 
-<pre class="prettyprint">
-return [
+<pre><code class="language-php">return [
     'admin|secret' => ['App\Infraestructure\Midleware\Auth']
 ];
-</pre>
+</code></pre>
 
 <p>Con estas simples instrucciones se modifica el sistema antiguo de configuración mediante arrays, facilitando tanto el uso como la
 organización, ya que ahora no sera posible crear en un solo array todo el sistema de rutas.</p>
@@ -409,9 +385,7 @@ implementaciones, para esto scoop usa el método <code>bind</code> de la clase
 <code>\Scoop\IoC\Injector</code>, dicho método recibe dos párametros, el primero es el nombre de
 la interface y el segundo el nombre de la clase que implementa dicha interface.</p>
 
-<pre class="prettyprint">
-\Scoop\Context::getInjector()->bind('\App\Repository\Quote', '\App\Repository\QuoteArray');
-</pre>
+<pre><code class="language-php">\Scoop\Context::getInjector()->bind('\App\Repository\Quote', '\App\Repository\QuoteArray');</code></pre>
 
 <p class="doc-danger">Este método se encuentra @deprecated desde la versión 0..6.1 en favor del siguiente.</p>
 
@@ -420,22 +394,20 @@ IoC esta se traducira automaticamente a la clase <code>\App\Repository\QuoteArra
 archivos para separar logica de configuración, para tal fin se puede establecer un key providers cuyo valor sea un 
 par clave valor [inteface => class].</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'providers' => [
         'App\Repository\Quote' => 'App\Repository\QuoteArray',
         'Scoop\Log\Logger' => 'Scoop\Log\factory\Logger:create'
     ]
 ]
-</pre>
+</code></pre>
 
 <p>Desde la versión <code>0.7.4</code> se pueden usar factorias para la creación de los objetos, para esto se
 debe establecer el factory method mediante <b>:</b> como se observa en <code>Scoop\Log\factory\Logger:create</code>.
 Una vez establecidas las reglas de transformación de interfaces o factorias cada vez que se inyecten, el sistema de
 inversión sabra como resolverló.</p>
 
-<pre class="prettyprint">
-class Logger
+<pre><code class="language-php">class Logger
 {
     public function create()
     {
@@ -445,7 +417,7 @@ class Logger
         return new \Scoop\Log\Logger($factory);
     }
 }
-</pre>
+</code></pre>
 
 <h3 class="deprecated">Servicios</h3>
 <p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
@@ -456,19 +428,16 @@ el constructor, en cambio un servicio es nombrado y es posible acceder a este de
 
 <p class="doc-alert">Desde la versión 0.6.2 se pueden <a href="{{#view->route('doc', 'frontend')}}#services">inyectar dependencias en las vistas</a>.</p>
 
-<pre class="prettyprint">
-\Scoop\IoC\Service::register('auth', '\App\Controller\Auth');
-</pre>
+<pre><code class="language-php">\Scoop\IoC\Service::register('auth', '\App\Controller\Auth');</code></pre>
 
 <p>dentro del archivo de configuración se debe establecer un par [name => classService]</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'services' => [
         'auth' => '\App\Controller\Auth'
     ]
 ]
-</pre>
+</code></pre>
 
 <h2>
     <a href="#components">Componentes</a>
@@ -480,13 +449,12 @@ el uso de clases, cada componente tiene un nombre asociado dentro de la vista y 
 [name => classHandler] se puede usar dentro de un archivo de configuración asociado mediante la clase de entorno o el uso
 directo del método <code>\Scoop\View::registerComponents($components)</code>.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'components' => [
         'text' => 'App\Component\InputText'
     ]
 ]
-</pre>
+</code></pre>
 
 <p>Para usar un componente dentro de la vista se debe usar el método <code>&#123;{#view->compose{ComponentName}()}&#125;</code>.</p>
 
@@ -498,8 +466,7 @@ directo del método <code>\Scoop\View::registerComponents($components)</code>.</
 <p>Cualquier tipo de excepción puede ser mapeado a un error https mediante las keys <code>http.errors.${code}.exceptions</code>. Si se desea
 agregar más cabeceras se debe agregar el key headers al codigo de error, así como la configuración del titulo (en caso de manejar vistas).</p>
 
-<pre class="prettyprint">
-'http' => [
+<pre><code class="language-php">'http' => [
     'errors' => [
         401 => [
             'title' => 'User not authorized',
@@ -508,4 +475,4 @@ agregar más cabeceras se debe agregar el key headers al codigo de error, así c
         ]
     ]
 ]
-</pre>
+</code></pre>

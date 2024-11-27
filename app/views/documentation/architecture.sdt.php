@@ -24,7 +24,59 @@ dirigir el desarrollo.</p>
 <p>La estructura de directorios de scoop esta diseñada para dar un buen punto de arranque para el desarrollo de
 aplicaciones orientadas a la web. Exiten multiples fromas de configurar la estructura de directorios, pero la
 prestablecida es la más conveniente en la mayoria de los casos. Los archivos que se encuentran en la raíz del
-proyecto son configuraciones de terceros o como <code>index.php</code> arraque del proyecto.</p>
+proyecto son configuraciones de terceros o utilidades como <code>index.php</code> para el arraque del proyecto.</p>
+
+<pre><code class="language-shell">├─ .devcontainers
+|   ├─ etc
+|   |   ├─ httpd
+|   |   |    └─ custom.conf
+|   |   └─ php
+|   |        └─ php.ini
+|   ├─ devcontainer.json
+|   ├─ docker-compose.yml
+|   └─ Dockerfile
+├─ app
+|   ├─ config
+|   |    ├─ lang
+|   |    |    ├─ en.php
+|   |    |    └─ es.php
+|   |    ├─ routes.php
+|   |    └─ providers.php
+|   ├─ scripts
+|   ├─ storage
+|   ├─ styles
+|   ├─ views
+|   ├─ config.php
+|   ├─ ice
+|   ├─ phpcs.xml
+|   ├─ phpstan.neon
+|   ├─ phpunit.xml
+|   └─ router.php
+├─ node_modules
+├─ public
+|   ├─ css
+|   ├─ fonts
+|   ├─ images
+|   ├─ js
+|   ├─ favicon.ico
+|   ├─ humans.txt
+|   └─ robots.txt
+├─ scoop
+├─ src
+├─ tests
+├─ vendor
+├─ .dockignore
+├─ .gitattributes
+├─ .gitignore
+├─ .htaccess
+├─ composer.json
+├─ Dockerfile
+├─ gulpfile.js
+├─ index.php
+├─ jsconfig.json
+├─ package.json
+└─ README.md
+</code></pre>
 
 <h3>.devcontainers</h3>
 <p>Contiene los archivos de infraestructura que son utilizados tanto para configurar el entorno como para inyectar al contenedor docker;
@@ -76,8 +128,7 @@ desde división por infraestructura y dominio, como por separación de artefacto
     <span class="anchor" id="lifecycle">...</span>
 </h2>
 
-<pre class="prettyprint">
-&lt;?php
+<pre><code class="language-php">&lt;?php
 
 namespace App\Infrastructure\Controller;
 
@@ -100,15 +151,14 @@ class Home extends Controller
         return 'Factura ' . $invoice['id'] . ' creada';
     }
 }
-</pre>
+</code></pre>
 
 <h2>
     <a href="#validations">Validaciones</a>
     <span class="anchor" id="validations">...</span>
 </h2>
 
-<pre class="prettyprint">
-class UserValidator extends \Scoop\Validator
+<pre><code class="language-php">class UserValidator extends \Scoop\Validator
 {
     public function validate($data): bool
     {
@@ -119,37 +169,34 @@ class UserValidator extends \Scoop\Validator
         return parent::validate($data);
     }
 }
-</pre>
+</code></pre>
 
-<pre  class="prettyprint">
-public function post()
+<pre><code class="language-php">public function post()
 {
     $dto = $this->getRequest()->getBody($this->userValidator);
     $invoice = $this->useCase->execute($dto);
     return 'Factura ' . $invoice['id'] . ' creada';
 }
-</pre>
+</code></pre>
 
 <h2>
     <a href="#inject">Inyección de dependencias</a>
     <span class="anchor" id="inject">...</span>
 </h2>
 
-<pre class="prettyprint">
-public function __construct(
+<pre><code class="language-php">public function __construct(
     private CreateInvoiceUseCase $useCase,
     private InvoiceValidator $validator
 ) {
 }
-</pre>
+</code></pre>
 
 <h2>
     <a href="#events">Eventos</a>
     <span class="anchor" id="events">...</span>
 </h2>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'events' => [
         InvoiceCreated::class => [
             EmailInvoiceSender::class,
@@ -158,14 +205,13 @@ public function __construct(
     ]
 
 ]
-</pre>
+</code></pre>
 
-<pre class="prettyprint">
-public function execute()
+<pre><code class="language-php">public function execute()
 {
     $invoice = new Invoice('FE001');
     $this->repository->save($invoice);
     $this->eventDispatcher->dispatch(new InvoiceCreated($invoice));
     return $invoice;
 }
-</pre>
+</code></pre>

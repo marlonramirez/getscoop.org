@@ -18,3 +18,10 @@
         @import "documentation/$view"
     </section>
 </div>
+<script>
+hljs.addPlugin(
+  new CopyButtonPlugin({
+    lang: "es"
+  })
+);
+hljs.highlightAll();</script>

@@ -30,8 +30,7 @@ deja definir una estrategía propia al momento de usar una arquitectura(Hexagona
 conexiones, esto garantiza la homogeniedad en el tratamiento de datos. El uso y configuración de la conexión se manejea
 mediante la clase DBC acronimo de Data Base Connection y que se provee mediante los archivo de configuración.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'db' => [
         'default' => [
             'database' => 'scoop',
@@ -49,7 +48,7 @@ mediante la clase DBC acronimo de Data Base Connection y que se provee mediante 
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <p>En el ejemplo anterior se proveen dos conexiones diferentes, cada una empaquetada con un nombre clave;
 para usar alguna conexión se debe hacer uso de la clase <code>\Scoop\Context</code> e incovar el método
@@ -63,11 +62,11 @@ otro tipo de conexión diferente se debe enviar la clave de la conexión <code>\
 
 <h3>Creación</h3>
 
-<pre  class="prettyprint">php app/ice new struct --schema=auth --name=data</pre>
+<pre><code class="language-shell">php app/ice new struct --schema=auth --name=data</code></pre>
 
 <h3>Ejecución</h3>
 
-<pre  class="prettyprint">php app/ice dbup --name=default --schema=auth --user=postgres --password=$POSTGRES_PASSWORD</pre>
+<pre><code class="language-shell">php app/ice dbup --name=default --schema=auth --user=postgres --password=$POSTGRES_PASSWORD</code></pre>
 
 <h2>
     <a href="#sqo">Query Objects</a>
@@ -80,10 +79,7 @@ la base de datos.</p>
 
 <p>Al instanciar un objeto SQO es necesario pasar como parametro el nombre de la tabla principal
 <code>new \Scoop\Storage\SQO('book')</code>, si es necesario colocar un alias o manejar una conexión
-diferente a <i>default</i> se pueden usar dos argumentos más.</p>
-<pre class="prettyprint">
-$bookSQO = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');
-</pre>
+<pre><code class="language-php">$bookSQO = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');</code></pre>
 
 <p class="doc-alert">A partir de la versión 0.5.6 se envia el nombre de la conexión y no la conexión como en anteriores versiones</p>
 
@@ -92,60 +88,54 @@ pertenecen al CRUD y cada uno devuelve un objeto DML especifico para cada caso, 
 el último id insertado mediante el objeto.</p>
 
 <h3>Creación</h3>
-<pre class="prettyprint">
-$bookSQO->create([
+<pre><code class="language-php">$bookSQO->create([
     'name' => 'Angels & demons',
     'author' => 'Dan Brown',
     'year' => '2009'
 ])->run();
-</pre>
+</code></pre>
 
 <h3>Lectura</h3>
-<pre class="prettyprint">
-$bookSQO->read()
+<pre><code class="language-php">$bookSQO->read()
     ->filter('name like %:name%')
     ->restrict('year = 2009')
     ->run();
-</pre>
+</code></pre>
 
 <h3>Actualización</h3>
-<pre class="prettyprint">
-$bookSQO->update([
+<pre><code class="language-php">$bookSQO->update([
     'name' => 'Angels & demons',
     'author' => 'Dan Brown',
     'year' => '2009'
 ])->restrict('id = :id')->run();
-</pre>
+</code></pre>
 
 <h3>Eliminación</h3>
-<pre class="prettyprint">
-$bookSQO->delete()
+<pre><code class="language-php">$bookSQO->delete()
     ->restrict('id = :id')
     ->run();
-</pre>
+</code></pre>
 
 <h3>Paginación</h3>
 <p>De manera sencilla es posible paginar el resultado de una consulta mediante SQO, lo que se debe tener en cuenta
 es el arreglo que necesita el método page para funcionar.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'page' => 0,
     'size' => 12
 ]
-</pre>
+</code></pre>
 
 <p>Si no se suministra ninguno de estos valores, scoop tomara por defecto los acá descritos y retornara un arreglo asociativo
 con una estructura similar a la siguiente.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'page' => 0,
     'size' => 12,
     'result' => array(),
     'total' => 0
 ]
-</pre>
+</code></pre>
 
 <p>En donde page y size son los mismo datos enviados o colocados por defecto, mientras result y total hacen referencia a la
 consulta realizada.</p>
@@ -180,8 +170,7 @@ para la definición de properties como la columna(column) son opcionales y/o dep
 column si se establece este sera el nombre que buscara dentro de la base de datos, en caso de no definirse se convertira en snake case
 la propiedad y este sera el nombre que buscará</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'entities' => [
         Invoice::class => [
             'table' => 'public.invoices',
@@ -193,13 +182,12 @@ la propiedad y este sera el nombre que buscará</p>
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <p>Las entidades por defecto esperan que exista una propiedad id, de no ser así se debe especificar cual de todas las propiedades
 va a funir como identificar de la entidad, esto se realiza mediante el key <code>id</code>.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'entities' => [
         Invoice::class => [
             'table' => 'public.invoices',
@@ -210,7 +198,7 @@ va a funir como identificar de la entidad, esto se realiza mediante el key <code
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <h3>Relaciones</h3>
 
@@ -219,8 +207,7 @@ en concreto como key de la relación se debe colocar el mismo nombre de la propi
 la primera posición representa la clase con la cual se relaciona, la seguna el campo que recibe la relación en la otra entidad (en caso de existir),
 la última posición representa el tipo de relacvión que se establece: ONE_TO_MANY, MANY_TO_MANY y MANY_TO_ONE.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'entities' => [
         Invoice::class => [
             'table' => 'public.invoices',
@@ -238,7 +225,7 @@ la última posición representa el tipo de relacvión que se establece: ONE_TO_M
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <p>Caso aparte merecen las relaciones MANY_TO_MANY, pues estas deben ser definidas fuera de la entidad en su propia key <code>relations</code>
 en estas se deben definir el nombre de la relación que luego debera ser usada dentro de la relación e la entiad despues del caracter <code>:</code>
@@ -246,8 +233,7 @@ en el segundo parametro de la misma. Una vez definida la key de la relación deb
 en la primera se coloca la tabla que sirve como tabla de "rompomiento" en la base de datos, en a segunda key se definen las entidades que se relacionan,
 cada una definiendo su tipo(type) y columna(column).</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'relations' => [
         'invoice_payments' => [
             'table' => 'public.payment_invoice',
@@ -258,7 +244,7 @@ cada una definiendo su tipo(type) y columna(column).</p>
         ]
         ]
 ]
-</pre>
+</code></pre>
 
 <h3>Custom types</h3>
 
@@ -267,8 +253,7 @@ llegar a no ser suficiente por lo cual se pueden crear tipos personalizados. Par
 registrar el tipo en el key correspondiente colocando el nombre del tipo y la clase que lo implementa, ara hacer uso del tipo
 se debe usar con el nombre dentro e la entiad.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'entities' => [
         Customer::class => [
             'table' => 'public.customers',
@@ -281,7 +266,7 @@ se debe usar con el nombre dentro e la entiad.</p>
     ],
     'types' => ['state' => State::class]
 ]
-</pre>
+</code></pre>
 
 <p>Implementar un tipo es crear una clase con los métodos <code>assemble</code> y <code>disassemble</code>; el primero
 es para ingresar el dato desde la tabla a la entidad y el segundo para enviar el dato a la tabla; en este último
@@ -290,8 +275,7 @@ para saber que dato se encuentra ersistido y realizar la comparación al momento
 quiere decir que disassemble se usa tanto para guardar de la entidad a la tabla como para normalizar los datos que se sacan
 de la tabla.</p>
 
-<pre class="prettyprint">
-class State extends Integer
+<pre><code class="language-php">class State extends Integer
 {
     public function disassemble(mixed $value): int
     {
@@ -314,7 +298,7 @@ class State extends Integer
         };
     }
 }
-</pre>
+</code></pre>
 
 <h3>Value Objects</h3>
 
@@ -322,8 +306,7 @@ class State extends Integer
 propiedad, para esto se debe definir dentro del grupo de <code>values</code> con las propiedades del value object que continenen a
 su vez el tipo y la columna (de ser necesaria).</p>
 
-<pre class="prettyprint">
-    [
+<pre><code class="language-php">[
     'properties' => [
         Customer::class => [
             'table' => 'public.customers',
@@ -346,8 +329,8 @@ su vez el tipo y la columna (de ser necesaria).</p>
             'zip' => ['type' => 'string', 'column' => 'zip_code']
         ]
     ]
-    ]
-</pre>
+]
+</code></pre>
 
 <h3>Herencia</h3>
 
@@ -365,8 +348,7 @@ debo mapear el valor e la base de datos a la clase que debo instanciar, en caso 
 los mapeados se tratara de instanciar una clase del tipo especificado, en el caso presentacod a continuación esta clase sería
 <code>Invoice</code>.</p>
 
-<pre class="prettyprint">
-[
+<pre><code class="language-php">[
     'entities' => [
         Customer::class => [
             'table' => 'public.customers',
@@ -383,7 +365,7 @@ los mapeados se tratara de instanciar una clase del tipo especificado, en el cas
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <p class="doc-danger">En futuras versiones se puede implementar una única tabla por subclase (Concrete Table Inheritance).</p>
 
@@ -392,8 +374,7 @@ los mapeados se tratara de instanciar una clase del tipo especificado, en el cas
     <span class="anchor" id="repositories">...</span>
 </h2>
 
-<pre class="prettyprint">
-&lt;?php
+<pre><code class="language-php">&lt;?php
 
 namespace App\Infrastructure\Repository;
 
@@ -436,14 +417,13 @@ class InvoiceCommand implements InvoiceRepository
         ->matching('payments.customer.email = :name', ['name' => $email]);
     }
 }
-</pre>
+</code></pre>
 
 <h2>
     <a href="#dsl">Criteria (DSL)</a>
     <span class="anchor" id="dsl">...</span>
 </h2>
-<pre class="prettyprint">
-public function search(Criteria $criteria): array
+<pre><code class="language-php">public function search(Criteria $criteria): array
 {
     $mapper = new CriteriaEPM($criteria);
     return $this->em->search(Invoice::class)
@@ -452,4 +432,4 @@ public function search(Criteria $criteria): array
     ->aggregate('payments.customer')
     ->matching($mapper->getDSL(), $mapper->getFilters(), $mapper->getOrder());
 }
-</pre>
+</code></pre>

@@ -15,7 +15,11 @@
         <link rel="shortcut icon" type="image/x-icon" href="{{#view->asset('favicon.ico')}}" />
         <!-- Enlace a la hoja de estilos general -->
         <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}" />
-        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
+        <script src="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.js"></script>
         <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" async></script>
         <!-- Titulo de la pagina -->
         <title>{{$title}} - {{#view->getConfig('app.name')}}</title>

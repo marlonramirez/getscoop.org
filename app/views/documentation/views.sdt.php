@@ -26,16 +26,12 @@ volcaran la información hacia el buffer de salida.</p>
 <p>sdt permite usar expresiones PHP dentro del código de las interpolaciones. Por ejemplo podemos imprimir el valor de
 una variable en minúscula de la siguiente forma:</p>
 
-<pre class="prettyprint">
-&lt;h1&gt;¡Bienvenido &#123;{strtolower($user)}&#125;!&lt;/h1&gt;
-</pre>
+<pre><code class="language-php-template">&lt;h1&gt;¡Bienvenido &#123;{strtolower($user)}&#125;!&lt;/h1&gt;</code></pre>
 
 <p>A pesar de no poder usar estructutras de control dentro de las interpolaciones, podemos hacer uso del operador
 terneario.</p>
 
-<pre class="prettyprint">
-&lt;h1&gt;¡&#123;{count($users) > 1 ? 'Bienvenidos': 'Bienvenido'}&#125;!&lt;/h1&gt;
-</pre>
+<pre><code class="language-php-template">&lt;h1&gt;¡&#123;{count($users) > 1 ? 'Bienvenidos': 'Bienvenido'}&#125;!&lt;/h1&gt;</code></pre>
 
 <h2>
     <a href="#control">Estructuras de control</a>
@@ -49,8 +45,7 @@ signo <code>:&lt;end&gt;</code>.</p>
 
 <h3>&#64;foreach</h3>
 
-<pre class="prettyprint">
-&lt;table&gt;
+<pre><code class="language-php-template">&lt;table&gt;
     &lt;thead&gt;
         &lt;tr&gt;
             &lt;th&gt;Key&lt;/th&gt;
@@ -66,52 +61,47 @@ signo <code>:&lt;end&gt;</code>.</p>
         &#58;foreach
     &lt;/tbody&gt;
 &lt;/table&gt;
-</pre>
+</code></pre>
 
 <h3>&#64;for</h3>
 
-<pre class="prettyprint">
-&lt;ul&gt;
+<pre><code class="language-php-template">&lt;ul&gt;
     &#64;for $i = 0; $i &gt;= $length; $i++
         &lt;li&gt;Item &#123;{$i}&#125;&lt;/li&gt;
     &#58;for
 &lt;/ul&gt;
-</pre>
+</code></pre>
 
 <h3>&#64;while</h3>
 
-<pre class="prettyprint">
-&lt;pre&gt;
+<pre><code class="language-php-template">&lt;pre&gt;
     &#64;while feof($file)
         &#123;{$fgetc($file)}&#125;
     &#58;while
 &lt;/pre&gt;
-</pre>
+</code></pre>
 
 <h3>&#64;if</h3>
 
-<pre class="prettyprint lang-html">
-&#64;if isset($user)
+<pre><code class="language-php-template">&#64;if isset($user)
     &lt;h1&gt;Welcome &#123;{$user}&#125;!&lt;/h1&gt;
 &#58;if
-</pre>
+</code></pre>
 
 <h3>&#64;else</h3>
 
-<pre class="prettyprint">
-&lt;header&gt;
+<pre><code class="language-php-template">&lt;header&gt;
     &#64;if isset($user)
         &lt;h1&gt;Welcome &#123;{$user}&#125;!&lt;/h1&gt;
     &#64;else
         &lt;a href="&#123;{&#35;view->route('login')}&#125;"&gt;Login&lt;/a&gt;
     &#58;if
 &lt;/header&gt;
-</pre>
+</code></pre>
 
 <h3>&#64;elseif</h3>
 
-<pre class="prettyprint">
-&lt;header&gt;
+<pre><code class="language-php-template">&lt;header&gt;
     &#64;if isset($user)
         &lt;h1&gt;Welcome &#123;{$user}&#125;!&lt;/h1&gt;
     &#64;elseif isset($guess)
@@ -120,7 +110,7 @@ signo <code>:&lt;end&gt;</code>.</p>
         &lt;a href="&#123;{&#35;view->route('login')}&#125;"&gt;Login&lt;/a&gt;
     &#58;if
 &lt;/header&gt;
-</pre>
+</code></pre>
 
 <h2>
     <a href="#special">Estructuras especiales</a>
@@ -129,34 +119,27 @@ signo <code>:&lt;end&gt;</code>.</p>
 
 <h3>&#64;extends</h3>
 
-<pre class="prettyprint">
-&#64;extends 'layers/layer'
-</pre>
+<pre><code class="language-php-template">&#64;extends 'layers/layer'</code></pre>
 
 <h3>&#64;sprout</h3>
 
 <h3>&#64;import</h3>
 
-<pre class="prettyprint">
-&#64;import 'partition/login'
-</pre>
+<pre><code class="language-php-template">&#64;import 'partition/login'</code></pre>
 
 <h3>&#64;inject</h3>
 
-<pre class="prettyprint">
-&#64;inject \App\Service\Provider#provider
-</pre>
+<pre><code class="language-php-template">&#64;inject \App\Service\Provider#provider</code></pre>
 
 <h2>
     <a href="#services">Uso de servicios</a>
     <span class="anchor" id="services">...</span>
 </h2>
 
-<pre class="prettyprint lang-html">
-&#64;inject \App\Service\Provider#provider
+<pre><code class="language-php-template">&#64;inject \App\Service\Provider#provider
 ...
 &lt;h1&gt;Hello &#123;{&#35;provider->getName()}&#125;&lt;/h1&gt;
-</pre>
+</code></pre>
 
 <h2>
     <a href="#components">Componentes</a>

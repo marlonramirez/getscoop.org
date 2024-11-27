@@ -86,8 +86,7 @@ propuesto por Tom Preston-Werner.</p>
 de apache para el enrutamiento, algunas caracteristicas SEO y de seguridad. Para el caso de nginx se debe realizar
 la configuración del archivo nginx.conf.</p>
 
-<pre class="prettyprint lang-html">
-merge_slashes off;
+<pre><code class="language-nginx">merge_slashes off;
 rewrite (.*)//+(.*) $1/$2 permanent;
 location / {
     root html;
@@ -114,7 +113,7 @@ location /(app|vendor|scoop|resources)/ {
 location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
     deny all;
 }
-</pre>
+</code></pre>
 
 <p class="doc-alert">Desde la versión 0.6.1 se incluye un servidor integrado, este se ejecuta automaticamente al ejecutar el entorno
 de desarrollo.</p>
@@ -157,7 +156,7 @@ automatización de procesos, esto garantiza una mayor productividad en el desarr
         <h3 class="deprecated">Gulp</h3>
         <p>Desde la versión 0.1.4 el bootstrap utiliza <a href="http://gulpjs.com" rel="external">gulp</a>
         como automatizador de tareas.</p>
-        <pre class="prettyprint">npm install -g gulp</pre>
+        <pre><code class="language-shell">npm install -g gulp</code></pre>
         <p class="doc-alert">Desde la versión <code>0.4.1</code> no es necesario instalar gulp como libreria global,
         cada repositorio genera su propia instancia de gulp.</p>
     </li>
@@ -175,13 +174,13 @@ La versión actual del bootstrap es la {{#view->getConfig('app.version')}}.</p>
         <h3>Composer</h3>
         <p>Antes de usar este medio de instalación asegurese de tener composer instalado en su maquina,
         luego utiliza el comando <code>create-project</code> en la terminal.</p>
-        <pre class="prettyprint">composer create-project mirdware/scoop project-name -s dev</pre>
+        <pre><code class="language-shell">composer create-project mirdware/scoop project-name -s dev</code></pre>
     </li>
     <li>
         <h3>GitHub</h3>
         <p>Scoop se desarrolla usando github como sistema de control de versiones, mediante este
         se puede clonar todo el repositorio del proyecto.</p>
-        <pre class="prettyprint lang-html">git clone https://github.com/mirdware/scoop.git</pre>
+        <pre><code class="language-shell">git clone https://github.com/mirdware/scoop.git</code></pre>
     </li>
     <li>
         <h3>Manual</h3>
@@ -200,10 +199,10 @@ La versión actual del bootstrap es la {{#view->getConfig('app.version')}}.</p>
 se deben instalar las librerias o dependencias tanto javascript como PHP ingresando los siguientes comandos en el directorio raíz de la aplicación.</p>
 
 <h3>Desarrollo</h3>
-<pre class="prettyprint">npm install && composer install && npm run dev</pre>
+<pre><code class="language-shell">npm install && composer install && npm run dev</code></pre>
 
 <h3>Producción</h3>
-<pre class="prettyprint">npm install && composer install --optimize-autoloader --no-dev && npm start</pre>
+<pre><code class="language-shell">npm install && composer install --optimize-autoloader --no-dev && npm start</code></pre>
 
 <p>Al ejecutar modo producción la aplicación no se queda en escucha si no que realiza la minificación de archivos Javascript y CSS.
 Para levantar el entorno de desarrollo se debe usar <code>npm run dev</code> el comando levantara un

@@ -10,8 +10,7 @@
     <span class='anchor' id='monitoring'>...</span>
 </h2>
 
-<pre class='prettyprint'>
-[
+<pre><code class="language-php">[
     'log' => [
         Level::INFO => [
             File::class => null
@@ -51,38 +50,33 @@
         ]
     ]
 ]
-</pre>
+</code></pre>
 
 <h2>
     <a href='#crypt'>Sistema de encriptación</a>
     <span class='anchor' id='crypt'>...</span>
 </h2>
 
-<pre class='prettyprint'>
-[
+<pre><code class="language-php">[
     'vault' => ['secret' => 'myP4ssw0rd', 'encoding' => 'hex']
 ]
-</pre>
+</code></pre>
 
 <h2>
     <a href='#ice'>Interface Command Environment (ICE)</a>
     <span class='anchor' id='ice'>...</span>
 </h2>
 
-<pre class='prettyprint'>
-[
+<pre><code class="language-php">[
     'commands' => [
         'notification' => '\App\Service\ReceiveNotification'
     ]
 ]
-</pre>
+</code></pre>
 
-<pre class='prettyprint'>
-php app/ice notification
-</pre>
+<pre><code class="language-shell">php app/ice notification</code></pre>
 
-<pre class="prettyprint">
-class Creator
+<pre><code class="language-php">class Creator
 {
     private static $commands = array(
         'struct' => '\Scoop\Command\Creator\Struct'
@@ -113,7 +107,7 @@ class Creator
         echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
     }
 }
-</pre>
+</code></pre>
 
 <h2>
     <a href='#i18n'>Internacionalización</a>
@@ -127,8 +121,7 @@ para esto se pueden usar técnicas como el uso de midlewares.</p>
 <p class="doc-danger">El siguiente ejemplo simula el uso de midlewares seún <a href="https://www.php-fig.org/psr/psr-15/">PSR-15</a>
 que aún no ha sido implementado y puede ser suceptible a cambios.</p>
 
-<pre class="prettyprint">
-class Midleware
+<pre><code class="language-php">class Midleware
 {
     public function __construct(
         private \Scoop\Bootstrap\Configuration $conf
@@ -141,7 +134,7 @@ class Midleware
         $handler->handle($request);
     }
 }
-</pre>
+</code></pre>
 
 <p>Las traducciones que maneja el sistema son:</p>
 

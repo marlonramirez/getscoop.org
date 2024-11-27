@@ -44,14 +44,11 @@
     nos podemos apoyar en grumphp.
 </p>
 
-<pre class="prettyprint">
-composer require --dev phpro/grumphp-shim
-</pre>
+<pre><code class="language-shell">composer require --dev phpro/grumphp-shim</code></pre>
 
 <p>Luego configuramos el archivo <code>grumphp.yml</code></p>
 
-<pre class="prettyprint">
-grumphp:
+<pre><code class="language-yaml">grumphp:
     process_timeout: null
     tasks: 
         phpcs:
@@ -64,4 +61,4 @@ grumphp:
                 - /^scoop\/(.*)/
         phpunit:
             config_file: app/phpunit.xml
-</pre>
+</code></pre>
