@@ -146,6 +146,65 @@ signo <code>:&lt;end&gt;</code>.</p>
     <span class="anchor" id="components">...</span>
 </h2>
 
+<pre><code class="language-php-template">&#123;{#view->composeMessage()}&#125;</code></pre>
+
+<pre><code class="language-php">class Message implements \Scoop\View\Component
+{
+    const INFO = 'info';
+    const SUCCESS = 'success';
+    const ERROR = 'error';
+    const WARNING = 'warning';
+    private static $props;
+    private static $request;
+
+    public function render()
+    {
+        if (self::$props) {
+            unset($_SESSION['data-scoop']['message']);
+        } else {
+            $message = self::$request->reference('message');
+            self::$props = $message ? $message : array('type' => 'not', 'msg' => '');
+        }
+        $type = self::$props['type'];
+        $msg = self::$props['msg'];
+        return Template::clearHTML('
+        &lt;div id="msg" data-attr="className:type" class="' . $type . '"&gt;
+            &lt;i class="close"&gt;&lt;/i&gt;
+            &lt;span data-bind="msg"&gt;' . $msg . '&lt;/span&gt;
+        &lt;/div&gt;');
+    }
+
+    public static function setRequest(\Scoop\Http\Request $request)
+    {
+        self::$request = $request;
+    }
+
+    public static function set($msg, $type = self::SUCCESS)
+    {
+        $class = new \ReflectionClass(get_class());
+        if (!in_array($type, $class->getConstants())) {
+            throw new \UnexpectedValueException('Error building the message [type ' . $type . ' rejected].');
+        }
+        self::$props = array('type' => $type, 'msg' => $msg);
+        $_SESSION['data-scoop']['message'] = self::$props;
+    }
+}
+</code></pre>
+
+<pre><code class="language-php">public function render()
+{
+    if (self::$props) {
+        unset($_SESSION['data-scoop']['message']);
+    } else {
+        $message = self::$request->reference('message');
+        self::$props = $message ? $message : array('type' => 'not', 'msg' => '');
+    }
+    return new \Scoop\View('message')->set([
+        'type' => self::$props['type'],
+        'msg' => self::$props['msg']
+    ]);
+}</code></pre>
+
 <h2>
     <a href="#cache">Cache y minificación</a>
     <span class="anchor" id="cache">...</span>

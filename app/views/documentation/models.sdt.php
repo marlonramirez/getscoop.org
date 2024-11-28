@@ -53,20 +53,39 @@ mediante la clase DBC acronimo de Data Base Connection y que se provee mediante 
 <p>En el ejemplo anterior se proveen dos conexiones diferentes, cada una empaquetada con un nombre clave;
 para usar alguna conexión se debe hacer uso de la clase <code>\Scoop\Context</code> e incovar el método
 <code>connect</code>, cuando no se envia ningún parametro al método este toma la conexión default, para escoger
-otro tipo de conexión diferente se debe enviar la clave de la conexión <code>\Scoop\Conext::connect('auth')</code>.</p>
+otro tipo de conexión diferente se debe enviar la clave de la conexión <code>Conext::connect('auth')</code>.</p>
 
 <h2>
     <a href="#structs">Structs</a>
     <span class="anchor" id="structs">...</span>
 </h2>
 
+<p>Los structs se pueden asemejar a las migraciones de otros franmeworks como laravel, aunqueson considerablemente más sencillos,
+se debe tener en cuenta que un struct no tiene forma de hacer rollback, por lo cual siempre se deben ejecutar los scripts hacia delante
+y se usa como lenguaje SQL puro, lo cual lo hace dependiente de la base de datos que se esta trabjando. Al final solo funciona como
+sistema de versionamiento de la base de datos, para mejorar el trabajo en equipo y controlar las modificaciones.</p>
+
 <h3>Creación</h3>
+
+<p>Los struct se ejecutan de manera ordenada, por lo cual ejecutara primero los que tenan mayor peso en el ordenamiento de los
+archivos, por esto es importante llevar un control de cuales deben ir primero que otros y para esto existe comando <code>new struct</code>.</p>
 
 <pre><code class="language-shell">php app/ice new struct --schema=auth --name=data</code></pre>
 
+<p>Las opciones que se manejan son <code>schema</code> para colocar el archivo en un folder aparte y de esta manera tambien se pueda
+ejecutar de manera aisalda, la otra opción es <code>name</code> el cual le concatena al nombre del archivo un valor descriptivo
+y que no solo sea la estampa de tiempo de la creación del archivo.</p>
+
 <h3>Ejecución</h3>
 
+<p>Una vez se encuentren los archivos SQL dentro de la carpeta <code>app/structs</code>, la cual se puede modificar mediante configuración.
+Se debe ejecutar mediante el comando <code>dbup</code>.</p>
+
 <pre><code class="language-shell">php app/ice dbup --name=default --schema=auth --user=postgres --password=$POSTGRES_PASSWORD</code></pre>
+
+<p>Aquí la opción <code>schema</code> sirve para ejecutar un directorio especifico, <code>name</code> sirve para traer una conexión
+diferente a la de defecto por su respectivo nombre, <code>user</code> modifica el usuario de la conexión escogida y finalmente <code>password</code>
+modifica la contraseña de la conexión.</p>
 
 <h2>
     <a href="#sqo">Query Objects</a>
@@ -77,33 +96,87 @@ el manejo de las sentencias mucho más flexibles y dinamicas, el mecanismo escog
 SQO(Scoop|Simple Query Object), el cual presenta una manera más sencilla y orientada a objetos de realizar consultas a
 la base de datos.</p>
 
-<p>Al instanciar un objeto SQO es necesario pasar como parametro el nombre de la tabla principal
-<code>new \Scoop\Storage\SQO('book')</code>, si es necesario colocar un alias o manejar una conexión
-<pre><code class="language-php">$bookSQO = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');</code></pre>
+<p>Al instanciar un objeto de la clase <code>\Scoop\Persistence\SQO</code> es necesario pasar como parametro el nombre de la tabla principal
+<code>new SQO('book')</code>, si es necesario colocar un alias o manejar una conexión.
+
+<pre><code class="language-php">$books = new \Scoop\Storage\SQO('book', 'alias', 'connectionName');</code></pre>
 
 <p class="doc-alert">A partir de la versión 0.5.6 se envia el nombre de la conexión y no la conexión como en anteriores versiones</p>
 
-<p>A partir de acá es posible usar los métodos de SQO: create, update, read, delete y getLastId. Los cuatro primeros
+<p>Una vez instanciado un objeto SQO es posible usar los métodos: create, update, read, delete y getLastId. Los cuatro primeros
 pertenecen al CRUD y cada uno devuelve un objeto DML especifico para cada caso, mientras  <code>getLastId</code> retorna
 el último id insertado mediante el objeto.</p>
 
 <h3>Creación</h3>
-<pre><code class="language-php">$bookSQO->create([
+
+<p>Existen dsitintas maneras de manejar la inserción de datos mediante el objeto de la clase <code>\Scoop\Persistence\SQO\Factory</code>
+que entrega el ejecutar el método create. La más sencilla es enviar como parámetro un array asociativo en el cual el key es la columna
+y el value el valor de dicha columna, una vez se establezcan los valores se dee ejecutar el método <code>run</code>, lo cual
+creara y ejecutara la sentencia insert en la base de datos.</p>
+
+<pre><code class="language-php">$books->create([
     'name' => 'Angels & demons',
     'author' => 'Dan Brown',
     'year' => '2009'
 ])->run();
 </code></pre>
 
+<p>Esto resultaria en la siguiente sentencia SQL; realizando la respectiva sanetización y reemplazo de valores.</p>
+
+<pre><code class="language-sql">INSERT INTO (name, author, year) VALUES (?, ?, ?)</code></pre>
+
+<p>Este método funciona adecuadamente para hacer una a una las inserciones, pero para manejar multi insert se deben invocar multiples
+veces el registro, internamente el sistema ordena las keys para hacerlas coincidir.</p>
+
+<pre><code class="language-php">$books->create([
+    'name' => 'Angels & demons',
+    'author' => 'Dan Brown',
+    'year' => '2009'
+])->create([
+    'name' => 'It',
+    'author' => 'Stephen King',
+    'year' => '1986'
+])->run();
+</code></pre>
+
+<p>Lo cual resulta en la siguiente sentencia SQL.</p>
+
+<pre><code class="language-sql">INSERT INTO (name, author, year) VALUES (?, ?, ?), (?, ?, ?)</code></pre>
+
+<p>Aunque la anterior forma es util para realizar multiples insert y mantiene la facilidad de uso de la primera, hay ocaciones en las
+que no es posible establecer una key y es mejor manjear el orden delos campos que se deben insertar, como por ejemplo en cargues
+masivos de información, para esto se debe enviar un array indexado como primer parametro indicando cuales son las columnas que se deben
+tener en cuenta, con esto establecido en cada iteración se deben enviar los valores en el orden establecido.</p>
+
+<pre><code class="language-php">$creator = $books->create(['name', 'author', 'year']);
+if (($handle = fopen("test.csv", "r")) !== false) {
+    while (($data = fgetcsv($handle, 1000, ",")) !== false) {
+        $creator->create($data)
+    }
+}
+$creator->run();
+</code></pre>
+
+<p>El resultado final del SQL sera similar al anterior.</p>
+
+<p>Finalmente es posible ejecutar INSERT SELECTS enviandole como parámetro del create el objeto de la clase 
+<code>\Scoop\Persistence\SQO\Reader</code>.</p>
+
+<pre><code class="language-php">$reader = $oldBooks->read('name', 'author', 'year')
+->filter('year > :year');
+$books->create(['name', 'author', 'year'], $reader)
+->run(['year' => 1989]);
+</code></pre>
+
 <h3>Lectura</h3>
-<pre><code class="language-php">$bookSQO->read()
+<pre><code class="language-php">$books->read()
     ->filter('name like %:name%')
     ->restrict('year = 2009')
     ->run();
 </code></pre>
 
 <h3>Actualización</h3>
-<pre><code class="language-php">$bookSQO->update([
+<pre><code class="language-php">$books->update([
     'name' => 'Angels & demons',
     'author' => 'Dan Brown',
     'year' => '2009'
@@ -111,7 +184,7 @@ el último id insertado mediante el objeto.</p>
 </code></pre>
 
 <h3>Eliminación</h3>
-<pre><code class="language-php">$bookSQO->delete()
+<pre><code class="language-php">$books->delete()
     ->restrict('id = :id')
     ->run();
 </code></pre>
@@ -144,6 +217,11 @@ consulta realizada.</p>
     <a href="#epm">Entity Persistence Management (EPM)</a>
     <span class="anchor" id="epm">...</span>
 </h2>
+
+<p>Con SQO se puede realizar casí cualquier tipo de consulta o ejecución hacia y desde la base de datos, pero no es lo que buscamos
+con la implementación de DDD, pues hasta acá aunque podemos modelar nuestro dominio y desde la implementación de la persistencia
+realizar todo el mapeo mediante SQO,este trabajo ya existe una nueva capa que maneja la persistencia de entidades y es
+lo que se explicará a continuación.</p>
 
 <p>El mapeo se realiza desde el archivo de configuración principal bajo la key <code>model</code>.</p>
 

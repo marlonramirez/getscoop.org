@@ -74,20 +74,17 @@
 ]
 </code></pre>
 
-<pre><code class="language-shell">php app/ice notification</code></pre>
-
-<pre><code class="language-php">class Creator
-{
-    private static $commands = array(
-        'struct' => '\Scoop\Command\Creator\Struct'
-    );
-    private $bus;
-    private $writer;
-
-    public function __construct(\Scoop\Command\Writer $writer)
+<pre><code class="language-php">class Router
     {
-        $this->writer = $writer;
-        $this->bus = new \Scoop\Command\Bus(self::$commands);
+        private $bus;
+        private $writer;
+        private $msg;
+        
+        public function __construct($msg, \Scoop\Command\Writer $writer, \Scoop\Command\Bus $bus)
+        {
+            $this->writer = $writer;
+            $this->msg = $msg;
+            $this->bus = $bus;
     }
 
     public function execute($command)
@@ -96,25 +93,27 @@
         $commandName = array_shift($args);
         $this->bus->dispatch($commandName, $args);
     }
-
+    
     public function help()
     {
-        echo 'create new starter artifacts', PHP_EOL, PHP_EOL,
-        'Commands:', PHP_EOL;
-        foreach (self::$commands as $command => $controller) {
-            echo $command, ' => ', $this->writer->writeLine("$controller.php", \Scoop\Command\Style\Color::BLUE);
+        $commands = $this->bus->getCommands();
+        $this->writer->write($this->msg, '', 'Commands:');
+        foreach ($commands as $command => $controller) {
+            $this->writer->write("$command => &lt;link!$controller.php!&gt;");
         }
-        echo PHP_EOL, 'Run app/ice new COMMAND --help for more information', PHP_EOL;
+        $this->writer->write('', 'Run app/ice new COMMAND --help for more information');
     }
 }
 </code></pre>
+
+<pre><code class="language-shell">php app/ice notification</code></pre>
 
 <h2>
     <a href='#i18n'>Internacionalización</a>
     <span class='anchor' id='i18n'>...</span>
 </h2>
 
-<p>El idioma de la aplicación se puede configurar por defecto desde el <a href="{{#view->route('doc', 'configuration')}}#basic-config">array de configuración</a>.
+<p>El idioma de la aplicación se puede configurar por defecto desde el <a href="{{#view->route('doc', 'configure')}}#basic-config">array de configuración</a>.
 Si se desea realizar modificaciones del idioma de manera dinámica se puede hacer uso del método <code>useLenguage</code> del contexto;
 para esto se pueden usar técnicas como el uso de midlewares.</p>
 

@@ -201,6 +201,12 @@ class Home extends Controller
         InvoiceCreated::class => [
             EmailInvoiceSender::class,
             ExternalBrokerSender::class
+        ],
+        ConnectionOpened::class => [
+            LogOnDBOpened::class
+        ],
+        ConnectionClosed::class => [
+            LogOnDBClosed::class
         ]
     ]
 
@@ -213,5 +219,23 @@ class Home extends Controller
     $this->repository->save($invoice);
     $this->eventDispatcher->dispatch(new InvoiceCreated($invoice));
     return $invoice;
+}
+</code></pre>
+
+<pre><code class="language-php">&lt;?php
+
+namespace App;
+
+use Scoop\Persistence\Event\ConnectionOpened;
+
+class LogOnDBOpened
+{
+    public function listen(ConnectionOpened $event): void
+    {
+        if (isset($_SESSION['user']['access'])) {
+            $db = $event->getConnection();
+            $db->exec("SELECT pgaudit.bind('{$_SESSION['user']['access']}')");
+        }
+    }
 }
 </code></pre>

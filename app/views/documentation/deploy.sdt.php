@@ -62,3 +62,37 @@
         phpunit:
             config_file: app/phpunit.xml
 </code></pre>
+
+<p>Si se va  a realizar un despliegue totalmente manual, se debe tener en cuenta que no es necesario desplegar todos los archivos de una
+aplicación scoop y al contrario esto puede llegar a ser contraproducente, los archivos que deben ser desplegados son los minimos para su funcionamiento
+evitando cualquier archivo de configuración de herramientas de desarrollo como la gestión de javascript, css y demás.</p>
+
+<pre><code class="language-shell">├─ app
+|   ├─ config
+|   |    ├─ lang
+|   |    |    ├─ en.php
+|   |    |    └─ es.php
+|   |    ├─ routes.php
+|   |    └─ providers.php
+|   ├─ storage
+|   ├─ views
+|   ├─ config.php
+|   └─ ice
+├─ public
+|   ├─ css
+|   ├─ fonts
+|   ├─ images
+|   ├─ js
+|   ├─ favicon.ico
+|   ├─ humans.txt
+|   └─ robots.txt
+├─ scoop
+├─ src
+├─ vendor
+├─ .htaccess
+├─ composer.json
+├─ index.php
+└─ package.json
+</code></pre>
+
+<p class="doc-alert">Para más información revisé la sección de <a href="{{#view->route('doc', 'architecture')}}#structure">estructura de directorios</a>.</p>

@@ -29,16 +29,16 @@ echo $app->run();
 </code></pre>
 
 <p>Cuando un contexto es establecido se puede acceder al entorno mediante su método
-<code>\Scoop\Context::getEnvironment()</code>, al cargador mediante <code>\Scoop\Context::getLoader()</code> y
- al inyector de dependencias mediante <code>\Scoop\Context::getInjector()</code>, tambien se pueden establecer
- conexiones y desconexiones a la base de datos mediante <code>\Scoop\Context::connect()</code> y <code>\Scoop\Context::disconnect()</code>
+<code>Context::getEnvironment()</code>, al cargador mediante <code>Context::getLoader()</code> y
+ al inyector de dependencias mediante <code>Context::getInjector()</code>, tambien se pueden establecer
+ conexiones y desconexiones a la base de datos mediante <code>Context::connect()</code> y <code>Context::disconnect()</code>
  respectivamente.</p>
 
  <p class="doc-danger">Desde la versión 0.6.4 el método <code>getInjector</code> se encuentra @deprecated en
- favor del método <code>\Scoop\Context::inject($dependency)</code> y desde la versión 0.7.3 el método <code>getLoader</code>.</p>
+ favor del método <code>Context::inject($id)</code> y desde la versión 0.7.3 el método <code>getLoader</code>.</p>
 
- <p>Para realizar la conexión a diferentes bases de datos se pueden enviar dos argumentos más a <code>\Scoop\Context::connect($bundle, $options)</code>,
- lo mismo sucede con el método <code>\Scoop\Context::disconnect($bundle, $options)</code> para más información consulta <a href="{{#view->route('doc', 'ddd')}}#dbc">el uso del DBC</a>.</p>
+ <p>Para realizar la conexión a diferentes bases de datos se pueden enviar dos argumentos más a <code>\Context::connect($bundle, $options)</code>,
+ lo mismo sucede con el método <code>Context::disconnect($bundle, $options)</code> para más información consulta <a href="{{#view->route('doc', 'ddd')}}#dbc">el uso del DBC</a>.</p>
 
 <h2>
     <a href="#basic-config">Configuraciones básicas</a>
@@ -409,15 +409,28 @@ inversión sabra como resolverló.</p>
 
 <pre><code class="language-php">class Logger
 {
+    private $environment;
+
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    {
+        $this->environment = $environment;
+    }
+
     public function create()
     {
-        $factory = new \Scoop\Log\Factory\Handler(
-            \Scoop\Context::getEnvironment()->getConfig('log', array())
+        return new \Scoop\Log\Logger(
+            new \Scoop\Log\Factory\Handler(
+                $this->environment->getConfig('log', array()),
+                $this->environment->getConfig('storage', 'app/storage/')
+                . 'logs/' . $this->environment->getConfig('app.name')
+                . '-' . date('Y-m-d') . '.log'
+            )
         );
-        return new \Scoop\Log\Logger($factory);
     }
 }
 </code></pre>
+
+<p class="doc-alert">Para más información revise la sección de <a href="{{#view->route('doc', 'architecture')}}#inject">inyección de dependencias</a>.</p>
 
 <h3 class="deprecated">Servicios</h3>
 <p class="doc-danger">Desde la versión 0.6.2 la configuración de servicios se encuentra @deprecated. Se recomienda el uso
@@ -447,7 +460,7 @@ el constructor, en cambio un servicio es nombrado y es posible acceder a este de
 <p>Los componentes en scoop son simples bloques de codigos HTML reutilizables y variables que se gestionan mediante
 el uso de clases, cada componente tiene un nombre asociado dentro de la vista y un handler PHP, este par
 [name => classHandler] se puede usar dentro de un archivo de configuración asociado mediante la clase de entorno o el uso
-directo del método <code>\Scoop\View::registerComponents($components)</code>.</p>
+directo del método <code>View::registerComponents</code>.</p>
 
 <pre><code class="language-php">[
     'components' => [
