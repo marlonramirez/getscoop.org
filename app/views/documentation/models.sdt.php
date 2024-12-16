@@ -231,7 +231,7 @@ lo que se explicará a continuación.</p>
 dentro de la aplicación, las keys principales en esta configuración son <code>table</code> y <code>properties</code>. Dentro
 de table se coloca el nombre de la tabla, este valor es obligatorio para realizar el correcto mapeo de entidades.</p>
 
-<p>Dentro de properties defino cada propiedad de la entidad, el unico valor obligatorio en este punto es el tipo, como tipo
+<p>Dentro dl keye properties se definé cada propiedad de la entidad, el unico valor obligatorio en este punto es el tipo, como tipo
 se puede definir los siguientes:</p>
 
 <ul>
@@ -241,11 +241,13 @@ se puede definir los siguientes:</p>
     <li>date</li>
     <li>bool</li>
     <li>serial</li>
+    <li>json</li>
 </ul>
 
-<p>Si se coloca un tipo de dato diferente a los especificados o a un custom type el sistema tratara de inferir el tipo. El resto de elementos
+<p>Si se coloca un tipo de dato diferente a los especificados o a un custom type el sistema tratara de inferir el tipo con la información
+proveniente de la base de datos. El resto de elementos
 para la definición de properties como la columna(column) son opcionales y/o dependen del tipo que se esta asignanado. En el caso de
-column si se establece este sera el nombre que buscara dentro de la base de datos, en caso de no definirse se convertira en snake case
+column si es establecida será el nombre que buscará dentro de la base de datos, en caso de no definirse se convertira en snake case
 la propiedad y este sera el nombre que buscará</p>
 
 <pre><code class="language-php">[
@@ -326,9 +328,9 @@ cada una definiendo su tipo(type) y columna(column).</p>
 
 <h3>Custom types</h3>
 
-<p>Como se menciono anteriormente existen <a href="#epm">tipos definido</a> para las entidades, ero esto en ocaciones puede
+<p>Como se menciono anteriormente existen <a href="#epm">tipos definidos</a> para las entidades, pero esto en ocaciones puede
 llegar a no ser suficiente por lo cual se pueden crear tipos personalizados. Para esto lo primero que se debe hacer es
-registrar el tipo en el key correspondiente colocando el nombre del tipo y la clase que lo implementa, ara hacer uso del tipo
+registrar el tipo en el key correspondiente colocando el nombre del tipo y la clase que lo implementa, para hacer uso del tipo
 se debe usar con el nombre dentro e la entiad.</p>
 
 <pre><code class="language-php">[
@@ -346,23 +348,16 @@ se debe usar con el nombre dentro e la entiad.</p>
 ]
 </code></pre>
 
-<p>Implementar un tipo es crear una clase con los métodos <code>assemble</code> y <code>disassemble</code>; el primero
-es para ingresar el dato desde la tabla a la entidad y el segundo para enviar el dato a la tabla; en este último
-se debe tener especial cuidado ues no solo viene el dato desde la entidad, el sistema usa este método de igual manera
-para saber que dato se encuentra ersistido y realizar la comparación al momento de generar actualizaciones, esto
-quiere decir que disassemble se usa tanto para guardar de la entidad a la tabla como para normalizar los datos que se sacan
-de la tabla.</p>
+<p>Implementar un tipo es crear una clase con mínimo dos métodos: <code>assemble</code> y <code>disassemble</code>; el primero
+es para ingresar el dato desde la tabla a la entidad y el segundo para enviar el dato desde la entidad hacia la tabla.</p>
 
 <pre><code class="language-php">class State extends Integer
 {
     public function disassemble(mixed $value): int
     {
-        if (is_int($value)) {
-            return $value;
-        }
         return match (true) {
-            $value instanceof ActiveState => 0,
-            $value instanceof InactiveState => 1,
+            $value instanceof InactiveState => 0,
+            $value instanceof ActiveState => 1,
             default => 1
         };
     }
@@ -370,10 +365,50 @@ de la tabla.</p>
     public function assemble(mixed $value): StateValue
     {
         return match ($value) {
-            0 => new ActiveState(),
-            1 => new InactiveState(),
+            0 => new InactiveState(),
+            1 => new ActiveState(),
             default => new ActiveState()
         };
+    }
+}
+
+</code></pre>
+
+<p>En la mayoria de casos este tipo de imlementación suele ser suficiente, pero existen otros dos métodos que se pueden implementar,
+    estos son: <code>isAutoincremental</code> y <code>comparate</code>. En el rimer caso solo sirve para definir si el tipo es generado
+    desde la base de datos y por lo tanto se debe refrescar su valor.
+</p>
+
+<pre class="language-php"><code>class Serial extends Integer
+{
+    public function isAutoincremental()
+    {
+        return true;
+    }
+}
+</code></pre>
+
+<p>Para el caso de <code>comparate</code> se debe establecer solo cuando la comparación entre lo que se genera desde la entidad y lo que se obtiene
+de la base de datos llea a ser diferente, un ejemplo es al momento de guardar un tipo CHARACTER el cual es llenado de espacios hasta
+completar la cantidad de caracteres definidos, por lo cual en la entidad puedo tener un campo <code>'001'</code> que guardá en base de datos <code>'&nbsp;&nbsp;&nbsp;&nbsp;001'</code>;
+algo similar sucede por ejemplo con los tipos de coma flotante.
+</p>
+
+<pre class="language-php"><code>class Varchar
+{
+    public function disassemble($value)
+    {
+        return trim($value);
+    }
+
+    public function assemble($value)
+    {
+        return trim($value);
+    }
+
+    public function comparate($oldValue, $newValue)
+    {
+        return trim($oldValue) === $newValue;
     }
 }
 </code></pre>

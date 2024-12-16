@@ -9,6 +9,7 @@ no convencionales de la aplicación que se deben especificar y es aqui donde ent
     <li><a href="#ioc">Inversión de control</a></li>
     <li><a href="#components">Componentes</a></li>
     <li><a href="#exceptions">Manejo de excepciones</a></li>
+    <li><a href="#cors">CORS</a></li>
 </ul>
 
 
@@ -486,6 +487,20 @@ agregar más cabeceras se debe agregar el key headers al codigo de error, así c
             'headers' => array('WWW-Authenticate' => 'Digest realm="' . $domain . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($domain) . '"')
             'exceptions' => [NotAuhorized::class]
         ]
+    ]
+]
+</code></pre>
+
+<h2>
+    <a href="#cors">CORS</a>
+    <span class="anchor" id="cors">...</span>
+</h2>
+
+<pre><code class="language-php">[
+    'cors' => [
+        'origin' => 'https://sespesoft.com,http://localhost',
+        'methods' => 'POST,PUT,GET',
+        'headers' => 'Authorization'
     ]
 ]
 </code></pre>

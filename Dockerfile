@@ -2,7 +2,6 @@ FROM node:20-alpine AS node
 WORKDIR /app
 COPY ["gulpfile.js", "jsconfig.json", "package*.json", "./"]
 RUN npm install
-COPY app/vendor/. app/vendor/
 COPY app/styles/. app/styles/
 COPY app/scripts/. app/scripts/
 RUN npm start
@@ -21,5 +20,4 @@ app/scripts \
 gulpfile.js \
 jsconfig.json \
 package-lock.json \
-composer.json \
 composer.lock
