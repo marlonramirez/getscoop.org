@@ -36,7 +36,7 @@
             <nav>
                 <ul>
                     <li>
-                        <a href="{{#view->route('doc')}}">
+                        <a href="{{#view->route('welcome')}}">
                             <i class="fa-stack">
                                 <i class="fa fa-circle fa-stack-2x"></i>
                                 <i class="fa fa-book fa-stack-1x fa-inverse"></i>
@@ -48,8 +48,8 @@
             </nav>
         </header>
         <main>
-            {{#view->composeMessage()}}
-            @sprout
+            <sc-message></sc-message>
+            @slot
         </main>
         <footer>
             <a style="float:left" href="http://mirdware.com" rel="external"><img src="{{#view->img('logo-blanco.png')}}" alt="MirdWare" title="MirdWare" /></a>

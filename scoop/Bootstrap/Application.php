@@ -8,22 +8,19 @@ class Application
 
     public function __construct()
     {
-        $this->environment = \Scoop\Context::getEnvironment();
+        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         $this->enableCORS();
     }
 
     public function run()
     {
-        $request = new \Scoop\Http\Request();
+        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Server\Request');
+        $router = \Scoop\Context::inject('\Scoop\Http\Router');
+        $request = \Scoop\Context::inject($requestType);
         try {
-            $response = $this->environment->route($request);
+            $response = $router->route($request);
             gc_collect_cycles();
             return $this->formatResponse($response);
-        } catch (\Scoop\Http\Exception $ex) {
-            if ($request->isAjax()) {
-                $ex->addHeader('Content-Type: application/json');
-            }
-            return $this->formatResponse($ex->handle());
         } catch (\Exception $ex) {
             $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Exception\Manager');
             $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
@@ -31,7 +28,11 @@ class Application
             $status = $exceptionManager->getStatusCode($ex);
             $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
             if (!$status) throw $ex;
-            return $this->formatResponse($exceptionManager->handle($ex, $request->isAjax(), $status));
+            return $this->formatResponse($exceptionManager->handle(
+                $ex,
+                $request->isAjax(),
+                $status
+            ));
         }
     }
 
@@ -39,6 +40,29 @@ class Application
     {
         if ($response === null) {
             return header('HTTP/1.0 204 No Response');
+        }
+        if ($response instanceof \Scoop\Http\Message\Response) {
+            $ignore = array(
+                'transfer-encoding' => 1,
+                'content-encoding' => 1,
+                'connection' => 1,
+                'keep-alive' => 1,
+                'proxy-authenticate' => 1,
+                'proxy-authorization' => 1,
+                'te' => 1,
+                'trailers' => 1,
+                'upgrade' => 1
+            );
+            http_response_code($response->getStatusCode());
+            $headers = $response->getHeaders();
+            foreach ($headers as $name => $values) {
+                if (!isset($ignore[strtolower($name)])) {
+                    foreach ($values as $value) {
+                        header("$name: $value", false);
+                    }
+                }
+            }
+            return $response->getBody();
         }
         if ($response instanceof \Scoop\View) {
             header('Content-Type:text/html');

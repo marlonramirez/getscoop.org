@@ -11,7 +11,8 @@ class TypeMapper
         'int' => 'Scoop\Persistence\Entity\Type\Integer',
         'bool' => 'Scoop\Persistence\Entity\Type\Boolean',
         'date' => 'Scoop\Persistence\Entity\Type\Date',
-        'json' => 'Scoop\Persistence\Entity\Type\Json'
+        'json' => 'Scoop\Persistence\Entity\Type\Json',
+        'json:array' => 'Scoop\Persistence\Entity\Type\JsonArray'
     );
     private $instances = array();
 

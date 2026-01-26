@@ -14,11 +14,13 @@ class Struct
     {
         $name = $this->normalizeName($command->getOption('name'));
         $path = $this->getPath($command->getOption('schema', ''));
-        $path = $path . date('YmdGisv') . $name . '.sql';
+        $microtime = microtime(true);
+        $date = \DateTime::createFromFormat('U.u', sprintf('%.6F', $microtime));
+        $path = $path . $date->format('YmdGisu') . $name . '.sql';
         $file = fopen($path, 'w');
         fwrite($file, '');
         fclose($file);
-        $this->writer->write("File <link!$path!> created");
+        $this->writer->write("File <link:$path!> created");
     }
 
     public function help()
@@ -48,7 +50,7 @@ class Struct
             $path .= '/';
         }
         if (!is_dir($path)) {
-            mkdir($path, 700, true);
+            mkdir($path, 0755, true);
         }
         return $path;
     }

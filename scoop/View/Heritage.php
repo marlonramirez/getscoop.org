@@ -2,79 +2,58 @@
 
 namespace Scoop\View;
 
-abstract class Heritage
+class Heritage
 {
-    private static $stack = array();
-    private static $data;
-    private static $templates;
+    private $parent;
+    private $templates;
 
-    /**
-     * Inicia los atributos estaticos de la clase.
-     * @param array<mixed> $data Los datos que seran renderizados por la plantilla.
-     */
-    public static function init($data)
+    public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $content = ob_get_contents();
-        self::$data = $data;
-        self::$templates = array_merge(
+        $this->templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
-            \Scoop\Context::getEnvironment()->getConfig('templates', array())
+            $environment->getConfig('templates', array())
         );
-        array_push(self::$stack, array(
-            'footer' => '',
-            'content' => trim($content)
-        ));
         ob_start();
     }
 
-    /**
-     * Invoca una plantilla padre a la vista.
-     * @param string $parent Ubicacion del template que sera aplicado a la vista.
-     */
-    public static function extend($parent)
-    {
-        $template = \Scoop\Context::inject(self::$templates['sdt.php']);
-        extract(self::$data);
-        require $template->parse($parent);
-        $index = count(self::$stack) - 1;
-        $footer = &self::$stack[$index]['footer'];
-        $footer = trim(ob_get_contents()) . $footer;
-        ob_end_clean();
-    }
-
-    /**
-     * Incluye un template dentro de otro.
-     * @param string $path Ruta donde se ubica la vista a ser incluida.
-     */
-    public static function getCompilePath($path)
+    public function getCompilePath($path)
     {
         $infoPath = pathinfo($path);
         $ext = (
             isset($infoPath['extension']) &&
-            isset(self::$templates[$infoPath['extension']])
+            isset($this->templates[$infoPath['extension']])
         ) ? $infoPath['extension'] : 'sdt.php';
         $path = $infoPath['dirname'] . '/' . $infoPath['filename'];
-        $template = \Scoop\Context::inject(self::$templates[$ext]);
-        return $template->parse($path, self::$data);
+        $template = \Scoop\Context::inject($this->templates[$ext]);
+        return $template->parse($path);
     }
 
-    /**
-     * Se aplica a un template en el lugar en donde la vista hija debe ser incluida.
-     */
-    public static function sprout()
+    public function setParent()
     {
+        $content = ob_get_clean();
+        if (isset($this->parent)) {
+            $this->parent = self::parseBlocks($content, $this->parent);
+        } else {
+            $this->parent = $content;
+        }
         ob_start();
     }
 
-    /**
-     * Obtiene el contenido de la vista y limpia el buffer.
-     * @return string Pie de página del template.
-     */
-    public static function getContent()
+    public function getContent()
     {
-        $item = array_pop(self::$stack);
-        $view = ob_get_contents() . $item['footer'];
-        ob_end_clean();
-        return $view;
+        if (isset($this->parent)) {
+            return self::parseBlocks(ob_get_clean(), $this->parent);
+        }
+        return ob_get_clean();
+    }
+
+    public static function parseBlocks($content, $parent)
+    {
+        $content = str_replace('$', '\$', $content);
+        $res =preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#', function ($matches) use (&$parent) {
+            $parent = str_replace("@slot[{$matches[1]}]", trim($matches[2]), $parent, $count);
+            return $count ? '' : $matches[0];
+        }, $content);
+        return preg_replace('#@slot(?!\[)#', trim($res), $parent);
     }
 }

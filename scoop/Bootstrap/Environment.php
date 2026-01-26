@@ -11,7 +11,6 @@ class Environment
         'instanceof' => 'Scoop\Bootstrap\Loader\TypeMapper'
     );
     private static $version;
-    private $router;
     private $config;
 
     public function __construct($configPath)
@@ -27,7 +26,8 @@ class Environment
             $http = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') ||
             (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] == 'on') ? 'https:' : 'http:';
-            define('ROOT', $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
+            $viteHost = getenv('VITE_HOST');
+            define('ROOT', $viteHost ? $viteHost : $http . '//' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/');
         }
         define('DEBUG_MODE', filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN));
         self::$loaders += $this->getConfig('loaders', array());
@@ -70,37 +70,6 @@ class Environment
         return $path;
     }
 
-    public function route($request)
-    {
-        $this->router = new \Scoop\Container\Router($this->getConfig('routes', array()));
-        \Scoop\Controller::setRequest($request);
-        \Scoop\Http\Controller::setRequest($request);
-        \Scoop\View::setRequest($request);
-        return $this->router->route($request);
-    }
-
-    public function getURL($args)
-    {
-        $query = array_pop($args);
-        if ($query !== null && !is_array($query)) {
-            array_push($args, $query);
-            $query = null;
-        }
-        if (empty($args)) {
-            $currentPath = '//' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            if (!$query) {
-                $query = array();
-            }
-            return $this->mergeQuery($currentPath, $query);
-        }
-        return $this->router->getURL(array_shift($args), $args, $query);
-    }
-
-    public function getCurrentRoute()
-    {
-        return $this->router->getCurrentRoute();
-    }
-
     public function getVersion()
     {
         if (!self::$version) {
@@ -109,25 +78,5 @@ class Environment
             self::$version = $annotations[1][0];
         }
         return self::$version;
-    }
-
-    private function getQuery($params)
-    {
-        $query = array();
-        $params = explode('&', $params);
-        foreach ($params as $param) {
-            $param = explode('=', $param);
-            $query[$param[0]] = $param[1];
-        }
-        return $query;
-    }
-
-    private function mergeQuery($url, $query)
-    {
-        $url = explode('?', $url);
-        if (isset($url[1])) {
-            $query += $this->getQuery($url[1]);
-        }
-        return $url[0] . $this->router->formatQueryString($query);
     }
 }

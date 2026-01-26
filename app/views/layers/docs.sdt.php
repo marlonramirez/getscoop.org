@@ -5,10 +5,16 @@
         <a href="#menu" id="menu-list" title="menú"></a>
         <ul>
             @foreach $menu as $name => $item
-                <li{{$view === $item['view'] ? ' class="active"' : ''}}>
-                    <a href="{{#view->route('doc', $name ? $name : null)}}">
-                        {{$item['title']}} <i class="fa fa-angle-double-right"></i>
-                    </a>
+                <li{{=$view === $item['view'] ? ' class="active"' : ''}}>
+                    @if $name
+                        <a href="{{#view->route('doc', $name)}}">
+                            {{$item['title']}} <i class="fa fa-angle-double-right"></i>
+                        </a>
+                    @else
+                        <a href="{{#view->route('welcome')}}">
+                            {{$item['title']}} <i class="fa fa-angle-double-right"></i>
+                        </a>
+                    :if
                 </li>
             :foreach
             </li>

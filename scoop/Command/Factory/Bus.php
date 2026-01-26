@@ -14,10 +14,12 @@ class Bus
     public function create()
     {
         return new \Scoop\Command\Bus(
-            $this->environment->getConfig('commands', array()) + array(
+            $this->environment->getConfig('ice.commands', array()) + array(
                 'new' => 'Scoop\Command\Handler\Creator',
                 'scan' => 'Scoop\Command\Handler\Scanner',
-                'dbup' => 'Scoop\Command\Handler\Structure'
+                'dbup' => 'Scoop\Command\Handler\Structure',
+                'preload' => 'Scoop\Command\Handler\PreLoader',
+                'clean' => 'Scoop\Command\Handler\Cleaner'
             )
         );
     }

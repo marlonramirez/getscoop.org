@@ -11,6 +11,6 @@ class Json
 
     public function assemble($value)
     {
-        return json_decode($value, true);
+        return json_decode($value);
     }
 }

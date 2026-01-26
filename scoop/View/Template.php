@@ -4,18 +4,10 @@ namespace Scoop\View;
 
 final class Template
 {
-    const HERITAGE = '\Scoop\View\Heritage';
     const SERVICE = '\Scoop\View\Service';
     private static $cachePath = 'app/storage/cache/views';
     private static $viewPath = 'app/views/';
 
-    /**
-     * Convierte las platillas sdt a vistas php, en caso que la vista sea más
-     * antiguas que el template.
-     * @param string $templatePath Nombre de la plantilla en formato name.sdt.php.
-     * @param array<mixed>  $viewData Datos que deben ser reemplazados dentro de la vista.
-     * @throws \UnderflowException No se puede generar la vista, pues no existe template.
-     */
     public function parse($templatePath)
     {
         $template = self::$viewPath . $templatePath . '.sdt.php';
@@ -36,21 +28,22 @@ final class Template
         self::$cachePath = $cachePath;
     }
 
-    /**
-     * Almacena la vista PHP en el disco.
-     * @param string $viewName Nombre de la vista a almacenar.
-     * @param string $content Contenido de la plantilla aplicando los reemplazos.
-     */
     protected function create($viewName, $templateName)
     {
         $content = self::compile($templateName);
         preg_match_all('/<pre[^>]*>.*?<\/pre>/is', $content, $matches);
         $matches = $matches[0];
         $content = self::clearHTML($content);
+        $content = preg_replace_callback(
+            '~<sc-([\.a-zA-Z0-9_-]+)
+            \s*((?:\s+[a-zA-Z0-9_-]+\s*=\s*(?:\{.+?\}|"[^"]*"|\'[^\']*\'))*)?
+            \s*>(.*?)<\/sc-\1>~six',
+            array('Scoop\View\Template', 'parseCustomTag'),
+            $content
+        );
         $search = array_map(array('\scoop\view\Template', 'clearHTML'), $matches);
-        $content = str_replace(array('[php', 'php]'), array('<?php', '?>'), $content);
-        $search += array(': ?><?php ', ' ?><?php ');
-        $matches += array(':', ';');
+        $search = array_merge($search, array(': ?> <?php ', ' ?> <?php ', ': ?><?php ', ' ?><?php ', '{{=', '{{', '}}'));
+        $matches = array_merge($matches, array(':', ';', ':', ';', '<?php echo(', '<?php echo #view->escape(',  ') ?>'));
         $content = str_replace($search, $matches, $content);
         $path = explode('/', $viewName);
         $count = count($path) - 1;
@@ -62,15 +55,10 @@ final class Template
             }
         }
         $view = fopen($viewName, 'w');
-        fwrite($view, $content);
+        fwrite($view, self::convertViewServices($content));
         fclose($view);
     }
 
-    /**
-     * Reglas para limpiar y minificar la vista.
-     * @param  string $html Contenido completo de la plantilla.
-     * @return string Plantilla limpia y minificada.
-     */
     public static function clearHTML($html)
     {
         $blockElements = array(
@@ -79,32 +67,17 @@ final class Template
             'pre', 'section', 'table', 'tfoot', 'tbody', 'ul', 'video', 'script', 'style', 'td', 'th', 'tr', 'option'
         );
         preg_match(
-            '/\s*<\s*html([^>]*)>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
+            '/\s*<\s*html\s*(.*?)\s*>\s*<\s*head\s*>\s*(.*?)\s*<\s*\/\s*head\s*>\s*<\s*body\s*>\s*/s',
             $html,
             $matches
         );
         if (isset($matches[0])) {
-            $head = str_replace(array('[php', 'php]'), array('<?php', '?>'), $matches[2]);
-            $head = preg_replace('/>\s+</', '><', $head);
-            $html = str_replace($matches[0], '<html' . $matches[1] . '><head>' . $head . '</head><body>', $html);
+            $head = preg_replace('/>\s+</', '><', $matches[2]);
+            $html = str_replace($matches[0], "<html {$matches[1]}><head>$head</head><body>", $html);
         }
         $html = preg_replace(
-            array(
-                '/\s+/',
-                '/<!--.*?-->/s',
-                '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/',
-                '/(;|=)\s*(\"|\')/',
-                '/\s*(\/?)\s*>/',
-                '/<\s/'
-            ),
-            array(
-                ' ',
-                '',
-                '</${1}></${2}>',
-                '${1}${2}',
-                '${1}>',
-                '<'
-            ),
+            array('/\s+/', '/<!--.*?-->/s', '/<\/\s*(\w+)\s*>\s*<\/(\w+)>/', '/(;|=)\s*(\"|\')/', '/\s*(\/?)\s*>/', '/<\s/'),
+            array(' ', '', '</${1}></${2}>', '${1}${2}', '${1}>', '<' ),
             $html
         );
         foreach ($blockElements as $element) {
@@ -113,11 +86,6 @@ final class Template
         return $html;
     }
 
-    /**
-     * Compila el template para convertir su sintaxis a PHP puro, generando de esta manera la vista.
-     * @param string $template Nombre del template que se usara
-     * @return string Contenido básico de la vista a ser mostrada
-     */
     private static function compile($template)
     {
         $content = '';
@@ -126,17 +94,14 @@ final class Template
             $content .= self::replace(fgets($file));
         }
         fclose($file);
-        return self::convertViewServices($content);
+        return $content;
     }
 
-    /**
-     * Reglas de reemplazo para cada uno de los comandos de la plantilla.
-     * EJ: @extends 'template' => \Scoop\View\Helper::extend('template').
-     * @param string $line Linea que se encuentra analizando el parseador.
-     * @return string Linea con los cambios realizados.
-     */
     private static function replace($line)
     {
+        if (self::replaceSingle($line)) {
+            return $line;
+        }
         $quotes = '\'[^\']*\'|"[^"]*"';
         $safeChars = '[\(\)\d\s\.\+\-\*\/%=]|true|false|null';
         $vars = '(\$|#)?[\w_]+(::[\w_]+|->[\w_]+|\[(' . $quotes . '|\d+|\$\w+)\])*';
@@ -145,60 +110,87 @@ final class Template
         $safeExp = $quotes . '|' . $conditional . '|' . $fn;
         $uri = '(\w+:)?[\$\w\/-]+';
         $line = preg_replace(array(
-            "/@inject ([\\\\\w]+)#(\w+)/",
-            "/@extends ('$uri')/",
-            "/@import ('$uri'|\"$uri\")/",
-            "/@if (($safeExp)+)/",
-            "/@elseif (($safeExp)+)/",
-            "/@while (($conditional|$fn)+)/",
-            "/@foreach (($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/",
-            "/@for (($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/"
+            "/@inject\s([\\\\\w]+)#(\w+)/",
+            "/@extends\s('$uri')/",
+            "/@import\s('$uri'|\"$uri\")/",
+            "/@foreach\s(($vars)+\s+as\s+($vars)+(\s*=>\s*($vars)+)?)/"
         ), array(
-            '[php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') php]',
-            '[php ' . self::HERITAGE . '::extend(${1}) php]',
-            '[php require ' . self::HERITAGE . '::getCompilePath(${1}) php]',
-            '[php if(${1}): php]',
-            '[php elseif(${1}): php]',
-            '[php while(${1}): php]',
-            '[php foreach(${1}): php]',
-            '[php for(${1}): php]'
+            '<?php ' . self::SERVICE . '::inject(\'${2}\',\'${1}\') ?>',
+            '<?php require #view->getCompilePath(${1});#view->setParent() ?>',
+            '<?php require #view->getCompilePath(${1}) ?>',
+            '<?php foreach(${1}): ?>'
         ), $line, 1, $count);
         if ($count !== 0) {
             return $line;
         }
-        $line = str_replace(
-            array(
-                ':if',
-                ':foreach',
-                ':for',
-                ':while',
-                '@else',
-                '@sprout'
-            ),
-            array(
-                '[php endif php]',
-                '[php endforeach php]',
-                '[php endfor php]',
-                '[php endwhile php]',
-                '[php else: php]',
-                '[php ' . self::HERITAGE . '::sprout() php]'
-            ),
-            $line,
-            $count
-        );
-        if ($count !== 0) {
+        if (self::replaceRegex($line, "/@(if|elseif|while)\s(($safeExp)+)/")) {
             return $line;
         }
-        return str_replace(array('{{', '}}'), array('[php echo ', ' php]'), $line);
+        self::replaceRegex($line, "/@(for)\s(($vars|$safeChars|$quotes|,|$fn)*;($conditional)+;($vars|$safeChars)*)/");
+        return $line;
+    }
+
+    private static function replaceSingle(&$line)
+    {
+        $line = str_replace(
+            array(':if', ':foreach', ':for', ':while', '@else'),
+            array('<?php endif ?>', '<?php endforeach ?>', '<?php endfor ?>', '<?php endwhile ?>', '<?php else: ?>'),
+            $line, $count
+        );
+        return $count !== 0;
+    }
+
+    private static function replaceRegex(&$line, $regex)
+    {
+        $line = preg_replace_callback($regex, function ($matches) {
+            return '<?php ' . $matches[1] . '(' . trim($matches[2]) . '): ?>';
+        }, $line, 1, $count);
+        return $count !== 0;
     }
 
     private static function convertViewServices($content)
     {
-        preg_match_all('/\[php.*?php\]/is', $content, $tagsFound);
+        preg_match_all('/\<\?php.*?\?>/is', $content, $tagsFound);
         foreach ($tagsFound[0] as $search) {
             $replace = preg_replace('/#(\w*)->/is', self::SERVICE . '::get(\'${1}\')->', $search);
             $content = str_replace($search, $replace, $content);
         }
         return $content;
+    }
+
+    private static function parseCustomTag($matches)
+    {
+        $componentName = $matches[1];
+        $attributesString = $matches[2] ? $matches[2] : '';
+        $contentValue = trim($matches[3]);
+        $props = array();
+        $attrPattern = '~([a-zA-Z0-9_-]+)\s*=\s*(?:\{(.+?)\}|"([^"]*)"|\'([^\']*)\')~ix';
+        if (preg_match_all($attrPattern, $attributesString, $attr_matches, PREG_SET_ORDER)) {
+            foreach ($attr_matches as $attr) {
+                $propName = $attr[1];
+                $propValuePhpCode = '';
+                if (!empty($attr[2])) {
+                    $propValuePhpCode = trim($attr[2]);
+                } elseif (isset($attr[3])) {
+                    $propValuePhpCode = "'" . addslashes($attr[3]) . "'";
+                } elseif (isset($attr[4])) {
+                    $propValuePhpCode = "'" . addslashes($attr[4]) . "'";
+                }
+                $props[$propName] = $propValuePhpCode;
+            }
+        }
+        $propsPhpArray = array();
+        foreach ($props as $key => $phpCodeForValue) {
+            $propsPhpArray[] = "'" . addslashes($key) . "' => " . $phpCodeForValue;
+        }
+        $propsPhpString = 'array(' . implode(', ', $propsPhpArray) . ')';
+        if (empty($contentValue)) {
+            $variable = '\'\'';
+            $contentValue = '<?php ';
+        } else {
+            $variable = uniqid('$t');
+            $contentValue = "<?php ob_start() ?>$contentValue<?php $variable=ob_get_clean();";
+        }
+        return "{$contentValue}echo #view->compose('$componentName', $propsPhpString, $variable); ?>";
     }
 }

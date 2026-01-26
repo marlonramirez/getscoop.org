@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-class Index extends \Scoop\Controller
+class Index
 {
     /**
      * @return \Scoop\View
@@ -10,6 +10,6 @@ class Index extends \Scoop\Controller
     public function get()
     {
         $view = new \Scoop\View('home');
-        return $view->set('title', 'Simple Characteristics of Object-Oriented PHP');
+        return $view->add('title', 'Simple Characteristics of Object-Oriented PHP');
     }
 }

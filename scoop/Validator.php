@@ -147,14 +147,14 @@ class Validator
             if (strrpos($field, '.*.')) {
                 $field = substr($field, 0, -3);
                 $value = $this->getValue($field, $data);
-                foreach ($value as $i => $value) {
+                foreach ($value as $i => $v) {
                     $this->setData($validations, $data, $field . '.' . $i . '.');
                 }
             } else {
                 $value = $this->getValue($field, $data);
                 foreach ($validations as $validation) {
                     $params = array('@name' => $field);
-                    if ($validation->with($data, self::$fields)) {
+                    if ($validation->attach($data, self::$fields)) {
                         $this->executeRule($validation, $params, $value);
                     }
                 }
