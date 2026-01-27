@@ -3,6 +3,8 @@
 <ul>
     <li><a href="#exceptions">Manejo de Excepciones y Mapeo HTTP</a></li>
     <li><a href="#monitoring">Monitoreo y Logging</a></li>
+    <li><a href="#cache">Caché distribuida</a></li>
+    <li><a href="#http-client">HTTP Client</a></li>
     <li><a href="#crypt">Vault: Seguridad Criptográfica</a></li>
     <li><a href="#ice">ICE: Interface Command Environment</a></li>
     <li><a href="#i18n">Internacionalización (i18n)</a></li>
@@ -80,6 +82,55 @@
 </code></pre>
 
 <p>Cada Handler es resuelto por el <b>Injector</b>, lo que permite que el sistema de log sea totalmente extensible y configurable mediante inyección de dependencias.</p>
+
+<p>El código de <code>scoop/Persistence/DBC.php</code> y <code>scoop/Bootstrap/Application.php</code> dispara eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>ErrorOccurred</code>.</p>
+
+<h2>
+    <a href='#cache'>Caché distribuida</a>
+    <span class='anchor' id='cache'>...</span>
+</h2>
+
+<p>Scoop implementa un sistema de almacenamiento temporal que cumple simultáneamente con los estándares <b>PSR-6</b> (Cache Item Pool) para una gestión granular y <b>PSR-16</b> (Simple Cache) para operaciones rápidas. Esta dualidad permite que el motor se adapte tanto a necesidades complejas de persistencia diferida como a casos de uso de alto rendimiento.</p>
+
+<h3>Arquitectura de Almacenamiento</h3>
+
+<p>El sistema se basa en un <i>Item Pool</i> extensible. Scoop provee de serie dos <i>drivers</i> de alta eficiencia:</p>
+
+<p>
+    <ul>
+        <li><b><code>FilePool</code>:</b> Persistencia en disco con una estructura de directorios jerárquica (basada en el hash de la clave) para evitar cuellos de botella en el sistema de archivos del SO ante volúmenes masivos de datos.</li>
+        <li><b><code>MemoryPool</code>:</b> Ideal para pruebas unitarias o procesos de corta duración que requieren velocidad de acceso volátil.</li>
+    </ul>
+</p>
+
+<pre><code class="language-php">$this->cache->set('user_session_1', $userData, 3600);
+$data = $this->cache->get('user_session_1');
+</code></pre>
+
+<p class="doc-alert"><b>Rendimiento de Autor:</b> El sistema soporta <b>Deferred Saving</b> (Guardado Diferido). Puedes preparar múltiples cambios en el pool y ejecutarlos atómicamente al final del ciclo de vida mediante el método <code>commit()</code>, optimizando las operaciones de I/O.</p>
+
+<h2>
+    <a href='#http-client'>HTTP Client</a>
+    <span class='anchor' id='http-client'>...</span>
+</h2>
+
+<p>Para la comunicación con servicios externos y la implementación de patrones como BFF o Microservicios, Scoop integra un <b>Cliente HTTP nativo</b> alineado con el estándar <b>PSR-18</b>. Está construido sobre <b>cURL</b>, eliminando la necesidad de dependencias externas pesadas (como Guzzle) y manteniendo el motor extremadamente ligero.</p>
+
+<h3>Capacidades Técnicas</h3>
+
+<p>
+    <ul>
+        <li><b>Gestión de Streams:</b> Utiliza el motor de <i>Streams</i> de Scoop para manejar cuerpos de petición y respuesta de gran tamaño sin saturar la memoria RAM.</li>
+        <li><b>Seguridad de Transporte:</b> Soporte nativo para protocolos modernos (TLS/SSL) y gestión automática de métodos HTTP (incluyendo verbos personalizados).</li>
+        <li><b>Manejo de Excepciones:</b> Diferencia técnicamente entre errores de red (<code>NetworkException</code>) y errores de petición (<code>RequestException</code>), permitiendo una gestión de fallos granular en el Dominio.</li>
+    </ul>
+</p>
+
+<pre><code class="language-php">public function get(): Response {
+    $request = new Request('https://api.externa.com/v1/data', 'GET');
+    return $this->httpClient->sendRequest($request);
+}
+</code></pre>
 
 <h2>
     <a href='#crypt'>Vault: Seguridad Criptográfica</a>
@@ -211,7 +262,7 @@ $plainText = $this->vault->decrypt($encrypted);
 
 <p>El idioma puede ser modificado en tiempo de ejecución mediante middlewares (PSR-15), permitiendo aplicaciones multi-idioma basadas en la sesión o cabeceras del navegador.</p>
 
-<pre><code class="language-php">class Midleware
+<pre><code class="language-php">class Middleware
 {
     public function __construct(
         private \Scoop\Bootstrap\Configuration $conf
@@ -220,7 +271,7 @@ $plainText = $this->vault->decrypt($encrypted);
 
     public function process($request, $handler)
     {
-        $this->conf->setLenguage($request->getVariable('lang'));
+        $this->conf->setLanguage($request->getHeaderLine('Accept-Language'));
         $handler->handle($request);
     }
 }

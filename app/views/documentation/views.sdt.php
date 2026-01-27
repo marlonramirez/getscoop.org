@@ -232,8 +232,8 @@
 <p>Se definen envolviendo el valor en llaves <code>{}</code>. El contenido dentro de las llaves es tratado como <b>código PHP real</b> y se evalúa antes de ser entregado al componente.</p>
 
 <pre><code class="language-php-template">&lt;sc-user-profile
-user&#123;user}&#125;
-isAdmin=&#123;{$user->hasRole('admin')}&#125;
+user={$user};
+isAdmin={$user->hasRole('admin')}
 theme="dark"
 &gt;&lt;/sc-user-profile&gt;</code></pre>
 

@@ -3,8 +3,8 @@
 <ul>
     <li><a href="#routing">app/routes</a></li>
     <li><a href="#params">Parámetros dinámicos</a></li>
-    <li><a href="#security">Seguridad en la Entrada: Sanitización Automática</a></li>
     <li><a href="#endpoint">Definición de Endpoints</a></li>
+    <li><a href="#request-response">Request y Response</a></li>
     <li><a href="#middlewares">Jerarquía de Middlewares</a></li>
     <li><a href="#cors">Políticas de Red: CORS</a></li>
 </ul>
@@ -40,7 +40,7 @@
 └─ endpoint.php
 </code></pre>
 
-<p>En este ejemplo, el valor "mi-primer-post" será capturado bajo la clave <code>slug</code>.</p>
+<p>En este ejemplo, el valor "mi-primer-post" será capturado bajo la clave <code>slug</code>. Scoop garantiza la predictibilidad del ruteo mediante un algoritmo de prioridad que favorece los paths estáticos sobre los dinámicos (<code>[id]</code>), eliminando colisiones accidentales.</p>
 
 <h3>Validación de parámetros de ruta</h3>
 
@@ -53,20 +53,6 @@
 </code></pre>
 
 <p class="doc-alert"><b>Comportamiento Fail-fast:</b> Si el validador de la ruta falla, el motor aborta la petición y lanza una excepción <code>NotFound</code> (404), garantizando que el sistema nunca procese identificadores con formato inválido.</p>
-
-<h2>
-    <a href="#security">Seguridad en la Entrada: Sanitización Automática</a>
-    <span class="anchor" id="security">...</span>
-</h2>
-
-<p>El objeto <code>Request</code> de Scoop no es solo un contenedor de datos; implementa una capa de <b>Defensa en Profundidad</b>. Por defecto, el motor aplica una sanitización agresiva a todos los strings provenientes de <code>$_GET</code>, <code>$_POST</code> y la URI.</p>
-
-<ul>
-    <li><b>Protección XSS:</b> El motor limpia etiquetas peligrosas (<code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;applet&gt;</code>) y atributos de eventos (<code>onmouseover</code>, <code>onclick</code>).</li>
-    <li><b>Normalización:</b> Decodifica entidades HTML y elimina caracteres nulos o invisibles que puedan evadir filtros de seguridad.</li>
-</ul>
-
-<p class="doc-alert"><b>Filosofía Purista:</b> Aunque el motor limpia los datos de infraestructura, Scoop recomienda que el Dominio siempre valide sus propios <i>Invariantes</i>. La sanitización de Scoop es una barrera de seguridad técnica, no una sustitución de la lógica de negocio.</p>
 
 <h2>
     <a href="#endpoint">Definición de endpoints</a>
@@ -109,6 +95,36 @@
 <p class="doc-alert"><b>Nota técnica:</b> Si el controlador es una clase invocable (implementa <code>__invoke</code>), el motor lo ejecutará directamente. De lo contrario, buscará un método con el mismo nombre que el verbo HTTP (get, post, etc.).</p>
 
 <h2>
+    <a href="#request-response">Request y Response</a>
+    <span class="anchor" id="request-response">...</span>
+</h2>
+
+<p>Scoop implementa objetos de <code>Request</code> y <code>Response</code> basados en PSR-7 con sistema de inmutabilidad y manejo de Streams nativo para la gestión de cuerpos de petición y respuesta. Esto garantiza que el motor pueda procesar flujos de datos masivos (descargas de archivos, payloads extensos) manteniendo una huella de memoria constante y mínima.</p>
+
+<p>El manejo de archivos subidos en Scoop es totalmente orientado a objetos. Olvídate de manipular el array global <code>FILES</code>; accede a los archivos mediante <code>request->getUploadedFiles()</code>, obteniendo objetos inmutables con soporte para streaming y validación de errores nativa.</p>
+
+<pre><code class="language-php">public function post(Request $request): Response
+{
+    $uploadedFiles = $request->getUploadedFiles();
+    $profileImage = $uploadedFiles['profile_image'];
+    if ($profileImage->getError() === UPLOAD_ERR_OK) {
+        $stream = $profileImage->getStream();
+        ...
+    }
+    return new Response(200, [], 'Archivo subido correctamente');
+}
+</code></pre>
+
+<p>El objeto <code>Request</code> de Scoop no es solo un contenedor de datos; implementa una capa de <b>Defensa en Profundidad</b>. Por defecto, el motor aplica una sanitización agresiva a todos los strings provenientes de <code>$_GET</code>, <code>$_POST</code> y la URI.</p>
+
+<ul>
+    <li><b>Protección XSS:</b> El motor limpia etiquetas peligrosas (<code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;applet&gt;</code>) y atributos de eventos (<code>onmouseover</code>, <code>onclick</code>).</li>
+    <li><b>Normalización:</b> Decodifica entidades HTML y elimina caracteres nulos o invisibles que puedan evadir filtros de seguridad.</li>
+</ul>
+
+<p class="doc-alert"><b>Filosofía Purista:</b> Aunque el motor limpia los datos de infraestructura, Scoop recomienda que el Dominio siempre valide sus propios <i>Invariantes</i>. La sanitización de Scoop es una barrera de seguridad técnica, no una sustitución de la lógica de negocio.</p>
+
+<h2>
     <a href="#middlewares">Jerarquía de middlewares</a>
     <span class="anchor" id="middlewares">...</span>
 </h2>
@@ -130,6 +146,27 @@
     <li>Middlewares en <code>app/routes/admin/middlewares.php</code> (Zonales).</li>
     <li>Middlewares definidos dentro del <code>endpoint.php</code> (Específicos).</li>
 </ol>
+
+<h3>Lógica de un Middleware</h3>
+
+<p>Un middleware debe implementar el método <code>process</code> según especificación PSR-15, este método recible dos parametros la request y el handler y debe retornar el Response.</p>
+
+<pre><code class="language-php">public function process(Request $request, Next $next): Response
+{
+    if ($request->getMethod() !== 'get') {
+        return;
+    }
+    $data = $request->getQueryParams();
+    if (
+        !isset($data['token']) ||
+        !isset($data['user']) ||
+        $this->userRepository->get(['token' => $data['token'], 'nombre' => $data['user']])
+    ) {
+        throw new Forbidden('deny for insufficient privileges');
+    }
+    return $next->handle($request);
+}
+</code></pre>
 
 <h2>
     <a href="#cors">Políticas de Red: CORS</a>

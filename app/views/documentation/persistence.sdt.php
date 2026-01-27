@@ -185,3 +185,13 @@ $books->delete()->restrict('id = :id')->run(['id' => 1]);
     'result' => [...]
 ]
 </code></pre>
+
+<h3>Operadores atómicos</h3>
+
+<p>El método <code>update</code> detecta operadores matemáticos al final de las llaves (+, -, *, /, %); con lo cual puedes realizar actualizaciones incrementales directamente en la base de datos de forma segura.</p>
+
+<pre><code class="language-php">$books->update([
+    'stock+' => 10,
+    'views-' => 1
+])->restrict('id = :id')->run(['id' => 1]);
+</code></pre>

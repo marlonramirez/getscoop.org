@@ -5,6 +5,7 @@
 <ul>
     <li><a href="#structure">Estructura de directorios</a></li>
     <li><a href="#dtos">Integridad Atómica con DTOs y Validación</a></li>
+    <li><a href="#flash">Mensajes entre peticiones</a></li>
     <li><a href="#use-cases">Orquestación de Casos de Uso</a></li>
     <li><a href="#events">Desacoplamiento con Bus de Eventos</a></li>
 </ul>
@@ -174,6 +175,24 @@ assets de la aplicación.</p>
     }
 }
 </code></pre>
+
+<h2>
+    <a href="#flash">Mensajes entre peticiones</a>
+    <span class="anchor" id="flash">...</span>
+</h2>
+
+<p>Scoop integra un sistema de Flash Messages persistente pero efímero. Permite enviar notificaciones o datos de estado entre peticiones de forma segura, garantizando que la información se limpie automáticamente una vez consumida por la vista.</p>
+
+<pre><code class="language-php">$this->request->flash()->get('message');
+</code></pre>
+
+<p>La forma común de manejar mensajes es mediante la clase <code>Route</code>.</p>
+
+<pre><code class="language-php">$route = new Route('filing');
+$request->redirect($route->withMessage('Factura creada correctamente'), 303);
+</code></pre>
+
+<p>Para enviar cualquier otro tipo de información se puede usar directamente el método <code>set</code> de <code>flash</code>.</p>
 
 <h2>
     <a href="#events">Desacoplamiento con Bus de Eventos</a>

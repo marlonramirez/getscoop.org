@@ -165,6 +165,8 @@
 ]
 </code></pre>
 
+<p>El sistema de persistencia soporta herencia recursiva; mediante el <code>DiscriminatorMapper</code>, Scoop puede resolver jerarquías polimórficas complejas, instanciando la subclase exacta basándose en el estado de la base de datos de forma totalmente transparente para el dominio.</p>
+
 <p class="doc-danger">En futuras versiones se puede implementar una única tabla por subclase (Concrete Table Inheritance).</p>
 
 <h2>
