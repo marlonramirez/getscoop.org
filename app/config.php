@@ -5,5 +5,6 @@ return array(
     'messages' => array(
         'es' => 'import:app/config/lang/es',
         'en' => 'import:app/config/lang/en'
-    )
+    ),
+    'cors' => true
 );

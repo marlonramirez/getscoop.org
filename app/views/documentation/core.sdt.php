@@ -46,8 +46,8 @@ $environment = \Scoop\Context::getEnvironment();
 
 <pre><code class="language-php">return [
     'providers' => require 'config/providers.php',
-    'routes'    => 'app/routes',
-    'app'       => 'json:package'
+    'routes' => 'app/routes',
+    'app' => 'json:package'
 ];
 </code></pre>
 

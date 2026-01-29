@@ -196,8 +196,8 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
         <li><b>Gestión de Ámbitos (Scopes):</b> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
             <pre><code class="language-php">[
     'service' => 'App\Infraestructure\Repository\Factory\PostgresUser',
-    'method'  => 'create',
-    'scope'   => 'singleton'
+    'method' => 'create',
+    'scope' => 'singleton'
 ]</code></pre>
         </li>
         <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR-7</b> (Response) y <b>PSR-17</b> (HTTP Factories).</li>

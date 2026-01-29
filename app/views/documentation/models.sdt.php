@@ -6,7 +6,7 @@
 
 <ul>
     <li><a href="#entities">Mapeo de Entidades POPO</a></li>
-    <li><a href="#values">Value Objects (Objetos de Valor)</a></li>
+    <li><a href="#vo">Value Objects (Objetos de Valor)</a></li>
     <li><a href="#relations">Gestión Compleja de Relaciones</a></li>
     <li><a href="#inheritance">Estrategias de Herencia y Polimorfismo</a></li>
     <li><a href="#types">Custom Types: Extendiendo el Motor</a></li>
