@@ -85,7 +85,7 @@ location ~ ^([^.\?]*[^/])$ {
    try_files $uri @addslash;
 }
 location @addslash {
-   return 301 $uri/;
+   return 308 $uri/$is_args$args;;
 }
 location /(app|vendor|scoop|resources)/ {
     deny all;
@@ -174,6 +174,55 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 </h2>
 
 <p>Scoop es un motor en constante refinamiento. Nuestra hoja de ruta no solo busca añadir funcionalidades, sino alcanzar la perfección técnica mediante el uso de estructuras de datos avanzadas y la implementación de patrones de aislamiento modular de alto nivel.</p>
+
+<p>
+    <pre class="mermaid" style="text-align:center">
+graph TD
+    %% Nodos de entrada
+    R1[Request 1]
+    R2[Request 2]
+    R3[Request 3]
+
+    subgraph WP ["Single PHP Process (Worker Mode)"]
+        direction LR
+
+        subgraph CA ["Context A: Billing"]
+            direction TB
+            I1[Injector A] --- C1[Config A]
+        end
+
+        subgraph CB ["Context B: Inventory"]
+            direction TB
+            I2[Injector B] --- C2[Config B]
+        end
+
+        subgraph CC ["Context C: Auth"]
+            direction TB
+            I3[Injector C] --- C3[Config C]
+        end
+    end
+
+    %% Flujo de peticiones
+    R1 --> I1
+    R2 --> I2
+    R3 --> I3
+
+    %% Estilos para Atom One Dark
+    style WP fill:#21252b,stroke:#5c6370,stroke-width:2px,color:#abb2bf
+
+    style CA fill:#282c34,stroke:#61afef,color:#abb2bf
+    style CB fill:#282c34,stroke:#98c379,color:#abb2bf
+    style CC fill:#282c34,stroke:#d19a66,color:#abb2bf
+
+    style R1 fill:#282c34,stroke:#abb2bf,color:#abb2bf
+    style R2 fill:#282c34,stroke:#abb2bf,color:#abb2bf
+    style R3 fill:#282c34,stroke:#abb2bf,color:#abb2bf
+
+    style I1 fill:#3e4452,stroke:#61afef,color:#61afef
+    style I2 fill:#3e4452,stroke:#98c379,color:#98c379
+    style I3 fill:#3e4452,stroke:#d19a66,color:#d19a66
+    </pre>
+</p>
 
 <div class="roadmap-box">
     <h3>v0.8.X: La Purificación del Hot Path</h3>

@@ -25,6 +25,18 @@
     </section>
 </div>
 <script>
+mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#61afef',
+            primaryTextColor: '#abb2bf',
+            primaryBorderColor: '#5c6370',
+            lineColor: '#98c379',
+            secondaryColor: '#282c34',
+            tertiaryColor: '#21252b'
+        }
+    });
 hljs.addPlugin(
   new CopyButtonPlugin({
     lang: "es"

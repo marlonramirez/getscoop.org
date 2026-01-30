@@ -115,15 +115,6 @@
 }
 </code></pre>
 
-<p>El objeto <code>Request</code> de Scoop no es solo un contenedor de datos; implementa una capa de <b>Defensa en Profundidad</b>. Por defecto, el motor aplica una sanitización agresiva a todos los strings provenientes de <code>$_GET</code>, <code>$_POST</code> y la URI.</p>
-
-<ul>
-    <li><b>Protección XSS:</b> El motor limpia etiquetas peligrosas (<code>&lt;script&gt;</code>, <code>&lt;object&gt;</code>, <code>&lt;applet&gt;</code>) y atributos de eventos (<code>onmouseover</code>, <code>onclick</code>).</li>
-    <li><b>Normalización:</b> Decodifica entidades HTML y elimina caracteres nulos o invisibles que puedan evadir filtros de seguridad.</li>
-</ul>
-
-<p class="doc-alert"><b>Filosofía Purista:</b> Aunque el motor limpia los datos de infraestructura, Scoop recomienda que el Dominio siempre valide sus propios <i>Invariantes</i>. La sanitización de Scoop es una barrera de seguridad técnica, no una sustitución de la lógica de negocio.</p>
-
 <h2>
     <a href="#middlewares">Jerarquía de middlewares</a>
     <span class="anchor" id="middlewares">...</span>

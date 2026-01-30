@@ -305,6 +305,54 @@ class InvoiceCommand implements InvoiceRepository
 
 <p class="doc-alert"><b>Unit of Work:</b> El motor rastrea internamente los cambios en las entidades. Al invocar <code>$this->em->flush()</code>, Scoop genera y ejecuta atómicamente todas las sentencias SQL de actualización necesarias.</p>
 
+<p>
+    <pre class="mermaid" style="text-align:center">
+graph LR
+    subgraph "Domain Layer (Aggregates)"
+        E1[Entity A - Root]
+        E2[Entity B - Related]
+        VO[Value Objects]
+        E1 --- VO
+        E1 <== "Relation Mapper" ==> E2
+    end
+
+    subgraph "Infraestructure Layer"
+        R[Repository]
+    end
+
+    subgraph "Scoop EPM Core"
+        M[Manager]
+        MAP[Mapper]
+        REL[Relation Handler]
+        TM[Type Mapper]
+    end
+
+    subgraph "Infrastructure"
+        DBC[DBC / PDO]
+        DB[(Database)]
+    end
+
+    %% Flujo de ejecución
+    R -- "1. Persist / Search" --> M
+    M -- "2. Hydrate / Extract" --> MAP
+    MAP -- "3. Main Fields" --> E1
+
+    M -- "4. Link / Cascade" --> REL
+    REL -- "5. Object Graph" --> E2
+
+    MAP & REL --> TM
+    TM -- "6. Atomic SQL" --> DBC
+    DBC --> DB
+
+    %% Estilos Atom One Dark
+    style R fill:#e06c75,stroke:#333,color:#fff
+    style M fill:#61afef,stroke:#333,color:#fff
+    style REL fill:#d19a66,stroke:#333,color:#fff
+    style E1 fill:#98c379,stroke:#333,color:#fff
+    style E2 fill:#98c379,stroke:#333,color:#fff
+    </pre>
+</p>
+
 <h2>
     <a href="#dsl">Abstracción de Consulta complejas</a>
     <span class="anchor" id="dsl">...</span>
@@ -320,7 +368,8 @@ class InvoiceCommand implements InvoiceRepository
     <li><b>Order:</b> La definición del ordenamiento de los resultados.</li>
 </ol>
 
-<pre><code class="language-php">public function search(Criteria $criteria): array
+<p>
+    <pre><code class="language-php">public function search(Criteria $criteria): array
 {
     $mapper = new CriteriaEPM($criteria);
     return $this->em->search(Invoice::class)
@@ -329,6 +378,7 @@ class InvoiceCommand implements InvoiceRepository
     ->aggregate('payments.customer')
     ->matching($mapper->getDSL(), $mapper->getFilters(), $mapper->getOrder());
 }
-</code></pre>
+    </code></pre>
+</p>
 
 <p class="doc-alert"><b>Pureza Táctica:</b> Con Criteria, el desarrollador puede construir filtros complejos desde la interfaz de usuario o servicios de aplicación sin que estas capas conozcan la estructura de la base de datos o la sintaxis SQL subyacente.</p>
