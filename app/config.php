@@ -6,5 +6,9 @@ return array(
         'es' => 'import:app/config/lang/es',
         'en' => 'import:app/config/lang/en'
     ),
-    'cors' => true
+    'ice' => array(
+        'commands' => array(
+            'scan:docs' => 'App\Command\DocScanner'
+        )
+    )
 );

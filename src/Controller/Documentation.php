@@ -13,11 +13,11 @@ class Documentation
         'routing' => array('title' => 'Infraestructura y ruteo', 'view' => 'routing'),
         'application' => array('title' => 'Capa de aplicación', 'view' => 'application'),
         'persistence' => array('title' => 'Persistencia Atómica', 'view' => 'persistence'),
-        'domain' => array('title' => 'Modelado de Dominio', 'view' => 'models'),
+        'domain' => array('title' => 'Modelado de Dominio', 'view' => 'domain'),
         'security' => array('title' => 'Seguridad', 'view' => 'security'),
-        'presentation' => array('title' => 'Capa de entrega (sdt)', 'view' => 'views'),
+        'presentation' => array('title' => 'Capa de entrega (sdt)', 'view' => 'presentation'),
         'ecosystem' => array('title' => 'Ecosistema y herramientas', 'view' => 'ecosystem'),
-        'ops' => array('title' => 'Calidad y despliegue', 'view' => 'deploy')
+        'deploy' => array('title' => 'Calidad y despliegue', 'view' => 'deploy')
     );
 
     /**

@@ -6,7 +6,6 @@
     <li><a href="#endpoint">Definición de Endpoints</a></li>
     <li><a href="#request-response">Request y Response</a></li>
     <li><a href="#middlewares">Jerarquía de Middlewares</a></li>
-    <li><a href="#cors">Políticas de Red: CORS</a></li>
 </ul></p>
 
 <h2>
@@ -170,20 +169,6 @@ return array_merge($group, [
     }
     return $next->handle($request);
 }
-</code></pre>
-
-<h2>
-    <a href="#cors">Políticas de Red: CORS</a>
-    <span class="anchor" id="cors">...</span>
-</h2>
-
-<p>La gestión de orígenes cruzados se define en la configuración central, permitiendo que <code>Application.php</code> maneje de forma transparente el pre-vuelo (peticiones <code>OPTIONS</code>) y las cabeceras de seguridad necesarias para clientes modernos.</p>
-
-<pre><code class="language-php">'cors' => [
-    'origin' => 'https://dashboard.miapp.com',
-    'methods' => 'POST, GET, OPTIONS',
-    'headers' => 'Authorization, Content-Type'
-]
 </code></pre>
 
 <p class="doc-alert"><b>Optimización de Producción:</b> Aunque en desarrollo Scoop escanea el sistema de archivos en cada petición, en producción se debe ejecutar el comando <code>app/ice cache routes</code>. Esto genera un mapa de rutas inmutable en memoria, eliminando el costo de I/O y garantizando un rendimiento superior.</p>

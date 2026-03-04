@@ -28,13 +28,14 @@ jobs:
       - name: Clean up development files
         run: |
           rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
-          rm -f *.md app/*.neon app/*.xml app/router.php package* .dockerignore Dockerfile config.json vite.config.js
-          rm -rf app/scripts app/styles
+          rm -f *.md app/*.neon app/*.xml *.yml app/router.php package* .dockerignore Dockerfile jsconfig.json vite.config.js
+          rm -rf app/scripts app/styles app/routes
       - name: deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          dangerous-clean-slate: true
           local-dir: ./
           server-dir: ./htdocs/
