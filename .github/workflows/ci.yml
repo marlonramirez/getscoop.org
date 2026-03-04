@@ -1,48 +1,40 @@
-name: CI/CD
+name: deploy
 on:
-  release:
-    types: [published]
+  push:
+    branches: [master]
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  push_to_registry:
-    name: Push Docker image to Docker Hub
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-      attestations: write
-      id-token: write
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      - uses: actions/checkout@v6
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+          php-version: 8.2
+          tools: composer
+      - name: build artifacts
+        run: composer run build
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          images: marlonramirez/scoop-documentation
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+          node-version: '24'
+      - name: build assets
+        run: |
+          npm install
+          npm start
+      - name: Clean up development files
+        run: |
+          rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
+          rm -f *.md app/*.neon app/*.xml app/router.php package* .dockerignore Dockerfile config.json vite.config.js
+          rm -rf app/scripts app/styles
+      - name: deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ./htdocs/
