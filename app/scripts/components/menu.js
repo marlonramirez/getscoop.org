@@ -1,15 +1,11 @@
-function reset($) {
-  $.marginMenu = '';
-  $.contentStyle = {
-    marginLeft: '',
-    marginRight: '',
-    overflow: ''
-  };
-}
-
 function toogle($) {
   if ($.marginMenu === '0') {
-    reset($);
+    $.marginMenu = '';
+    $.contentStyle = {
+      marginLeft: '',
+      marginRight: '',
+      overflow: ''
+    };
   } else {
     $.marginMenu = '0';
     $.contentStyle = {
@@ -21,8 +17,7 @@ function toogle($) {
 }
 
 export default ($) => ({
-    mount: () => console.log($),
     '#menu-list': {
-        click: () => toogle($)
+        _click: () => toogle($)
     }
 });

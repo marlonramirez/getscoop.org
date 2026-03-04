@@ -40,7 +40,7 @@
     .col-3
         width 45%;
         margin 0 1.5%
-    
+
     .about
         figcaption
             display none
@@ -55,9 +55,14 @@
     header
         margin 0
         width 100%
-        figcaption
-            display inline-block
-            width auto
+        flex-direction row
+        flex-wrap wrap
+        height auto
+        padding 15px
+        gap 15px
+        .search-container
+            order 3
+            flex 0 0 90%
 
     #contact-project
         label
@@ -76,6 +81,12 @@
     .col-3
         width 100%
         margin 0
+
+    main
+        margin-top 82px
+
+    #nav-docs
+        top 11em
 
     footer
         background-image none

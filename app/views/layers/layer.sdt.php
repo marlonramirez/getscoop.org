@@ -5,10 +5,6 @@
         <meta charset="utf-8" />
         <!-- Visualización en cualquier dispositivo utilizando responsive disign -->
         <meta name="viewport" content="width=device-width" />
-        @if isset($meta)
-            <meta name="description" content="{{$meta['description']}}" />
-            <meta name="keywords" content="{{$meta['keywords']}}" />
-        :if
         <!-- Referencia a los datos del autor y material utilizado -->
         <link rel="author" href="{{#view->asset('humans.txt')}}" />
         <!-- Icono de la aplicación -->
@@ -17,12 +13,20 @@
         <link rel="stylesheet" href="{{#view->css(#view->getConfig('app.name').'.min.css')}}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
         <link rel="stylesheet" href="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.css" />
+        @if getenv('VITE_HOST')
+            <script type="module" src="{{ROOT}}@vite/client"></script>
+        :if
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/nginx.min.js"></script>
         <script src="https://unpkg.com/highlightjs-copy/dist/highlightjs-copy.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-        <script src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" async></script>
+        <script type="module" src="{{#view->js(#view->getConfig('app.name').'.min.js')}}" async></script>
+        @if isset($meta)
+            @foreach $meta as $name => $value
+                <meta name="{{$name}}" content="{{$value}}" />
+            :foreach
+        :if
         <!-- Titulo de la pagina -->
         <title>{{$title}} - {{#view->getConfig('app.name')}}</title>
     </head>
@@ -83,15 +87,21 @@ const searchInput = document.getElementById('docs-search');
 const resultsContainer = document.getElementById('search-results');
 
 fetch(`{{ROOT}}index.json`)
-    .then(response => response.json())
-    .then(data => {
-        const options = {
-            keys: ['title', 'content'],
-            threshold: 0.3,
-            includeScore: true
-        };
-        fuse = new Fuse(data, options);
-    });
+.then(response => response.json())
+.then(data => {
+    const options = {
+        keys: [
+            { name: 'title', weight: 0.7 },
+            { name: 'content', weight: 0.2 }
+        ],
+        threshold: 0.2,
+        ignoreLocation: true,
+        distance: 1000,
+        includeScore: true
+    };
+    fuse = new Fuse(data, options);
+});
+
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value;
     currentFocus = -1;
@@ -135,6 +145,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== searchInput) {
         e.preventDefault();
         searchInput.focus();
+        searchInput.select();
     }
 });
 
@@ -155,8 +166,10 @@ searchInput.addEventListener('keydown', function(e) {
             }
         }
         resultsList.style.display = 'none';
+        searchInput.value = '';
     } else if (e.key === "Escape") {
         resultsList.style.display = 'none';
+        searchInput.blur();
     }
 });
 

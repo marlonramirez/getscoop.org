@@ -3,7 +3,7 @@
 <p>Antes de entrar en materia técnica, definiremos los principios que rigen el sistema y las bases necesarias para operar con rigor arquitectónico.</p>
 
 <p><ul>
-    <li><a href="#changelog">Control de cambios (v.{{#view->getConfig('app.version')}})</a></li>
+    <li><a href="#changelog">Control de cambios (v.0.8.1)</a></li>
     <li><a href="#filosofy">Filosofía de scoop</a></li>
     <li><a href="#good-practices">Buenas prácticas</a></li>
     <li><a href="#requirements">Requisitos y herramientas</a></li>
@@ -13,7 +13,7 @@
 </ul></p>
 
 <h2>
-    <a href="#changelog">Control de cambios (v.{{#view->getConfig('app.version')}})</a>
+    <a href="#changelog">Control de cambios (v.0.8.1)</a>
     <span class="anchor" id="changelog">...</span>
 </h2>
 

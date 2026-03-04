@@ -1,7 +1,6 @@
 import { Module } from 'scalar';
-import Messenger from './scoop/services/Messenger';
 import Menu from './components/menu';
 
-new Module(Messenger)
+new Module()
 .compose('#main-docs', Menu)
 .execute();

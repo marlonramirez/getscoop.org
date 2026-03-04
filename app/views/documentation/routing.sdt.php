@@ -1,7 +1,7 @@
 <p>Esta capa actúa como la frontera de entrada a la aplicación. Scoop separa la definición física de los puntos de acceso (endpoints) de la lógica de negocio, utilizando el sistema de archivos como el orquestador principal de la infraestructura web.</p>
 
 <p><ul>
-    <li><a href="#routing">app/routes</a></li>
+    <li><a href="#routing">Sistema de rutas app/routes</a></li>
     <li><a href="#params">Parámetros dinámicos</a></li>
     <li><a href="#endpoint">Definición de Endpoints</a></li>
     <li><a href="#request-response">Request y Response</a></li>
@@ -9,7 +9,7 @@
 </ul></p>
 
 <h2>
-    <a href="#routing">app/routes</a>
+    <a href="#routing">Sistema de rutas app/routes</a>
     <span class="anchor" id="routing">...</span>
 </h2>
 
