@@ -60,7 +60,7 @@
                 </a>
                 <a href="https://twitter.com/mirdware" rel="external"><i class="fa fa-twitter"></i> Twitter</a>
             </div>
-            <i>scoop</i> is a trademark of <a href="http://mirdware.com" rel="external">MirdWare</a> © 2025<br/>
+            <i>scoop framework</i> is a trademark of <a href="http://mirdware.com" rel="external">MirdWare</a> © {{date('Y')}}<br/>
             <a href="https://opensource.org/licenses/MIT">License</a>
         </footer>
     </body>

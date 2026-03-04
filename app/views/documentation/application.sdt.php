@@ -80,7 +80,8 @@
 <h3>app</h3>
 <p>Contiene todo el código diferente al core del negocio pero que igual es necesario para la ejecución de la aplicación,
 entre esto tenemos:</p>
-<ul>
+
+<p><ul>
     <li><b>config/:</b> En esta carpeta es donde se deben referenciar los archivos de configuración.</li>
     <li><b>routes/:</b> Sistema de archivos para definir las rutas de la aplicación.</li>
     <li><b>scripts/:</b> En esta carpeta es donde se deben referenciar los archivos de javascript.</li>
@@ -91,13 +92,15 @@ entre esto tenemos:</p>
     <li><b>ice:</b> Este es el archivo donde se ejecutan los comandos de consola del sistema.</li>
     <li><b>phpcs.xml:</b> En este archivo se encuentran las reglas del lintter php.</li>
     <li><b>router.php:</b> Este archivo sirve como sistema rewrite para el servidor php standalone.</li>
-</ul>
+</ul></p>
 
 <h3>public</h3>
+
 <p>Contiene todo los assets compilados y listos para ser entregado al cliente, además de imagenes, archivos usados
 para la indexación en motores de busqueda y fuente de letras. Normalmente no deben ser modificados más que para agregar, modificar o eliminar
 assets de la aplicación.</p>
-<ul>
+
+<p><ul>
     <li><b>css/:</b> En esta carpeta es donde se deben referenciar los archivos css transpilados y minificados.</li>
     <li><b>fonts/:</b> En esta carpeta es donde se deben referenciar los archivos de fuentes de letras.</li>
     <li><b>images/:</b> En esta carpeta es donde se deben referenciar los archivos de imagenes.</li>
@@ -105,7 +108,7 @@ assets de la aplicación.</p>
     <li><b>favicon:</b> Este archivo es el que se carga por defecto como icono en el template principal de la aplicación.</li>
     <li><b>humans.txt:</b> Este archivo es el que se carga por defecto para ser leido por humanos en el template principal de la aplicación.</li>
     <li><b>robots.txt:</b> Este archivo es el que se carga por defecto para ser leido por humanos en el template principal de la aplicación.</li>
-</ul>
+</ul></p>
 
 <h3>scoop</h3>
 <p>Carpeta principal del bootstrap, contiene todo lo necesario para arrancar el proyecto. No debe ser modificada o alterada,

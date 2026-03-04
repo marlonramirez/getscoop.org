@@ -1,13 +1,13 @@
 <p>Esta capa actúa como la frontera de entrada a la aplicación. Scoop separa la definición física de los puntos de acceso (endpoints) de la lógica de negocio, utilizando el sistema de archivos como el orquestador principal de la infraestructura web.</p>
 
-<ul>
+<p><ul>
     <li><a href="#routing">app/routes</a></li>
     <li><a href="#params">Parámetros dinámicos</a></li>
     <li><a href="#endpoint">Definición de Endpoints</a></li>
     <li><a href="#request-response">Request y Response</a></li>
     <li><a href="#middlewares">Jerarquía de Middlewares</a></li>
     <li><a href="#cors">Políticas de Red: CORS</a></li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#routing">app/routes</a>
@@ -61,14 +61,12 @@
 
 <p>El archivo <code>endpoint.php</code> es la unidad mínima de definición de una ruta. Debe retornar un array asociativo con las siguientes propiedades:</p>
 
-<p>
-    <ul>
-        <li><b><code>id</code>:</b> (Opcional) Identificador único de la ruta. Es vital para generar URLs dinámicas mediante <code>view->route('id')</code> sin acoplarse al path físico.</li>
-        <li><b><code>controller</code>:</b> Clase encargada de procesar la petición. Puede ser una sola clase (recurso REST) o un array mapeado por métodos HTTP (get, post, etc.).</li>
-        <li><b><code>validator</code>:</b> (Opcional) Clase que hereda de <code>\Scoop\Validator</code> para validar los parámetros <code>[param]</code> de la URI.</li>
-        <li><b><code>middlewares</code>:</b> (Opcional) Un array indexado de clases que actúan como filtros específicos para este endpoint, ejecutándose después de los middlewares de carpeta.</li>
-    </ul>
-</p>
+<p><ul>
+    <li><b><code>id</code>:</b> (Opcional) Identificador único de la ruta. Es vital para generar URLs dinámicas mediante <code>view->route('id')</code> sin acoplarse al path físico.</li>
+    <li><b><code>controller</code>:</b> Clase encargada de procesar la petición. Puede ser una sola clase (recurso REST) o un array mapeado por métodos HTTP (get, post, etc.).</li>
+    <li><b><code>validator</code>:</b> (Opcional) Clase que hereda de <code>\Scoop\Validator</code> para validar los parámetros <code>[param]</code> de la URI.</li>
+    <li><b><code>middlewares</code>:</b> (Opcional) Un array indexado de clases que actúan como filtros específicos para este endpoint, ejecutándose después de los middlewares de carpeta.</li>
+</ul></p>
 
 <pre><code class="language-php">return [
     'id' => 'user.update',
@@ -122,9 +120,12 @@
 
 <p>La seguridad y la interceptación jerárquica se gestionan mediante archivos <code>middlewares.php</code>. A diferencia de los endpoints, este archivo debe retornar un <b>array indexado simple</b> (lista de clases) que implementen <b>PSR-15</b>.</p>
 
+<p>Para la creación de los middlewares se utilizan las mismas reglas de resolución que el <b>Inyector</b> emplea para los <a href="{{#view->route('doc', 'core')}}#injector">providers</a>, permitiendo el uso de la notación <code>Clase:Método</code> para invocar factorías específicas.</p>
+
 <pre><code class="language-php">return [
-    Middleware\Session::class,
-    Middleware\AdminGuard::class
+    'Middleware\CORS:createForAPI',
+    'Middleware\Session',
+    'Middleware\AdminGuard'
 ];
 </code></pre>
 
@@ -132,11 +133,23 @@
 
 <p>Los middlewares en Scoop son <b>aditivos</b>. El motor construye un <i>pipeline</i> acumulando todos los middlewares encontrados desde el directorio raíz hasta el endpoint final. Esto permite establecer capas de seguridad zonales:</p>
 
-<ol>
+<p><ol>
     <li>Middlewares en <code>app/routes/middlewares.php</code> (Globales).</li>
     <li>Middlewares en <code>app/routes/admin/middlewares.php</code> (Zonales).</li>
     <li>Middlewares definidos dentro del <code>endpoint.php</code> (Específicos).</li>
-</ol>
+</ol></p>
+
+<h3>Agrupar middlewares</h3>
+
+<p>Fiel al principio de minimalismo, Scoop no impone un sistema propietario de agrupación. Al tratarse de arrays nativos de PHP, la composición de grupos se realiza mediante la manipulación de arreglos estándar.</p>
+
+<pre><code class="language-php">$group = require '../middlewares/group.php';
+
+return array_merge($group, [
+    'Middleware\CORS:createForAPI',
+    'Middleware\Session'
+]);
+</code></pre>
 
 <h3>Lógica de un Middleware</h3>
 

@@ -31,7 +31,7 @@
         <i class="fa fa-database fa-stack-1x fa-inverse"></i>
     </span>
     <h2>Persistencia DDD</h2>
-    <p>El binomio <b>SQO</b> (Query Builder atómico) y <b>EPM</b> (Entity Manager) ofrece una persistencia transparente basada en el patrón Data Mapper. Scoop prohíbe el Lazy Loading para proteger el rendimiento, obligando a una carga explícita de agregados mediante <code>aggregate()</code> y utilizando <b>Closure Binding</b> para una hidratación de entidades a velocidad nativa.</p>
+    <p>Mediante un <b>Query Builder</b> y un <b>Entity Persistence Manager</b> ofrece una persistencia transparente basada en el patrón Data Mapper. Scoop prohíbe el Lazy Loading para proteger el rendimiento, obligando a una carga explícita de agregados mediante <code>aggregate()</code> y utilizando <b>Closure Binding</b> para una hidratación de entidades a velocidad nativa.</p>
 </div>
 
 <div class="col-3 mark-stack-scoop">

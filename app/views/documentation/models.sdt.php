@@ -4,7 +4,7 @@
 
 <p>EPM es un motor de persistencia basado en el patrón <b>Data Mapper</b> y diseñado bajo el principio de <b>Persistence Ignorance</b>. A diferencia de otros sistemas, tus entidades de dominio no heredan de clases del framework ni contienen anotaciones que corrompan su propósito. El mapeo se define de forma externa, garantizando que tu Dominio permanezca puro, imperturbable y altamente testeable.</p>
 
-<ul>
+<p><ul>
     <li><a href="#entities">Mapeo de Entidades POPO</a></li>
     <li><a href="#vo">Value Objects (Objetos de Valor)</a></li>
     <li><a href="#relations">Gestión Compleja de Relaciones</a></li>
@@ -12,7 +12,7 @@
     <li><a href="#types">Custom Types: Extendiendo el Motor</a></li>
     <li><a href="#repositories">Repositorios y Agregados</a></li>
     <li><a href="#dsl">Abstracción de Consulta complejas</a></li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#entities">Mapeo de Entidades POPO</a>
@@ -258,17 +258,7 @@
 
 <p>Scoop prohíbe el <i>Lazy Loading</i> por diseño. Para recuperar relaciones, se debe utilizar el método <b><code>aggregate()</code></b>, permitiendo que el motor realice Joins inteligentes u optimizaciones de carga en lote.</p>
 
-<pre><code class="language-php">&lt;?php
-
-namespace App\Infrastructure\Repository;
-
-use Scoop\Persistence\Entity\Manager;
-use App\Domain\Repository\InvoiceCommand as InvoiceRepository;
-use App\Domain\Entity\Invoice;
-use App\Domain\Value\InvoiceId;
-
-
-class InvoiceCommand implements InvoiceRepository
+<pre><code class="language-php">class InvoiceCommand implements InvoiceRepository
 {
     private Manager $em;
 
@@ -305,8 +295,7 @@ class InvoiceCommand implements InvoiceRepository
 
 <p class="doc-alert"><b>Unit of Work:</b> El motor rastrea internamente los cambios en las entidades. Al invocar <code>$this->em->flush()</code>, Scoop genera y ejecuta atómicamente todas las sentencias SQL de actualización necesarias.</p>
 
-<p>
-    <pre class="mermaid" style="text-align:center">
+<p><pre class="mermaid" style="text-align:center">
 graph LR
     subgraph "Domain Layer (Aggregates)"
         E1[Entity A - Root]
@@ -350,8 +339,7 @@ graph LR
     style REL fill:#d19a66,stroke:#333,color:#fff
     style E1 fill:#98c379,stroke:#333,color:#fff
     style E2 fill:#98c379,stroke:#333,color:#fff
-    </pre>
-</p>
+</pre></p>
 
 <h2>
     <a href="#dsl">Abstracción de Consulta complejas</a>
@@ -362,11 +350,11 @@ graph LR
 
 <p>El método <code>matching()</code> recibe tres componentes fundamentales para orquestar la consulta:</p>
 
-<ol>
+<p><ol>
     <li><b>DSL:</b> La regla de filtrado expresada en términos de las propiedades de la entidad (ej: <code>payments.customer.email = :email</code>).</li>
     <li><b>Filters:</b> Los valores que alimentarán los parámetros del DSL.</li>
     <li><b>Order:</b> La definición del ordenamiento de los resultados.</li>
-</ol>
+</ol></p>
 
 <p>
     <pre><code class="language-php">public function search(Criteria $criteria): array

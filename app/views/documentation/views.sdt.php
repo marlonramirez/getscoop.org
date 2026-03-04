@@ -2,14 +2,14 @@
 
 <p class="doc-alert">Aunque sea posible usar código PHP directamente sobre la plantilla, no es un uso aconsejable para mantener la pureza de la arquitectura.</p>
 
-<ul>
+<p><ul>
     <li><a href="#assets">Gestión de activos</a></li>
     <li><a href="#interpolation">Interpolación</a></li>
     <li><a href="#control">Estructuras de control</a></li>
     <li><a href="#special">Estructuras especiales</a></li>
     <li><a href="#components">Arquitectura de componentes</a></li>
     <li><a href="#cache">Cache y minificación</a></li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#assets">Gestión de activos</a>
@@ -42,10 +42,10 @@
 
 <p>La vinculación de datos se realiza mediante dobles llaves. Scoop aplica una política de <b>seguridad por defecto</b>:</p>
 
-<ul>
+<p><ul>
     <li><b><code>&#123;{$var}&#125;</code>:</b> Salida escapada automáticamente mediante <code>htmlspecialchars</code> para prevenir ataques XSS.</li>
     <li><b><code>&#123;{=$var}&#125;</code>:</b> Salida en crudo (Raw). Debe usarse con precaución y solo con contenido de total confianza.</li>
-</ul>
+</ul></p>
 
 <p>Se permite el uso de expresiones PHP y operadores ternarios dentro de las llaves para transformaciones rápidas de presentación:</p>
 
@@ -57,6 +57,7 @@
     <a href="#control">Estructuras de control</a>
     <span class="anchor" id="control">...</span>
 </h2>
+
 <p>SDT utiliza una sintaxis simétrica diseñada para facilitar el parseo y la legibilidad. Cada estructura inicia con el símbolo <code>@</code> y finaliza con un delimitador estructural <code>:</code>. Es imperativo que cada apertura y cierre se realice en su propia línea.</p>
 
 <h3>&#64;foreach</h3>
@@ -167,6 +168,72 @@
 </code></pre>
 
 <h2>
+    <a href="#security-directives">Directivas de seguridad</a>
+    <span class="anchor" id="security-directives">...</span>
+</h2>
+
+<p>Scoop proporciona directivas especializadas para implementar patrones de seguridad web estándar de forma automática.</p>
+
+<h3>&#64;csrf</h3>
+
+<p>La directiva <code>&#64;csrf</code> inyecta automáticamente un token de protección CSRF (Cross-Site Request Forgery) en el lugar correcto según el contexto. Scoop detecta si la directiva está dentro de <code>&lt;head&gt;</code> o dentro de un <code>&lt;form&gt;</code> y genera el código apropiado:</p>
+
+<h4>Uso en &lt;head&gt; (para AJAX)</h4>
+
+<pre><code class="language-php-template">&lt;head&gt;
+    &lt;title&gt;Mi Aplicación&lt;/title&gt;
+    &#64;csrf
+&lt;/head&gt;
+</code></pre>
+
+<p><b>Genera:</b></p>
+
+<pre><code class="language-html">&lt;meta name="csrf-token" content="a1b2c3d4..."&gt;
+</code></pre>
+
+<p>Este meta tag puede ser leído por código JavaScript para incluir el token en peticiones AJAX:</p>
+
+<pre><code class="language-javascript">const token = document.querySelector('meta[name="csrf-token"]').content;
+
+fetch('/api/users', {
+    method: 'POST',
+    headers: {
+        'X-CSRF-Token': token,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({name: 'John'})
+});
+</code></pre>
+
+<h4>Uso en Formularios</h4>
+
+<pre><code class="language-php-template">&lt;form method="POST" action="/users"&gt;
+    &#64;csrf
+    &lt;input type="text" name="name"&gt;
+    &lt;input type="email" name="email"&gt;
+    &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;
+</code></pre>
+
+<p><b>Genera:</b></p>
+
+<pre><code class="language-html">&lt;input type="hidden" name="csrf-token" value="a1b2c3d4..."&gt;
+</code></pre>
+
+<h4>Validación Automática</h4>
+
+<p>Cuando el middleware <code>CsrfGuard</code> está habilitado, Scoop valida automáticamente el token en todas las peticiones que modifican datos (POST, PUT, PATCH, DELETE). No requiere configuración adicional en los controladores.</p>
+
+<pre><code class="language-php">[
+    'middlewares' => [
+        '\\Scoop\\Security\\Middleware\\CsrfGuard',
+    ]
+]
+</code></pre>
+
+<p class="doc-alert"><b>Importante:</b> La directiva <code>&#64;csrf</code> solo inyecta el token. El middleware <code>CsrfGuard</code> es necesario para validarlo en el servidor. Sin el middleware, el token se genera pero no se valida.</p>
+
+<h2>
     <a href="#components">Arquitectura de componentes</a>
     <span class="anchor" id="components">...</span>
 </h2>
@@ -240,6 +307,7 @@ theme="dark"
 <h3>Uso en el Template</h3>
 
 <p>Se invocan como etiquetas HTML, permitiendo el envío de bloques de contenido a slots internos.</p>
+
 <pre><code class="language-php-template">&lt;sc-message /&gt;
 
 &lt;sc-modal title="Borrar registro"&gt;
@@ -257,8 +325,8 @@ theme="dark"
 
 <p>Durante la fase de transpilación, Scoop aplica optimizaciones agresivas:</p>
 
-<ol>
+<p><ol>
     <li><b>Limpieza de HTML:</b> Elimina comentarios y espacios en blanco redundantes, reduciendo el peso del archivo enviado al cliente.</li>
     <li><b>Pre-compilación:</b> Convierte directivas SDT en sentencias PHP nativas listas para <b>Opcache</b>.</li>
     <li><b>Aislamiento de Scope:</b> Cada vista se renderiza en su propia instancia de objeto, evitando colisiones de variables globales.</li>
-</ol>
+</ol></p>

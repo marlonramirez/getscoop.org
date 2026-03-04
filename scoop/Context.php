@@ -35,7 +35,8 @@ class Context
         $config = self::normalizeConnection($bundle, $options);
         $key = implode('', $config);
         if (!isset(self::$connections[$key])) {
-            self::$connections[$key] = new Persistence\DBC(
+            self::$connections[$key] = new Persistence\Connection(
+                self::inject('\Scoop\Event\Dispatcher'),
                 $config['database'],
                 $config['user'],
                 $config['password'],

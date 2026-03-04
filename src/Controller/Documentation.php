@@ -14,6 +14,7 @@ class Documentation
         'application' => array('title' => 'Capa de aplicación', 'view' => 'application'),
         'persistence' => array('title' => 'Persistencia Atómica', 'view' => 'persistence'),
         'domain' => array('title' => 'Modelado de Dominio', 'view' => 'models'),
+        'security' => array('title' => 'Seguridad', 'view' => 'security'),
         'presentation' => array('title' => 'Capa de entrega (sdt)', 'view' => 'views'),
         'ecosystem' => array('title' => 'Ecosistema y herramientas', 'view' => 'ecosystem'),
         'ops' => array('title' => 'Calidad y despliegue', 'view' => 'deploy')

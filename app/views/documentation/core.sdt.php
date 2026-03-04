@@ -1,12 +1,12 @@
 <p>El núcleo de Scoop está diseñado bajo el paradigma de <b>Arquitectura Explícita</b>. El objetivo es minimizar las decisiones arbitrarias mediante convenciones sólidas, manteniendo una flexibilidad absoluta donde la infraestructura nunca condiciona al dominio.</p>
 
-<ul>
+<p><ul>
     <li><a href="#context">Contexto y entorno</a></li>
     <li><a href="#config">Gestión de la configuración</a></li>
     <li><a href="#injector">Inversión de control (IoC)</a></li>
     <li><a href="#extend">Extensibilidad del Núcleo</a></li>
     <li><a href="#lifecycle">Ciclo de vida de una petición</a></li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#context">Contexto y entorno</a>
@@ -180,38 +180,41 @@ $environment = \Scoop\Context::getEnvironment();
 
 <h3>Fases del Ciclo de Vida:</h3>
 
-<ol>
+<p><ol>
     <li><b>Context & Environment:</b> Captura del entorno global y encapsulamiento en un objeto inmutable <code>ServerRequest</code> (PSR-7), asegurando un estado inicial determinista.</li>
     <li><b>Routing:</b> Localización del <i>endpoint</i> y su jerarquía de middlewares. En producción, utiliza un <b>mapa pre-compilado</b> que garantiza una resolución O(1) sin I/O de disco.</li>
     <li><b>Atomic Dispatching (Control Hand-off):</b> El Inyector resuelve el grafo de dependencias e instancia el controlador. Aquí, el motor <b>cede el control al desarrollador</b>: se ejecuta la lógica de negocio (Controlador/Casos de Uso) tras procesar la cadena de middlewares.</li>
     <li><b>Response Transformation:</b> El motor recupera el control para normalizar el retorno del desarrollador (Array, Vista o Escalar) en una respuesta PSR-7 inmutable.</li>
     <li><b>Resource Cleanup:</b> Volcamiento del stream al buffer de salida e invocación de <code>gc_collect_cycles()</code> para liberar el grafo de objetos y cerrar conexiones antes de que el servidor entregue la respuesta final.</li>
-</ol>
+</ol></p>
 
-<p>
-    <pre class="mermaid" style="text-align:center">
+<p><pre class="mermaid" style="text-align:center">
 graph TD
     %% Nodos principales
-    Start((HTTP Request)) --> P1[1. Context & Environment]
+    Start((Request)) --> P1[1. Context & Environment]
     P1 --> P2[2. Routing]
     P2 --> P3[3. Atomic Dispatching]
 
     %% Detalle de la cesión de control en la Fase 3
     subgraph HandOff ["Developer Sovereignty"]
         P3 --> EXEC[Execute Controller Logic]
-        EXEC --> UC[Use Cases / Domain]
+        EXEC -.-> UC[Use Cases]
+        UC -.-> DOM[Domain]
+        DOM -.-> UC
+        UC -.-> EXEC
     end
 
-    UC --> P4{4. Response}
+    EXEC --> P4[4. Response transformation]
 
     %% Ramificación de transformación
     P4 -- "Array/Object" --> JSON[JSON Payload]
     P4 -- "View" --> SDT[SDT Engine]
     P4 -- "Scalar/String" --> TXT[Plain Text]
+    P4 -- "Response" --> P5[5. Resource Cleanup]
 
     %% Cierre del ciclo
     JSON & SDT & TXT --> P5[5. Resource Cleanup]
-    P5 --> End((HTTP Response))
+    P5 --> End((Response))
 
     %% Estilización para coherencia visual (Atom One Dark)
     style P1 fill:#282c34,stroke:#61afef,stroke-width:2px,color:#abb2bf
@@ -223,10 +226,10 @@ graph TD
     style HandOff fill:transparent,stroke:#d19a66,stroke-dasharray: 5 5,color:#d19a66
     style EXEC fill:#3e4452,stroke:#d19a66,color:#d19a66
     style UC fill:#3e4452,stroke:#d19a66,color:#d19a66
+    style DOM fill:#3e4452,stroke:#d19a66,color:#d19a66
 
     style Start fill:#3e4452,stroke:#abb2bf,color:#abb2bf
     style End fill:#3e4452,stroke:#abb2bf,color:#abb2bf
-    </pre>
-</p>
+</pre></p>
 
 <p class="doc-alert"><b>Mantenibilidad:</b> Cualquier excepción lanzada en el dominio es interceptada por el <code>ExceptionManager</code>, que decide la respuesta adecuada basada en tu configuración de <code>http.errors</code>.</p>

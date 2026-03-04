@@ -1,14 +1,13 @@
 <p>Scoop provee un conjunto de servicios de soporte diseñados para garantizar la robustez del sistema en producción. Desde la gestión inteligente de errores hasta el entorno de consola extensible, estas herramientas permiten que la infraestructura de la aplicación sea tan sólida como su lógica de negocio.</p>
 
-<ul>
+<p><ul>
     <li><a href="#exceptions">Manejo de Excepciones y Mapeo HTTP</a></li>
     <li><a href="#monitoring">Monitoreo y Logging</a></li>
     <li><a href="#cache">Caché distribuida</a></li>
     <li><a href="#http-client">HTTP Client</a></li>
-    <li><a href="#crypt">Vault: Seguridad Criptográfica</a></li>
     <li><a href="#ice">ICE: Interface Command Environment</a></li>
     <li><a href="#i18n">Internacionalización (i18n)</a></li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#exceptions">Manejo de Excepciones y Mapeo HTTP</a>
@@ -118,36 +117,16 @@ $data = $this->cache->get('user_session_1');
 
 <h3>Capacidades Técnicas</h3>
 
-<p>
-    <ul>
-        <li><b>Gestión de Streams:</b> Utiliza el motor de <i>Streams</i> de Scoop para manejar cuerpos de petición y respuesta de gran tamaño sin saturar la memoria RAM.</li>
-        <li><b>Seguridad de Transporte:</b> Soporte nativo para protocolos modernos (TLS/SSL) y gestión automática de métodos HTTP (incluyendo verbos personalizados).</li>
-        <li><b>Manejo de Excepciones:</b> Diferencia técnicamente entre errores de red (<code>NetworkException</code>) y errores de petición (<code>RequestException</code>), permitiendo una gestión de fallos granular en el Dominio.</li>
-    </ul>
-</p>
+<p><ul>
+    <li><b>Gestión de Streams:</b> Utiliza el motor de <i>Streams</i> de Scoop para manejar cuerpos de petición y respuesta de gran tamaño sin saturar la memoria RAM.</li>
+    <li><b>Seguridad de Transporte:</b> Soporte nativo para protocolos modernos (TLS/SSL) y gestión automática de métodos HTTP (incluyendo verbos personalizados).</li>
+    <li><b>Manejo de Excepciones:</b> Diferencia técnicamente entre errores de red (<code>NetworkException</code>) y errores de petición (<code>RequestException</code>), permitiendo una gestión de fallos granular en el Dominio.</li>
+</ul></p>
 
 <pre><code class="language-php">public function get(): Response {
     $request = new Request('https://api.externa.com/v1/data', 'GET');
     return $this->httpClient->sendRequest($request);
 }
-</code></pre>
-
-<h2>
-    <a href='#crypt'>Vault: Seguridad Criptográfica</a>
-    <span class='anchor' id='crypt'>...</span>
-</h2>
-
-<p>Scoop incluye <b>Vault</b>, un sistema de encriptación de alta seguridad basado en <b>AES-256-GCM</b>. Está diseñado para proteger datos sensibles en reposo (como tokens de terceros o información personal) garantizando la integridad mediante una etiqueta de autenticación (AEAD).</p>
-
-<pre><code class="language-php">[
-    'vault' => ['secret' => 'myP4ssw0rd', 'encoding' => 'hex']
-]
-</code></pre>
-
-<p>Para usarlo, basta con inyectar la clase <code>Vault</code> en tu servicio o repositorio:</p>
-
-<pre><code class="language-php">$encrypted = $this->vault->encrypt("Dato sensible");
-$plainText = $this->vault->decrypt($encrypted);
 </code></pre>
 
 <h2>

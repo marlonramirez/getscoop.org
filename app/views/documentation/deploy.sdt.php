@@ -1,12 +1,12 @@
 <p>Scoop está diseñado para escalar desde despliegues atómicos —basados en la transferencia simple de archivos— hasta flujos de trabajo avanzados con tuberías de <b>Integración y Despliegue Continuo (CI/CD)</b>. La arquitectura del motor garantiza que, independientemente del método elegido, el sistema mantenga su integridad y alto rendimiento.</p>
 
-<ul>
-<li><a href="#quality">Estándares de Calidad</a></li>
-<li><a href="#automation">Automatización con Hooks</a></li>
-<li><a href="#optimization">Optimización de Producción</a></li>
-<li><a href="#cicd">Integración Continua (GitHub Actions)</a></li>
-<li><a href="#manual">Estrategia de Despliegue Manual</a></li>
-</ul>
+<p><ul>
+  <li><a href="#quality">Estándares de Calidad</a></li>
+  <li><a href="#automation">Automatización con Hooks</a></li>
+  <li><a href="#optimization">Optimización de Producción</a></li>
+  <li><a href="#cicd">Integración Continua (GitHub Actions)</a></li>
+  <li><a href="#manual">Estrategia de Despliegue Manual</a></li>
+</ul></p>
 
 <h2>
     <a href="#quality">Estándares de Calidad</a>
@@ -15,11 +15,11 @@
 
 <p>Para asegurar que la aplicación cumpla con los estándares de la industria (como las normas PSR), Scoop integra soporte nativo para las herramientas líderes de análisis y pruebas del ecosistema PHP:</p>
 
-<ul>
+<p><ul>
     <li><b>Pruebas (Unit & Integration):</b> Gracias al desacoplamiento del <b>Injector</b>, Scoop facilita el testeo unitario del Dominio (POPOs) y pruebas de integración mediante <code>PHPUnit</code>, permitiendo mockear adaptadores de infraestructura sin esfuerzo.</li>
     <li><b>Linter (Estilo):</b> Se utiliza <code>PHPCS</code> para garantizar que el código siga las normas de estilo definidas en <code>app/phpcs.xml</code>, manteniendo una base de código homogénea.</li>
     <li><b>Análisis Estático:</b> Para mitigar los riesgos de la flexibilidad del lenguaje, Scoop se apoya en <code>PHPStan</code>. Recomendamos niveles de análisis estrictos para validar la seguridad de tipos y la lógica de los grafos de inyección.</li>
-</ul>
+</ul></p>
 
 <h2>
     <a href="#automation">Automatización con Hooks</a>
