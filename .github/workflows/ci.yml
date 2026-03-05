@@ -28,7 +28,7 @@ jobs:
       - name: Clean up development files
         run: |
           rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
-          rm -f *.md app/*.neon app/*.xml *.yml app/router.php package* .dockerignore Dockerfile jsconfig.json vite.config.js
+          rm -f *.md app/*.neon app/*.xml *.yml app/router.php package* composer* .dockerignore Dockerfile jsconfig.json vite.config.js
           rm -rf app/scripts app/styles app/routes
       - name: deploy
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6

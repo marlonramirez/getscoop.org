@@ -42,6 +42,7 @@
         "build": [
             "@php app/ice scan types",
             "@php app/ice scan routes",
+            "@php app/ice preload json:composer",
             "@php app/ice preload json:package",
             "@php app/ice scan:docs"
         ],

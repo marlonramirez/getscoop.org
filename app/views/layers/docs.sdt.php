@@ -20,9 +20,11 @@
             </li>
         </ul>
     </nav>
-    <section id="content-docs" data-attr="classList:contentClass">
-        @import "documentation/$view"
-    </section>
+    <div id="content-docs">
+        <section data-attr="classList:contentClass">
+            @import "documentation/$view"
+        </section>
+    </div>
 </div>
 <script>
 mermaid.initialize({

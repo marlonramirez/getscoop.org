@@ -2,9 +2,12 @@
     top 80px
 
 #content-docs
-    transition transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)
-    &.active
-        transform translateX(255px)
+    overflow-x hidden
+    margin-left calc(250px + 1em)
+    section
+        transition transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+        &.active
+            transform translateX(255px)
     h2
         a
             color #222
@@ -66,9 +69,6 @@
         margin .5em 2%
         float left
         width 40%
-
-#content-docs
-    margin-left 16.5em
 
 #nav-docs
     top 6em
