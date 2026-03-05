@@ -47,7 +47,7 @@
 
 <h3>Derivación de Clave (PBKDF2)</h3>
 
-<p>Cipher utiliza <b>PBKDF2</b> con 20,000 iteraciones para derivar la clave de encriptación final, añadiendo una capa adicional de seguridad contra ataques de fuerza bruta:</p>
+<p>Cipher utiliza algoritmos de derivación robustos (incluyendo PBKDF2 en entornos modernos), añadiendo una capa adicional de seguridad contra ataques de fuerza bruta:</p>
 
 <pre><code class="language-php">$derivedKey = hash_pbkdf2('sha256', $masterKey, $salt, 20000, 32, true);</code></pre>
 
@@ -227,6 +227,29 @@ fetch('https://api.example.com/users', {
     <a href="#good-parts">Buenas Prácticas de Seguridad</a>
     <span class="anchor" id="good-parts">...</span>
 </h2>
+
+<h3>Endurecimiento de Respuesta (Hardening)</h3>
+
+<p>Fiel a la filosofía de soberanía de Scoop, el core no inyecta cabeceras de seguridad de forma intrusiva. En su lugar, proporciona la infraestructura necesaria para que se defina su propia política de "Hardening" mediante middlewares.</p>
+
+<p>Recomendamos crear un middleware de infraestructura para blindar el comportamiento del navegador del usuario final:</p>
+
+<pre><code class="language-php">class SecurityHeadersMiddleware
+{
+    public function process($request, $next)
+    {
+        return $next->handle($request)
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withHeader('X-Frame-Options', 'SAMEORIGIN')
+            ->withHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+            ->withHeader('Content-Security-Policy', "default-src 'self'");
+    }
+}
+</code></pre>
+
+<p>Al registrar este middleware en la raíz de <code>app/routes/middlewares.php</code>, toda la aplicación quedará protegida contra ataques de Clickjacking, MIME-sniffing y fugas de procedencia (Referrer).</p>
+
+<p class="doc-alert"><b>¿Por qué no es automático?</b> Porque Scoop respeta tus casos de uso. Si una sección de tu aplicación necesita ser cargada en un iframe externo o requiere una política CSP relajada, tienes la libertad total de configurar o excluir este middleware en esa rama del ruteo.</p>
 
 <h3>Almacenamiento de Claves</h3>
 

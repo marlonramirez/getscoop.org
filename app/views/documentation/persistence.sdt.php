@@ -87,7 +87,7 @@ $column = $connection->quoteColumn('public.users.id');
 
 <h3>quoteCriteria() - Sintaxis SQL Universal</h3>
 
-<p>El método <code>quoteCriteria()</code> permite usar la <b>sintaxis de SQL Server con brackets</b> <code>[column]</code> como notación universal. Scoop automáticamente convierte a quotes específicos del motor:</p>
+<p>El método <code>quoteCriteria()</code> permite usar la <b>sintaxis de SQL Server con brackets</b> <code>[column]</code> como notación universal para garantizar que tus alias y columnas no colisionen con palabras reservadas del motor SQL. Scoop automáticamente convierte a quotes específicos del motor:</p>
 
 <pre><code class="language-php">/** Escribes UNA VEZ (sintaxis SQL Server) y ejecuta en CUALQUIER motor:
 MySQL:      `status` = :status AND `user`.`id` = :id

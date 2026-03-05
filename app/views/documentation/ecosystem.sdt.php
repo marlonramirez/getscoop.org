@@ -23,7 +23,7 @@
         401 => [
             'title' => 'User not authorized',
             'headers' => array('WWW-Authenticate' => 'Digest realm="' . $domain . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($domain) . '"')
-            'exceptions' => [NotAuhorized::class]
+            'exceptions' => [NotAuthorized::class]
         ]
     ]
 ]

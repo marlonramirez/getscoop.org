@@ -17,7 +17,7 @@
 
 <pre><code class="language-php">\Scoop\Context::load('app/config');
 $app = new \Scoop\Bootstrap\Application();
-echo $app->run();
+$app->run();
 </code></pre>
 
 <p>Una vez establecido el contexto, el sistema permite acceder a los componentes del núcleo de forma desacoplada:</p>

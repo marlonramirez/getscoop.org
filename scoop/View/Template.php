@@ -138,7 +138,7 @@ final class Template
                 '<?php endwhile ?>',
                 '<?php else: ?>',
                 self::$inHead ?
-                '<meta name="X-CSRF-Token" content="{{ #view->getCsrfToken() }}">' :
+                '<meta name="csrf-token" content="{{ #view->getCsrfToken() }}">' :
                 '<input type="hidden" name="csrf-token" value="{{ #view->getCsrfToken() }}">'
             ),
             $line, $count

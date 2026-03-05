@@ -237,7 +237,7 @@
     public function createUser($data) {
         return $this->builder
         ->build('users')
-        ->creator($data)
+        ->create($data)
         ->run()
         ->fetchAll();
     }

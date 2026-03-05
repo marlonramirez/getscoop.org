@@ -7,6 +7,7 @@
     <li><a href="#interpolation">Interpolación</a></li>
     <li><a href="#control">Estructuras de control</a></li>
     <li><a href="#special">Estructuras especiales</a></li>
+    <li><a href="#security-directives">Directivas de seguridad</a></li>
     <li><a href="#components">Arquitectura de componentes</a></li>
     <li><a href="#cache">Cache y minificación</a></li>
 </ul></p>

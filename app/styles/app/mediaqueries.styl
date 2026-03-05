@@ -29,7 +29,7 @@
         display block
 
     #content-docs
-        margin-left 0
+        margin-left calc(30px - 5%)
 
     figcaption.about-scoop
         display none
@@ -53,16 +53,19 @@
         padding 0
 
     header
-        margin 0
-        width 100%
         flex-direction row
         flex-wrap wrap
-        height auto
-        padding 15px
         gap 15px
+        padding-bottom 15px
         .search-container
             order 3
             flex 0 0 90%
+
+    body
+        margin-top 145px
+
+    .anchor
+        bottom calc(145px + .5em)
 
     #contact-project
         label
@@ -81,12 +84,6 @@
     .col-3
         width 100%
         margin 0
-
-    main
-        margin-top 82px
-
-    .anchor
-        bottom 167px
 
     #nav-docs
         top 11em

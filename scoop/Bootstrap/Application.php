@@ -20,7 +20,7 @@ class Application
         try {
             $response = $router->route($request);
             gc_collect_cycles();
-            return $this->printResponse($response);
+            $this->printResponse($response);
         } catch (\Exception $ex) {
             $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
