@@ -136,8 +136,9 @@ function displayResults(results) {
 }
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-container')) {
-        resultsContainer.style.display = 'none';
+    resultsContainer.style.display = 'none';
+    if (e.target.closest('.search-container')) {
+        searchInput.value = '';
     }
 });
 
@@ -150,8 +151,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 searchInput.addEventListener('keydown', function(e) {
-    const resultsList = document.getElementById('search-results');
-    let items = resultsList.getElementsByClassName('result-item');
+    let items = resultsContainer.getElementsByClassName('result-item');
     if (e.key === "ArrowDown") {
         currentFocus++;
         addActive(items);
@@ -165,10 +165,10 @@ searchInput.addEventListener('keydown', function(e) {
                 items[currentFocus].click();
             }
         }
-        resultsList.style.display = 'none';
+        resultsContainer.style.display = 'none';
         searchInput.value = '';
     } else if (e.key === "Escape") {
-        resultsList.style.display = 'none';
+        resultsContainer.style.display = 'none';
         searchInput.blur();
     }
 });

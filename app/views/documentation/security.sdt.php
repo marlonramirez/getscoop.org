@@ -4,6 +4,7 @@
     <li><a href="#cipher">Sistema de Encriptación (Cipher)</a></li>
     <li><a href="#csrf">Protección CSRF</a></li>
     <li><a href="#cors">Control CORS</a></li>
+    <li><a href="#good-parts">Buenas Prácticas de Seguridad</a></li>
 </ul></p>
 
 <h2>
@@ -222,7 +223,10 @@ fetch('https://api.example.com/users', {
 ]
 </code></pre>
 
-<h2>Buenas Prácticas de Seguridad</h2>
+<h2>
+    <a href="#good-parts">Buenas Prácticas de Seguridad</a>
+    <span class="anchor" id="good-parts">...</span>
+</h2>
 
 <h3>Almacenamiento de Claves</h3>
 

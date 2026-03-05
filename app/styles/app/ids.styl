@@ -2,6 +2,9 @@
     top 80px
 
 #content-docs
+    transition transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+    &.active
+        transform translateX(255px)
     h2
         a
             color #222
@@ -71,7 +74,10 @@
     top 6em
     position sticky
     float left
-    width 15em
+    width 250px
+    transition transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+    &.active
+        transform translateX(255px)
     ul
         border-radius .5em
         padding .5em 0
@@ -106,7 +112,7 @@
     text-rendering optimizeLegibility
     font-size 1.5em
     color #666
-    margin-right -23px
+    margin-right -30px
     display none
     &:before
         content "\f03c"

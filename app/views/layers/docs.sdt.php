@@ -1,7 +1,7 @@
 @extends 'layers/layer'
 <h2 class="head-main">Guia de desarrollo con scoop</h2>
 <div id="main-docs" class="main">
-    <nav id="nav-docs" data-attr="style.marginLeft: marginMenu">
+    <nav id="nav-docs" data-attr="classList:menuClass">
         <a href="#menu" id="menu-list" title="menú"></a>
         <ul>
             @foreach $menu as $name => $item
@@ -20,7 +20,7 @@
             </li>
         </ul>
     </nav>
-    <section id="content-docs" data-attr="style:contentStyle">
+    <section id="content-docs" data-attr="classList:contentClass">
         @import "documentation/$view"
     </section>
 </div>

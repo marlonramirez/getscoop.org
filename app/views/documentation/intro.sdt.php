@@ -484,6 +484,7 @@ graph TD
         <li><b>Inyección Pre-compilada:</b> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
         <li><b>Escaneo de Bajo Impacto:</b> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
         <li><b>Compliance:</b> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
+        <li><b>Interceptor Bus:</b> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
         <li><b>Gestión de Ámbitos (Scopes):</b> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
             <pre><code class="language-php">'App\Domain\Respository\User' => [
     'service' => 'App\Infraestructure\Repository\Factory\PostgresUser',
@@ -501,7 +502,6 @@ graph TD
         <li><b>Infraestructura Persistente:</b> Soporte nativo para <a href="https://frankenphp.dev/" target="_blank">FrankenPHP</a> (Worker Mode), permitiendo que el motor permanezca en memoria y elimine los tiempos de arranque.</li>
         <li><b>Aislamiento Físico:</b> Implementación de múltiples <b>Bounded Contexts</b> mediante instancias de <code>Context</code> independientes, garantizando que el acoplamiento entre módulos sea técnicamente imposible.</li>
         <li><b>Context Mapping:</b> Creación del sistema de <i>Bridges</i> para orquestar la comunicación y traducción de datos entre contextos de forma segura.</li>
-        <li><b>Interceptor Bus:</b> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
         <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR</b>.</li>
     </ul></p>
 </div>
