@@ -74,8 +74,11 @@ export default defineConfig(({ command, mode }) => {
             if (assetInfo.name === 'main.css' || assetInfo.name === 'styles.css' || assetInfo.name.endsWith('app.css')) {
               return `css/${appName}.min.css`;
             }
-            if (assetInfo.name && /\.(woff2?|eot|ttf|otf|svg|png|jpe?g|gif)$/i.test(assetInfo.name)) {
-              return `assets/[name]-[hash][extname]`;
+            if (assetInfo.name && /\.(woff2?|eot|ttf|otf)$/i.test(assetInfo.name)) {
+              return `fonts/[name]-[hash][extname]`;
+            }
+            if (assetInfo.name && /\.(svg|png|jpe?g|gif)$/i.test(assetInfo.name)) {
+              return `images/[name]-[hash][extname]`;
             }
             return `assets/[name]-[hash][extname]`;
           }
@@ -89,14 +92,14 @@ export default defineConfig(({ command, mode }) => {
             normalizePath(path.resolve(__dirname, 'node_modules')),
             normalizePath(path.resolve(__dirname, 'app/styles'))
           ],
-          additionalData: isProduction ? `` : `$fa-font-path = "/fonts"`
+          additionalData: isProduction ? `$public = "../"` : `$fa-font-path = "/fonts";$public = "/public/"`
         }
       }
     },
     resolve: {
       alias: {
         '@': normalizePath(path.resolve(__dirname, './app/scripts')),
-        '~styles': normalizePath(path.resolve(__dirname, './app/styles')),
+        '#': normalizePath(path.resolve(__dirname, './app/styles'))
       }
     }
   };

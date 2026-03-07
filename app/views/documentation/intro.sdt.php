@@ -1,4 +1,4 @@
-<p>Bienvenido a la documentación oficial de <b>Scoop</b>. Este motor está diseñado para transitar un camino evolutivo: desde la simplicidad de un micro-ruteador hasta la complejidad de una arquitectura distribuida.</p>
+<p>Bienvenido a la documentación oficial de <b>scoop</b>. Este motor está diseñado para transitar un camino evolutivo: desde la simplicidad de un micro-ruteador hasta la complejidad de una arquitectura distribuida.</p>
 
 <p>Antes de entrar en materia técnica, definiremos los principios que rigen el sistema y las bases necesarias para operar con rigor arquitectónico.</p>
 

@@ -2,8 +2,17 @@
 
 namespace App\Command;
 
+use Scoop\Command\Writer;
+
 class DocScanner
 {
+    private $writer;
+
+    public function __construct(Writer $writer)
+    {
+        $this->writer = $writer;
+    }
+
     public function execute()
     {
         $files = glob("app/views/documentation/*.php");
@@ -33,14 +42,14 @@ class DocScanner
             }
         }
         if (file_put_contents('index.json', json_encode($index, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
-            echo 'Indice generado con exito. ' . count($index) . ' secciones encontradas.';
+            $this->writer->write('<success:Indice generado con exito. ' . count($index) . ' secciones encontradas.!>');
         } else {
-            echo 'Error al escribir el archivo JSON. Revisa permisos de carpeta.';
+            $this->writer->write('<error:Error al escribir el archivo JSON. Revisa permisos de carpeta.!>');
         }
     }
 
     public function help()
     {
-
+        $this->writer->write('Escanea el directorio <info:app/views/documentation!> y genera index.json para realizar busquedas dinamicas.');
     }
 }

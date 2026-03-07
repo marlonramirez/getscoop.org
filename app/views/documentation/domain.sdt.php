@@ -131,7 +131,7 @@
                 Payment::class => ['type' => 'int', 'column' => 'payment_id']
             ]
         ]
-        ]
+    ]
 ]
 </code></pre>
 

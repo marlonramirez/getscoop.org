@@ -2,14 +2,23 @@
 
 namespace App\Controller;
 
+use Scoop\Bootstrap\Environment;
+
 class Index
 {
+    private $environment;
+
+    public function __construct(Environment $environment)
+    {
+        $this->environment = $environment;
+    }
+
     /**
      * @return \Scoop\View
      */
     public function get()
     {
         $view = new \Scoop\View('home');
-        return $view->add('title', 'Simple Characteristics of Object-Oriented PHP');
+        return $view->add('title', $this->environment->getConfig('app.description'));
     }
 }

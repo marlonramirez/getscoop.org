@@ -14,8 +14,6 @@
 
 <p>La clase <code>Cipher</code> implementa un sistema de <b>encriptación versionada</b>, siendo el primer framework PHP con esta característica. Esto permite migrar algoritmos de encriptación de manera transparente sin necesidad de re-encriptar la base de datos completa.</p>
 
-<h3>Uso Básico</h3>
-
 <pre><code class="language-php">class MyService
 {
     public function __construct(private \Scoop\Security\Cipher $cipher)
@@ -48,8 +46,6 @@
 <h3>Derivación de Clave (PBKDF2)</h3>
 
 <p>Cipher utiliza algoritmos de derivación robustos (incluyendo PBKDF2 en entornos modernos), añadiendo una capa adicional de seguridad contra ataques de fuerza bruta:</p>
-
-<pre><code class="language-php">$derivedKey = hash_pbkdf2('sha256', $masterKey, $salt, 20000, 32, true);</code></pre>
 
 <h3>Migración de Algoritmos</h3>
 
@@ -123,7 +119,7 @@ fetch('/api/users', {
 <ol>
     <li>Header <code>X-CSRF-Token</code></li>
     <li>Query parameter <code>?csrf-token=...</code></li>
-    <li>Body field <code>csrf-token</code> (solo POST)</li>
+    <li>Body field <code>csrf-token</code> (POST y PUT sin archivos)</li>
 </ol>
 
 <p><b>Métodos HTTP exentos:</b> GET, HEAD, OPTIONS, TRACE no requieren token CSRF.</p>
@@ -172,6 +168,8 @@ fetch('/api/users', {
 ]
 </code></pre>
 
+<p>Si no se configura el middleware de CORS pero se incluye en la pila, se aceptara cualquier petición hecha a los endpoints.</p>
+
 <p class="doc-alert"><b>Importante:</b> Nunca use <code>'*'</code> (wildcard total) en origins si <code>credentials</code> está habilitado. Los navegadores modernos bloquean esta combinación por seguridad. Use una lista explícita de dominios o wildcards de subdominios específicos.</p>
 
 <h3>Preflight Requests</h3>
@@ -213,13 +211,8 @@ fetch('https://api.example.com/users', {
 
 <p>Para permitir headers personalizados en las peticiones:</p>
 
-<pre><code class="language-php">'cors' => [
-    'headers' => [
-        'Content-Type',
-        'Authorization',
-        'X-API-Key',
-        'X-Request-ID'
-    ]
+<pre><code class="language-php">[
+    'headers' => 'Content, Authorization, X-API-Key, X-Request-ID'
 ]
 </code></pre>
 

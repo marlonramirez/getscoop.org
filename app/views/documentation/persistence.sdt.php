@@ -269,7 +269,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 
 <h3>Creación e Inserción de Datos</h3>
 
-<p>El método <code>create()</code> devuelve una factoría (<code>SQO\Factory</code>) que permite gestionar la inserción de datos bajo tres modalidades técnicas:</p>
+<p>El método <code>create()</code> devuelve una factoría (<code>Builder\Factory</code>) que permite gestionar la inserción de datos bajo tres modalidades técnicas:</p>
 
 <h4>Inserción Atómica (Asociativa)</h4>
 
@@ -306,7 +306,7 @@ $creator->run();
 
 <h4>INSERT SELECT</h4>
 
-<p>SQO permite realizar inserciones basadas en el resultado de una consulta previa pasando un objeto <code>SQO\Reader</code>.</p>
+<p>SQO permite realizar inserciones basadas en el resultado de una consulta previa pasando un objeto <code>Builder\Reader</code>.</p>
 
 <pre><code class="language-php">$reader = $oldBooks->read('name', 'author')->filter('year > :year');
 $books->create(['name', 'author'], $reader)->run(['year' => 1989]);
