@@ -5,7 +5,6 @@
   <li><a href="#automation">Automatización con Hooks</a></li>
   <li><a href="#optimization">Optimización de Producción</a></li>
   <li><a href="#cicd">Integración Continua (GitHub Actions)</a></li>
-  <li><a href="#manual">Estrategia de Despliegue Manual</a></li>
 </ul></p>
 
 <h2>
@@ -54,19 +53,111 @@
 
 <p>A diferencia del entorno de desarrollo, donde Scoop prioriza la flexibilidad y el descubrimiento dinámico, en producción el motor debe operar en <b>Modo Inmutable</b>. El proceso de construcción (build) utiliza el CLI <code>ice</code> para eliminar la reflexión del <i>Hot Path</i>:</p>
 
-<pre><code class="language-shell">php app/ice scan routes
-php app/ice cache types
-php app/ice preload json:package
+<pre><code class="language-shell">app/ice scan routes
+app/ice cache types
+app/ice preload json:package
+app/ice preload json:composer
 </code></pre>
 
-<p>Este proceso transforma la jerarquía de archivos y las definiciones dinámicas en mapas de PHP plano optimizados para <b>Opcache</b>, eliminando el coste de I/O y reflexión en cada petición. Se recomienda automatizar estos comandos en el <code>composer.json</code> bajo el evento <code>post-install-cmd</code> o mediante un comando de <code>build</code> dedicado.</p>
+<p>Este proceso transforma la jerarquía de archivos y las definiciones dinámicas en mapas de PHP plano optimizados para <b>Opcache</b>, eliminando el coste de I/O y reflexión en cada petición. Estos comandos se encuentran en el <code>composer.json</code> mediante un comando <code>build</code>. Es imperativo que este proceso finalice con éxito antes del despliegue, ya que la versión de producción dependerá exclusivamente de estos artefactos para su ejecución..</p>
+
+<p>También tenemos el comando <code>app/ice dbup</code> que no puede ser ejecutado en compilación o creación de la imagen, si no que se debe ejecutar cuando se haya desplegado en el servidor para que logre conectar con la base de datos.</p>
+
+<p class="doc-alert"><b>Permisos de Escritura:</b> El proceso de construcción genera archivos dentro de <code>app/storage/cache</code>. Asegúrese de que el usuario del servidor web (ej. www-data) tenga permisos de lectura sobre estos archivos y permisos de escritura sobre la carpeta <code>storage</code> para logs y caché persistente.</p>
+
+<p class="doc-alert"><b>Pro-Tip de Despliegue:</b> Asegúrese siempre de ejecutar <code>composer install --optimize-autoloader --no-dev</code> en el servidor de destino para minimizar la latencia del cargador de clases de PHP.</p>
+
+<h3>Estructura de archivos en despliegue</h3>
+
+<p>Es vital no transferir los archivos de desarrollo para reducir la superficie de ataque y mejorar el rendimiento. Un despliegue "limpio" de Scoop debe contener únicamente los artefactos de ejecución.</p>
+
+<pre><code class="language-shell">├─ app
+|   ├─ config
+|   |    ├─ lang
+|   |    |    ├─ en.php
+|   |    |    └─ es.php
+|   |    ├─ routes.php
+|   |    └─ providers.php
+|   ├─ storage
+|   ├─ views
+|   ├─ config.php
+|   └─ ice
+├─ public
+|   ├─ css
+|   ├─ fonts
+|   ├─ images
+|   ├─ js
+|   ├─ favicon.ico
+|   ├─ humans.txt
+|   └─ robots.txt
+├─ scoop
+├─ src
+├─ vendor
+├─ .htaccess
+└─ index.php
+</code></pre>
+
+<p>Para profundizar en la organización de los archivos, consulte la sección de <a href="{{#view->route('doc', 'application')}}#structure">Estructura de directorios</a>.</p>
 
 <h2>
     <a href="#cicd">Integración Continua (GitHub Actions)</a>
     <span class="anchor" id="cicd">...</span>
 </h2>
 
-<p>Scoop se integra de forma natural en flujos de trabajo modernos. A continuación, se presenta una configuración avanzada para <b>GitHub Actions</b> que ilustra un ciclo completo: pruebas, construcción de imagen Docker (AWS ECR) y despliegue automatizado.</p>
+<p>Scoop se integra de forma natural en flujos de trabajo modernos. A continuación, se presentan una serie de configuraciones avanzadas para <b>GitHub Actions</b> que ilustran diferentes estratégias de despliegue.</p>
+
+<h3>AWS</h3>
+
+<p>Pruebas, construcción de imagen Docker subiendo a ECR y despliegue automatizado en EC2.</p>
+
+<h3>FTP</h3>
+
+<pre><code class="language-yaml">name: deploy
+on:
+  push:
+    branches:
+      - master
+concurrency:
+  group: ci-$&#123;{ github.ref }&#125;
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: composer
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+      - name: Compile to production
+        run: composer build
+      - name: Execute tests
+        run: composer test
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Build assets
+        run: |
+          npm install
+          npm start
+      - name: Clean up development files
+        run: |
+          rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
+          rm -f *.md app/*.neon app/*.xml *.yml app/router.php package* composer* .dockerignore Dockerfile jsconfig.json vite.config.js
+          rm -rf app/scripts app/styles app/routes
+      - name: Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: $&#123;{ secrets.FTP_SERVER }&#125;
+          username: $&#123;{ secrets.FTP_USERNAME }&#125;
+          password: $&#123;{ secrets.FTP_PASSWORD }&#125;
+          local-dir: ./
+          server-dir: ./htdocs/
+</code></pre>
 
 <pre><code class="language-yaml">name: CI/CD
 on:
@@ -100,6 +191,8 @@ jobs:
           coverage: none
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+      - name: Compile to production
+        run: composer build
       - name: Execute tests
         run: composer test
   build:
@@ -186,43 +279,4 @@ jobs:
           script: ./deploy.sh
 </code></pre>
 
-<p class="doc-alert"><b>Seguridad:</b> Nunca incluya secretos (llaves de Vault o contraseñas de DB) directamente en el archivo YAML. Utilice los <i>Secrets</i> de GitHub y mapee los valores mediante variables de entorno.</p>
-
-<h2>
-    <a href="#manual">Estrategia de Despliegue Manual</a>
-    <span class="anchor" id="manual">...</span>
-</h2>
-
-<p>Si opta por un despliegue manual (FTP/SCP), es vital no transferir los archivos de desarrollo para reducir la superficie de ataque y mejorar el rendimiento. Un despliegue "limpio" de Scoop debe contener únicamente los artefactos de ejecución:</p>
-
-<pre><code class="language-shell">├─ app
-|   ├─ config
-|   |    ├─ lang
-|   |    |    ├─ en.php
-|   |    |    └─ es.php
-|   |    ├─ routes.php
-|   |    └─ providers.php
-|   ├─ storage
-|   ├─ views
-|   ├─ config.php
-|   └─ ice
-├─ public
-|   ├─ css
-|   ├─ fonts
-|   ├─ images
-|   ├─ js
-|   ├─ favicon.ico
-|   ├─ humans.txt
-|   └─ robots.txt
-├─ scoop
-├─ src
-├─ vendor
-├─ .htaccess
-├─ composer.json
-├─ index.php
-└─ package.json
-</code></pre>
-
-<p class="doc-alert"><b>Pro-Tip de Despliegue:</b> Asegúrese siempre de ejecutar <code>composer install --optimize-autoloader --no-dev</code> en el servidor de destino para minimizar la latencia del cargador de clases de PHP.</p>
-
-<p>Para profundizar en la organización de los archivos, consulte la sección de <a href="{{#view->route('doc', 'application')}}#structure">Estructura de directorios</a>.</p>
+<p class="doc-alert"><b>Seguridad:</b> Nunca incluya secretos (llaves de cipher o contraseñas de DB) directamente en el archivo YAML. Utilice los <i>Secrets</i> de GitHub y mapee los valores mediante variables de entorno.</p>

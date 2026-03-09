@@ -502,6 +502,8 @@ graph TD
         <li><b>Infraestructura Persistente:</b> Soporte nativo para <a href="https://frankenphp.dev/" target="_blank">FrankenPHP</a> (Worker Mode), permitiendo que el motor permanezca en memoria y elimine los tiempos de arranque.</li>
         <li><b>Aislamiento Físico:</b> Implementación de múltiples <b>Bounded Contexts</b> mediante instancias de <code>Context</code> independientes, garantizando que el acoplamiento entre módulos sea técnicamente imposible.</li>
         <li><b>Context Mapping:</b> Creación del sistema de <i>Bridges</i> para orquestar la comunicación y traducción de datos entre contextos de forma segura.</li>
+        <li><b>Cambio de motor CSS:</b> Cambiar stylus por un sistema más moderno como Lightning CSS (o PostCSS).</li>
+        <li><b>Circuit breaker:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16)</li>
         <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR</b>.</li>
     </ul></p>
 </div>

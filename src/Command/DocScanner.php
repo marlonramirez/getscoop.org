@@ -4,13 +4,18 @@ namespace App\Command;
 
 use Scoop\Command\Writer;
 
-class DocScanner
+class DocScanner implements Command
 {
     private $writer;
 
     public function __construct(Writer $writer)
     {
         $this->writer = $writer;
+    }
+
+    public static function getName()
+    {
+        return 'scan:docs';
     }
 
     public function execute()

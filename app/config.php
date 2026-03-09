@@ -7,8 +7,6 @@ return array(
         'en' => 'import:app/config/lang/en'
     ),
     'ice' => array(
-        'commands' => array(
-            'scan:docs' => 'App\Command\DocScanner'
-        )
+        'commands' => 'insteadof:App\Command\Command'
     )
 );
