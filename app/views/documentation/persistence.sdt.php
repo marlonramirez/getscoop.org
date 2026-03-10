@@ -312,6 +312,35 @@ $creator->run();
 $books->create(['name', 'author'], $reader)->run(['year' => 1989]);
 </code></pre>
 
+<h4>Resolución de conflictos</h4>
+
+<p>Si intentas crear un elemento que ya existe en la base de datos (basado en una clave única o primaria), se generará una excepción. Para evitar esto, <strong>scoop</strong> permite gestionar conflictos mediante los métodos <code>resolveConflict</code>, <code>doNothing</code> y <code>doUpdate</code>.</p>
+
+<pre><code class="language-php">$books->create([
+    'name' => 'Angels & Demons',
+    'author' => 'Dan Brown',
+    'year' => '2009'
+])->resolveConflict('name')
+->doNothing()
+->run();
+</code></pre>
+
+<p>El método <code>resolveConflict</code> identifica la columna que podría causar la colisión. A continuación, puedes encadenar una acción:</p>
+
+<ul>
+    <li><code>doNothing()</code>: Si se halla un conflicto, el motor ignorará la inserción y no realizará ninguna acción.</li>
+    <li><code>doUpdate()</code>: Realiza un <i>upsert</i>. Si el registro existe, lo actualizará con los nuevos datos. Puedes pasar un array con las columnas específicas que deseas actualizar; de lo contrario, se actualizarán todos los campos enviados originalmente.</li>
+</ul>
+
+<p><pre><code class="language-php">$books->create([
+    'name' => 'Angels & Demons',
+    'author' => 'Dan Brown',
+    'year' => '2009'
+])->resolveConflict('name')
+->doUpdate(['year'])
+->run();
+</code></pre></p>
+
 <h3>Lectura y Filtrado</h3>
 
 <p>El método <code>read()</code> habilita una interfaz fluida para la recuperación de datos, permitiendo el uso de filtros dinámicos, donde la regla solo se añade al SQL si el parámetro está presente (<code>filter</code>), y restricciones de infraestructura, que son obligatorias y lanzan una excepción si el parámetro no es suministrado (<code>restrict</code>).</p>

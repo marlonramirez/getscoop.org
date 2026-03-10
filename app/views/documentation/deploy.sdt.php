@@ -63,8 +63,6 @@ app/ice preload json:composer
 
 <p>También tenemos el comando <code>app/ice dbup</code> que no puede ser ejecutado en compilación o creación de la imagen, si no que se debe ejecutar cuando se haya desplegado en el servidor para que logre conectar con la base de datos.</p>
 
-<p class="doc-alert"><b>Permisos de Escritura:</b> El proceso de construcción genera archivos dentro de <code>app/storage/cache</code>. Asegúrese de que el usuario del servidor web (ej. www-data) tenga permisos de lectura sobre estos archivos y permisos de escritura sobre la carpeta <code>storage</code> para logs y caché persistente.</p>
-
 <p class="doc-alert"><b>Pro-Tip de Despliegue:</b> Asegúrese siempre de ejecutar <code>composer install --optimize-autoloader --no-dev</code> en el servidor de destino para minimizar la latencia del cargador de clases de PHP.</p>
 
 <h3>Estructura de archivos en despliegue</h3>
@@ -99,16 +97,14 @@ app/ice preload json:composer
 
 <p>Para profundizar en la organización de los archivos, consulte la sección de <a href="{{#view->route('doc', 'application')}}#structure">Estructura de directorios</a>.</p>
 
+<p class="doc-alert"><b>Permisos de Escritura:</b> El proceso de construcción genera archivos dentro de <code>app/storage/cache</code>. Asegúrese de que el usuario del servidor web (ej. www-data) tenga permisos de lectura sobre estos archivos y permisos de escritura sobre la carpeta <code>storage</code> para logs y caché persistente.</p>
+
 <h2>
     <a href="#cicd">Integración Continua (GitHub Actions)</a>
     <span class="anchor" id="cicd">...</span>
 </h2>
 
 <p>Scoop se integra de forma natural en flujos de trabajo modernos. A continuación, se presentan una serie de configuraciones avanzadas para <b>GitHub Actions</b> que ilustran diferentes estratégias de despliegue.</p>
-
-<h3>AWS</h3>
-
-<p>Pruebas, construcción de imagen Docker subiendo a ECR y despliegue automatizado en EC2.</p>
 
 <h3>FTP</h3>
 
@@ -158,6 +154,10 @@ jobs:
           local-dir: ./
           server-dir: ./htdocs/
 </code></pre>
+
+<h3>AWS</h3>
+
+<p>Pruebas, construcción de imagen Docker subiendo a ECR y despliegue automatizado en EC2.</p>
 
 <pre><code class="language-yaml">name: CI/CD
 on:

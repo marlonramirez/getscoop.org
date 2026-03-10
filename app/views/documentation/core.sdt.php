@@ -59,7 +59,8 @@ $environment = \Scoop\Context::getEnvironment();
     <ul>
         <li><b><code>import:</code></b> Carga archivos PHP externos bajo demanda, ideal para segmentar grandes mapas de configuración.</li>
         <li><b><code>json:</code></b> Parsea y cachea archivos JSON (como el <code>package.json</code>) convirtiéndolos en arrays nativos.</li>
-        <li><b><code>instanceof:</code></b> Es el cargador más avanzado. Recupera todas las clases que implementan un contrato específico consultando un <b>índice de abstracciones pre-calculado</b>, logrando una resolución $O(1)$ en entornos de producción.</li>
+        <li><b><code>insteadof:</code></b> Mapea las implementaciones de un tipo sin instanciarlas. Retorna un array de nombres de clase que implementan el contrato especificado, permitiendo selección manual o estrategias de resolución condicional.</li>
+        <li><b><code>instanceof:</code></b> Instancia las clases halladas mediante <code>insteadof</code>.</li>
     </ul>
 </p>
 
@@ -69,11 +70,14 @@ $environment = \Scoop\Context::getEnvironment();
         'es' => 'import:app/config/lang/es',
         'en' => 'import:app/config/lang/en'
     ],
-    'commands' => 'instanceof:App\Command\Command'
+    'ice' => [
+        'commands' => 'insteadof:App\Command\Handler',
+    ],
+    'Validators' => 'instanceof:App\Domain\Validator'
 ];
 </code></pre>
 
-<p class="doc-alert"><b>Optimización O(1):</b> El loader <code>instanceof:</code> no escanea el disco en cada petición. Consulta un índice de tipos pre-calculado por <code>ice</code>, permitiendo el autodescubrimiento de servicios sin peaje de rendimiento.</p>
+<p class="doc-alert"><b>Optimización O(1):</b> El loader <code>insteadof:</code> no escanea el disco en cada petición. En producción consulta un índice de tipos pre-calculado por <code>ice</code>, permitiendo el autodescubrimiento de servicios sin peaje de rendimiento.</p>
 
 <h2>
     <a href="#injector">Inversión de control (IoC)</a>

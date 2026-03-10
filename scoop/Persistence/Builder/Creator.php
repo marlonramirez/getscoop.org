@@ -40,6 +40,10 @@ final class Creator
         if (array_keys($values) !== range(0, $numValues - 1)) {
             $order = array();
             foreach ($this->fields as $index => $key) {
+                $key = substr($key, 1, -1);
+                if (!isset($values[$key])) {
+                    throw new \InvalidArgumentException("Column $key missing");
+                }
                 $order[$index] = $values[$key];
             }
             $values = $order;

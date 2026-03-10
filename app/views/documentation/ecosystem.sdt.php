@@ -160,7 +160,7 @@ $data = $this->cache->get('user_session_1');
     <li><b><code>help()</code>:</b> Define la documentación del comando, invocada automáticamente al usar el flag <code>--help</code>.</li>
 </ul>
 
-<pre><code class="language-php">class Router
+<p><pre><code class="language-php">class Router
 {
     private $bus;
     private $writer;
@@ -190,7 +190,7 @@ $data = $this->cache->get('user_session_1');
         $this->writer->write('', 'Run app/ice new COMMAND --help for more information');
     }
 }
-</code></pre>
+</code></pre></p>
 
 <h3>Gestión de la Salida (Writer)</h3>
 
