@@ -206,7 +206,7 @@ $request->redirect($route->withMessage('Factura creada correctamente'), 303);
 
 <h3>Configuración de Suscriptores</h3>
 
-<p>La asociación entre un Evento y sus Listeners se define de forma declarativa en el mapa de configuración:</p>
+<p>La asociación entre un evento y sus listeners se define de forma declarativa en el mapa de configuración:</p>
 
 <pre><code class="language-php">[
     'events' => [
@@ -217,6 +217,33 @@ $request->redirect($route->withMessage('Factura creada correctamente'), 303);
     ]
 ]
 </code></pre>
+
+<h3>Middlewares</h3>
+
+<p>La configuración anterior permite la declaración simple de listeners o subscriptores, pero estos pueden ser decorados con middlewares de diversas manera. La primera es mediante la misma configuración.</p>
+
+<pre><code class="language-php">[
+    'events' => [
+        InvoiceCreated::class => [
+            SendWelcomeEmail::class,
+            NotifyAccountingSystem::class => [DBMiddleware::class]
+        ]
+    ]
+]
+</code></pre>
+
+<p>La segunda opción permite que el propio listener declare sus middlewares mediante el método estático <code>getMiddlewares</code>. Esta aproximación es ideal cuando se utiliza el cargador <code>insteadof</code> para el autodescubrimiento de listeners, permitiendo que cada uno transporte su propia configuración de infraestructura.</p>
+
+<pre><code class="language-php">class NotifyAccountingSystem
+{
+    public static function getMiddlewares()
+    {
+        return [DBMiddleware::class];
+    }
+}
+</code></pre>
+
+<p>Cabe la pena recordar que la configuración prima sobre la declaración del método.</p>
 
 <h3>Listeners Inyectables</h3>
 

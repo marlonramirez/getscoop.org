@@ -2,6 +2,9 @@
 
 namespace Scoop\Http;
 
+use BadMethodCallException;
+use InvalidArgumentException;
+
 class Router
 {
     private $routes;
@@ -24,18 +27,32 @@ class Router
             if ($route['validator']) {
                 $this->validateRoute($route['validator'], $route['params']);
             }
+            $controller = $route['controller'];
             $method = $request->getMethod();
-            $controller = $this->getController($route['controller'], $method);
-            if ($controller) {
-                $controllerReflection = new \ReflectionClass($controller);
-                if (is_callable($controller)) {
-                    $method = '__invoke';
-                } elseif (!$controllerReflection->hasMethod($method)) {
+            if (is_array($controller)) {
+                if (!isset($controller[$method])) {
                     throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
                 }
-                $callable = $controllerReflection->getMethod($method);
-                $requestHandler = new \Scoop\Http\Handler\Request($controller, $callable, $route);
+                $controller = $controller[$method];
+                if (is_callable($controller)) {
+                    $method = '__invoke';
+                }
+            }
+            if (!class_exists($controller)) {
+                throw new \Scoop\Http\Exception\NotFound();
+            }
+            try {
+                $requestHandler = new \Scoop\Http\Handler\Request(
+                    $controller,
+                    $method,
+                    $route['middlewares'],
+                    $route['params']
+                );
                 return $requestHandler->handle($request);
+            } catch (BadMethodCallException $ex) {
+                throw new \Scoop\Http\Exception\MethodNotAllowed($ex->getMessage());
+            } catch (InvalidArgumentException $ex) {
+                throw new \Scoop\Http\Exception\NotFound($ex->getMessage());
             }
         }
         throw new \Scoop\Http\Exception\NotFound();
@@ -68,20 +85,6 @@ class Router
         if (!$validator->validate($params)) {
             throw new \Scoop\Http\Exception\NotFound();
         }
-    }
-
-    private function getController($controller, $method)
-    {
-        if (is_array($controller)) {
-            if (!isset($controller[$method])) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
-            }
-            $controller = $controller[$method];
-        }
-        if (!class_exists($controller)) {
-            throw new \Scoop\Http\Exception\NotFound();
-        }
-        return \Scoop\Context::inject($controller);
     }
 
     private function getRoute($url)

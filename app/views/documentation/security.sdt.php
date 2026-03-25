@@ -119,8 +119,10 @@ fetch('/api/users', {
 <ol>
     <li>Header <code>X-CSRF-Token</code></li>
     <li>Query parameter <code>?csrf-token=...</code></li>
-    <li>Body field <code>csrf-token</code> (POST y PUT sin archivos)</li>
+    <li>Body field <code>csrf-token</code></li>
 </ol>
+
+<p class="alert">Para formularios con <code>enctype="multipart/form-data"</code> que manejen archivos de gran tamaño, se recomienda enviar el token via <code>query param</code> en el action o via header <code>X-CSRF-Token</code> al usar fetch, para evitar el costo de parsear el body completo en la validación CSRF.</p>
 
 <p><b>Métodos HTTP exentos:</b> GET, HEAD, OPTIONS, TRACE no requieren token CSRF.</p>
 

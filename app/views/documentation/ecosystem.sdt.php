@@ -147,6 +147,13 @@ $data = $this->cache->get('user_session_1');
 ]
 </code></pre>
 
+<p>Para arquitecturas extensibles, puedes usar el cargador <code>insteadof</code>. Este recupera automáticamente todas las clases que implementan un contrato específico.</p>
+
+<pre><code class="language-php">'commands' => 'insteadof:App\Command\CommandInterface'
+</code></pre>
+
+<p>Cuando se utilizan cargadores dinámicos o listas indexadas, el comando debe implementar el método estático <code>getName()</code> para definir su palabra clave en la consola <code>ice</code>.</p>
+
 <p>Ejecución desde la terminal.</p>
 
 <pre><code class="language-shell">php app/ice notification</code></pre>

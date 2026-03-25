@@ -32,7 +32,7 @@ $app->run();
 
 <pre><code class="language-php">$service = \Scoop\Context::inject(MyServiceInterface::class);
 $db = \Scoop\Context::connect('default');
-$environment = \Scoop\Context::getEnvironment();
+$environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 </code></pre>
 
 <p class="doc-alert"><b>Evolución DX:</b> Desde la versión 0.6.4, se prioriza el uso de <code>Context::inject($id)</code>, eliminando la necesidad de interactuar directamente con las instancias internas del inyector.</p>

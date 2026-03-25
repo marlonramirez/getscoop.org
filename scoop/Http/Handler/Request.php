@@ -7,34 +7,31 @@ class Request
     private $controller;
     private $middlewares;
     private $params;
-    private $callable;
+    private $method;
 
-    public function __construct($controller, $callable, $route)
+    public function __construct($controller, $method, $middlewares, $params)
     {
-        $this->middlewares = $route['middlewares'];
-        $this->params = $route['params'];
-        $this->callable = $callable;
+        $this->middlewares = $middlewares;
+        $this->params = $params;
         $this->controller = $controller;
+        $this->method = $method;
     }
 
     public function handle($request)
     {
         if (empty($this->middlewares)) {
-            $args = $this->getArguments($request);
-            $response = $this->callable->invokeArgs($this->controller, $args);
-            return $this->transformResponse($response);
+            return $this->processController($request);
         }
         $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
             $className = get_class($middlewareInstance);
-            throw new \RuntimeException("Middleware $className does not implement process method");
+            throw new \BadMethodCallException("Middleware $className does not implement process method");
         }
         return $middlewareInstance->process($request, new Next($this));
     }
 
-    private function getArguments($request)
+    private function getArguments($parameters, $request)
     {
-        $parameters = $this->callable->getParameters();
         $args = array();
         $hasType = empty($parameters) ? false : method_exists($parameters[0], 'getType');
         foreach ($parameters as $reflectionParam) {
@@ -50,13 +47,17 @@ class Request
     private function getArgument($reflectionParam)
     {
         $paramName = $reflectionParam->getName();
-        if (isset($this->params[$paramName])) {
+        if (array_key_exists($paramName, $this->params)) {
             return $this->params[$paramName];
+        }
+        $position = $reflectionParam->getPosition();
+        if (array_key_exists($position, $this->params)) {
+            return $this->params[$position];
         }
         if ($reflectionParam->isDefaultValueAvailable()) {
             return $reflectionParam->getDefaultValue();
         }
-        throw new \Scoop\Http\Exception\NotFound("has '$paramName' missing");
+        throw new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing.");
     }
 
     private function transformResponse($response)
@@ -77,7 +78,7 @@ class Request
         if (
             is_scalar($response) ||
             is_object($response) &&
-            method_exists($response, '_toString')
+            method_exists($response, '__toString')
         ) {
             return new \Scoop\Http\Message\Response(
                 200,
@@ -90,5 +91,18 @@ class Request
             array('Content-Type' => 'application/json'),
             json_encode($response)
         );
+    }
+
+    private function processController($request)
+    {
+        $controller = \Scoop\Context::inject($this->controller);
+        $controllerReflection = new \ReflectionClass($controller);
+        if (!$controllerReflection->hasMethod($this->method)) {
+            throw new \BadMethodCallException("Not implement {$this->method} method");
+        }
+        $callable = $controllerReflection->getMethod($this->method);
+        $args = $this->getArguments($callable->getParameters(), $request);
+        $response = $callable->invokeArgs($controller, $args);
+        return $this->transformResponse($response);
     }
 }
