@@ -232,7 +232,7 @@ $request->redirect($route->withMessage('Factura creada correctamente'), 303);
 ]
 </code></pre>
 
-<p>La segunda opción permite que el propio listener declare sus middlewares mediante el método estático <code>getMiddlewares</code>. Esta aproximación es ideal cuando se utiliza el cargador <code>insteadof</code> para el autodescubrimiento de listeners, permitiendo que cada uno transporte su propia configuración de infraestructura.</p>
+<p>La segunda opción permite que el propio listener declare sus middlewares mediante el método estático <code>getMiddlewares</code>. Esta aproximación es ideal cuando se utiliza el cargador <code>typeof</code> para el autodescubrimiento de listeners, permitiendo que cada uno transporte su propia configuración de infraestructura.</p>
 
 <pre><code class="language-php">class NotifyAccountingSystem
 {

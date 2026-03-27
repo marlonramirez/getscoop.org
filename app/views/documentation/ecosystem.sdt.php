@@ -5,6 +5,7 @@
     <li><a href="#monitoring">Monitoreo y Logging</a></li>
     <li><a href="#cache">Caché distribuida</a></li>
     <li><a href="#http-client">HTTP Client</a></li>
+    <li><a href="#events">Catálogo de eventos</a></li>
     <li><a href="#ice">ICE: Interface Command Environment</a></li>
     <li><a href="#i18n">Internacionalización (i18n)</a></li>
 </ul></p>
@@ -130,6 +131,19 @@ $data = $this->cache->get('user_session_1');
 </code></pre>
 
 <h2>
+    <a href="#events">Catálogo de eventos</a>
+    <span class="anchor" id="events">...</span>
+</h2>
+
+<p>Scoop es un motor observable. El núcleo dispara <a href="{{#view->route('doc', 'application')}}#events">eventos</a> clave que permiten extender el comportamiento del sistema sin modificar el código fuente:</p>
+
+<ul>
+    <li><code>Scoop\Http\Event\ErrorOccurred:</code> Se dispara ante cualquier excepción no capturada en el ciclo de vida de la aplicación. Permite acceder a la excepción mediante <code>getError()</code> y al estado HTTP sugerido con <code>getStatusCode()</code>.</li>
+    <li><code>Scoop\Persistence\Event\ConnectionOpened:</code> Notifica la apertura física de una conexión al bundle de base de datos. Provee acceso al objeto mediante <code>getConnection()</code>, ideal para auditoría o inyectar configuraciones de sesión SQL (ej. <code>SET TIMEZONE</code>).</li>
+    <li><code>Scoop\Persistence\Event\ConnectionClosed:</code> Se dispara al cerrar la conexión o destruir el objeto Connection, permitiendo tareas de limpieza o métricas de tiempo de uso.</li>
+</ul>
+
+<h2>
     <a href='#ice'>ICE: Interface Command Environment</a>
     <span class='anchor' id='ice'>...</span>
 </h2>
@@ -147,9 +161,9 @@ $data = $this->cache->get('user_session_1');
 ]
 </code></pre>
 
-<p>Para arquitecturas extensibles, puedes usar el cargador <code>insteadof</code>. Este recupera automáticamente todas las clases que implementan un contrato específico.</p>
+<p>Para arquitecturas extensibles, puedes usar el cargador <code>typeof</code>. Este recupera automáticamente todas las clases que implementan un contrato específico.</p>
 
-<pre><code class="language-php">'commands' => 'insteadof:App\Command\CommandInterface'
+<pre><code class="language-php">'commands' => 'typeof:App\Command\CommandInterface'
 </code></pre>
 
 <p>Cuando se utilizan cargadores dinámicos o listas indexadas, el comando debe implementar el método estático <code>getName()</code> para definir su palabra clave en la consola <code>ice</code>.</p>

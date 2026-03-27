@@ -7,6 +7,6 @@ return array(
         'en' => 'import:app/config/lang/en'
     ),
     'ice' => array(
-        'commands' => 'insteadof:App\Command\Command'
+        'commands' => 'typeof:App\Command\Command'
     )
 );

@@ -83,7 +83,7 @@ SQL Server: [public].[users].[id]
 $column = $connection->quoteColumn('public.users.id');
 </code></pre>
 
-<p><b>Validación automática:</b> El método valida que el identificador tenga un formato SQL válido (<code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>), previniendo inyecciones SQL accidentales.</p>
+<p class="doc-alert"><b>Blindaje Léxico:</b> Scoop aplica una validación estricta a todos los identificadores (tablas, columnas, alias) mediante la expresión regular <code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>. Esto previene ataques de inyección de identificadores, garantizando que solo caracteres alfanuméricos y delimitadores controlados entren en la construcción de la sentencia.</p>
 
 <h3>quoteCriteria() - Sintaxis SQL Universal</h3>
 

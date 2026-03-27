@@ -59,8 +59,8 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
     <ul>
         <li><b><code>import:</code></b> Carga archivos PHP externos bajo demanda, ideal para segmentar grandes mapas de configuración.</li>
         <li><b><code>json:</code></b> Parsea y cachea archivos JSON (como el <code>package.json</code>) convirtiéndolos en arrays nativos.</li>
-        <li><b><code>insteadof:</code></b> Mapea las implementaciones de un tipo sin instanciarlas. Retorna un array de nombres de clase que implementan el contrato especificado, permitiendo selección manual o estrategias de resolución condicional.</li>
-        <li><b><code>instanceof:</code></b> Instancia las clases halladas mediante <code>insteadof</code>.</li>
+        <li><b><code>typeof:</code></b> Mapea las implementaciones de un tipo sin instanciarlas. Retorna un array de nombres de clase que implementan el contrato especificado, permitiendo selección manual o estrategias de resolución condicional.</li>
+        <li><b><code>instanceof:</code></b> Instancia las clases halladas mediante <code>typeof</code>.</li>
     </ul>
 </p>
 
@@ -71,13 +71,13 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
         'en' => 'import:app/config/lang/en'
     ],
     'ice' => [
-        'commands' => 'insteadof:App\Command\Handler',
+        'commands' => 'typeof:App\Command\Handler',
     ],
     'Validators' => 'instanceof:App\Domain\Validator'
 ];
 </code></pre>
 
-<p class="doc-alert"><b>Optimización O(1):</b> El loader <code>insteadof:</code> no escanea el disco en cada petición. En producción consulta un índice de tipos pre-calculado por <code>ice</code>, permitiendo el autodescubrimiento de servicios sin peaje de rendimiento.</p>
+<p class="doc-alert"><b>Optimización O(1):</b> El loader <code>typeof:</code> no escanea el disco en cada petición. En producción consulta un índice de tipos pre-calculado por <code>ice</code>, permitiendo el autodescubrimiento de servicios sin peaje de rendimiento.</p>
 
 <h2>
     <a href="#injector">Inversión de control (IoC)</a>

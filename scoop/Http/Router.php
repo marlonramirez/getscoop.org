@@ -34,7 +34,7 @@ class Router
                     throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
                 }
                 $controller = $controller[$method];
-                if (is_callable($controller)) {
+                if (method_exists($controller, '__invoke')) {
                     $method = '__invoke';
                 }
             }
@@ -50,9 +50,9 @@ class Router
                 );
                 return $requestHandler->handle($request);
             } catch (BadMethodCallException $ex) {
-                throw new \Scoop\Http\Exception\MethodNotAllowed($ex->getMessage());
+                throw new \Scoop\Http\Exception\MethodNotAllowed("not implement $method method");
             } catch (InvalidArgumentException $ex) {
-                throw new \Scoop\Http\Exception\NotFound($ex->getMessage());
+                throw new \Scoop\Http\Exception\NotFound();
             }
         }
         throw new \Scoop\Http\Exception\NotFound();

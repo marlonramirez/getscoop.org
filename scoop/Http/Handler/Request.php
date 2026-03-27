@@ -25,7 +25,7 @@ class Request
         $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
             $className = get_class($middlewareInstance);
-            throw new \BadMethodCallException("Middleware $className does not implement process method");
+            throw new \RuntimeException("Middleware $className does not implement process method");
         }
         return $middlewareInstance->process($request, new Next($this));
     }
@@ -98,7 +98,7 @@ class Request
         $controller = \Scoop\Context::inject($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
-            throw new \BadMethodCallException("Not implement {$this->method} method");
+            throw new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
         }
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
