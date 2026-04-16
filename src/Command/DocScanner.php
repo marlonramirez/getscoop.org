@@ -47,9 +47,9 @@ class DocScanner implements Command
             }
         }
         if (file_put_contents('index.json', json_encode($index, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))) {
-            $this->writer->write('<success:Indice generado con exito. ' . count($index) . ' secciones encontradas.!>');
+            $this->writer->write('✅ <success:Indice generado con exito. ' . count($index) . ' secciones encontradas.!>');
         } else {
-            $this->writer->write('<error:Error al escribir el archivo JSON. Revisa permisos de carpeta.!>');
+            $this->writer->write('❌ <error:Error al escribir el archivo JSON. Revisa permisos de carpeta.!>');
         }
     }
 

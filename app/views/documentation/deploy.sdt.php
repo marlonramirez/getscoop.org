@@ -54,7 +54,7 @@
 <p>A diferencia del entorno de desarrollo, donde Scoop prioriza la flexibilidad y el descubrimiento dinámico, en producción el motor debe operar en <b>Modo Inmutable</b>. El proceso de construcción (build) utiliza el CLI <code>ice</code> para eliminar la reflexión del <i>Hot Path</i>:</p>
 
 <pre><code class="language-shell">app/ice scan routes
-app/ice cache types
+app/ice scan types
 app/ice preload json:package
 app/ice preload json:composer
 </code></pre>

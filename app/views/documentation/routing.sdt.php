@@ -171,4 +171,4 @@ return array_merge($group, [
 }
 </code></pre>
 
-<p class="doc-alert"><b>Optimización de Producción:</b> Aunque en desarrollo Scoop escanea el sistema de archivos en cada petición, en producción se debe ejecutar el comando <code>app/ice cache routes</code>. Esto genera un mapa de rutas inmutable en memoria, eliminando el costo de I/O y garantizando un rendimiento superior.</p>
+<p class="doc-alert"><b>Optimización de Producción:</b> Aunque en desarrollo Scoop escanea el sistema de archivos en cada petición, en producción se debe ejecutar el comando <code>app/ice scan routes</code>. Esto genera un mapa de rutas inmutable en memoria, eliminando el costo de I/O y garantizando un rendimiento superior.</p>

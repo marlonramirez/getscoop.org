@@ -24,7 +24,7 @@ $app->run();
 
 <p>
     <ul>
-        <li><b>Entorno:</b> Acceso a la configuración mediante <code>Context::getEnvironment()</code>.</li>
+        <li><b>inject:</b> Inyección de dependencias mediante service locator <code>Context::inject($provider)</code>.</li>
         <li><b>Persistencia:</b> Gestión de conexiones y desconexiones mediante <code>Context::connect($bundle)</code>.</li>
         <li><b>Resolución:</b> El método <code>Context::inject($id)</code> es la puerta de entrada para obtener cualquier servicio gestionado por el inyector.</li>
     </ul>

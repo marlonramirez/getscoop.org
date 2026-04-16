@@ -48,11 +48,11 @@
             Slack::class => [
                 'url' => 'https://hooks.slack.com/services/T00/B0000/XXXXXXXXXXXXXX',
                 'config' => [
-                    'blocks': [[
-                        'type': 'section',
-                        'text': [
-                            'type': 'mrkdwn',
-                            'text': 'Something has happened:'
+                    'blocks' => [[
+                        'type' => 'section',
+                        'text' => [
+                            'type' => 'mrkdwn',
+                            'text' => 'Something has happened:'
                         ]]
                     ]
                 ]
@@ -65,12 +65,12 @@
             Email::class => ['email' => ['support@sespesoft.com', 'admin@sespesoft.com']],
             Slack::class => [
                 'url' => 'https://hooks.slack.com/services/T00/B0000/XXXXXXXXXXXXXX',
-                'config' => ['blocks': [
+                'config' => ['blocks' => [
                     [
-                        'type': 'section',
-                        'text': [
-                            'type': 'mrkdwn',
-                            'text': 'Critical error email send with:'
+                        'type' => 'section',
+                        'text' => [
+                            'type' => 'mrkdwn',
+                            'text' => 'Critical error email send with:'
                         ]
                     ]
                 ]]

@@ -319,6 +319,61 @@ theme="dark"
 &lt;/sc-modal&gt;
 </code></pre>
 
+<h3>Invocación sin azúcar sintáctico</h3>
+
+<p>La etiqueta <code>&lt;sc-*&gt;</code> es una conveniencia del compilador SDT. En tiempo de ejecución se traduce a una llamada directa al método <code>#view->compose()</code>, que acepta tres parámetros: el nombre del componente, un array asociativo de propiedades y una cadena con el contenido hijo (<i>children</i>).</p>
+
+<p>Invocar el método directamente es útil cuando el nombre del componente se determina en tiempo de ejecución, cuando se genera el contenido hijo de forma programática, o cuando se
+trabaja fuera del compilador SDT.</p>
+
+<pre><code class="language-php-template">&#123;{= #view->compose('message', array(), '') }&#125;</code></pre>
+
+<p>Equivale exactamente a:</p>
+
+<pre><code class="language-php-template">&lt;sc-message&gt;&lt;/sc-message&gt;</code></pre>
+
+<p>Para invocar componente con propiedades y contenido estático:</p>
+
+<pre><code class="language-php-template">&#123;{= #view->compose(
+    'modal',
+    array('title' => 'Delete record'),
+    '&lt;p&gt;Are you sure you want to delete this item?&lt;/p&gt;'
+) }&#125;</code></pre>
+
+<p>Cuando el contenido hijo requiere lógica de presentación propia, se captura con <code>ob_start</code> / <code>ob_get_clean</code> antes de invocar el método:</p>
+
+<pre><code class="language-php-template">&lt;?php ob_start() ?&gt;
+&#64;foreach $items as $item
+    &lt;li&gt;&#123;{$item->name}&#125;&lt;/li&gt;
+&#58;foreach
+&lt;?php $children = ob_get_clean() ?&gt;
+&#123;{= #view->compose('card', array('title' => $title), $children) }&#125;</code></pre>
+
+<p>Los componentes de vista siguen la misma firma; el prefijo <code>view.</code> indica al motor que debe cargar una plantilla SDT en lugar de una clase:</p>
+
+<pre><code class="language-php-template">&lt;?php ob_start() ?&gt;
+    &lt;p&gt;Product description...&lt;/p&gt;
+&lt;?php $children = ob_get_clean() ?&gt;
+&#123;{= #view->compose(
+    'view.partials.card',
+    array('title' => 'Product', 'price' => $price),
+    $children
+) }&#125;</code></pre>
+
+<p>Los puntos en el nombre del componente de vista se traducen a separadores de carpeta, por lo que <code>view.partials.card</code> resuelve a <code>app/views/partials/card.sdt.php</code>.</p>
+
+<p>Los bloques <code>@block[name]</code> que se definen dentro de una etiqueta <code>&lt;sc-*&gt;</code> son también HTML plano que el método <code>Heritage::parseBlocks</code> procesa internamente. Para replicar ese comportamiento de forma explícita, se incluye la directiva <code>@block</code> dentro de la cadena de contenido hijo:</p>
+
+<pre><code class="language-php-template">&lt;?php ob_start() ?&gt;
+@block[footer]
+    &lt;button&gt;Confirm&lt;/button&gt;
+:block
+&lt;p&gt;Are you sure?&lt;/p&gt;
+&lt;?php $children = ob_get_clean() ?&gt;
+&#123;{= #view->compose('modal', array('title' => 'Confirm action'), $children) }&#125;</code></pre>
+
+<p class="doc-alert"><b>Nota:</b> la salida de <code>#view->compose()</code> no está escapada por el motor, por lo que siempre debe invocarse con la sintaxis de salida en crudo <code>&#123;{=&nbsp;...&nbsp;}&#125;</code> y no con <code>&#123;{&nbsp;...&nbsp;}&#125;</code>.</p>
+
 <h2>
     <a href="#cache">Cache y minificación</a>
     <span class="anchor" id="cache">...</span>
