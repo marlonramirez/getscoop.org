@@ -1,8 +1,8 @@
 <?php
 
-namespace Scoop\Http\Exception;
+namespace Scoop\Http\Error;
 
-class Manager
+class Mapper
 {
     const VIEW = 'exceptions/default';
     private static $messages = array();
@@ -59,18 +59,22 @@ class Manager
         }
     }
 
-    public function handle($ex, $isJSON, $status)
+    public function map($ex, $isJSON, $status)
     {
         $code = $ex->getCode();
         $headers = isset($this->config[$status]['headers']) ? $this->config[$status]['headers'] : array();
         if (isset(self::$messages[$code])) {
-            $ex = new \Scoop\Http\Exception\Proxy($ex, self::$messages[$code]);
+            $ex = new Proxy($ex, self::$messages[$code]);
         }
         if ($isJSON) {
+            $response = array('code' => $code, 'message' => $ex->getMessage());
+            if (DEBUG_MODE) {
+                $response['trace'] = $ex->__toString();
+            }
             return new \Scoop\Http\Message\Response(
                 $status,
                 $headers + array('Content-Type' => 'application/json'),
-                json_encode(array('code' => $code, 'message' => $ex->getMessage()))
+                json_encode($response)
             );
         }
         return new \Scoop\Http\Message\Response(

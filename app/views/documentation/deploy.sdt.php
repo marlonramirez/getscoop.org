@@ -1,11 +1,36 @@
 <p>Scoop está diseñado para escalar desde despliegues atómicos —basados en la transferencia simple de archivos— hasta flujos de trabajo avanzados con tuberías de <b>Integración y Despliegue Continuo (CI/CD)</b>. La arquitectura del motor garantiza que, independientemente del método elegido, el sistema mantenga su integridad y alto rendimiento.</p>
 
 <p><ul>
+  <li><a href="#debug">Debug mode</a></li>
   <li><a href="#quality">Estándares de Calidad</a></li>
   <li><a href="#automation">Automatización con Hooks</a></li>
   <li><a href="#optimization">Optimización de Producción</a></li>
   <li><a href="#cicd">Integración Continua (GitHub Actions)</a></li>
 </ul></p>
+
+<h2>
+    <a href="#debug">Debug mode</a>
+    <span class="anchor" id="debug">...</span>
+</h2>
+
+<p>Scoop utiliza el Debug Mode para equilibrar la agilidad durante el desarrollo y el máximo rendimiento en producción. Este modo se activa automáticamente basándose en la directiva de PHP <code>display_errors</code>.</p>
+
+<p>Cuando <code>DEBUG_MODE</code> es <b>true</b>, el motor activa el "escaneo en caliente" (Hot Scanning):</p>
+
+<ul>
+    <li><b>Ruteo Dinámico:</b> El <code>Router</code> invoca al escáner de rutas en cada petición para reflejar cambios inmediatos en <code>app/routes</code>.</li>
+    <li><b>Autodescubrimiento de Tipos:</b> El <code>TypeMapper</code> escanea el <code>composer.json</code> y los directorios del proyecto para resolver implementaciones de interfaces al vuelo.</li>
+    <li><b>Visibilidad Total:</b> El <code>ExceptionManager</code> renderiza trazas completas de errores (Stack Trace), archivos y líneas afectadas.</li>
+</ul>
+
+<p>En entornos productivos, es obligatorio que <code>display_errors</code> esté desactivado. Mantener el Debug Mode activo en producción conlleva dos riesgos críticos:</p>
+
+<ol>
+    <li><b>Fuga de Información:</b> Las trazas de error pueden exponer credenciales, rutas de archivos y lógica interna del negocio.</li>
+    <li><b>Degradación de Rendimiento:</b> El escaneo constante de archivos (I/O) y el análisis de tokens de PHP eliminan las optimizaciones de caché, aumentando significativamente el tiempo de respuesta.</li>
+</ol>
+
+<p>Al desactivar el Debug Mode, el sistema dejará de escanear el sistema de archivos y confiará exclusivamente en los mapas compilados. Asegúrese de haber ejecutado los comandos de <code>ice scan</code> antes de pasar a un entorno inmutable.</p>
 
 <h2>
     <a href="#quality">Estándares de Calidad</a>

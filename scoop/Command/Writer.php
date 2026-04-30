@@ -14,7 +14,9 @@ class Writer
 
     public function __construct($styles)
     {
-        exec('chcp 65001');
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            exec('chcp 65001 2>NUL');
+        }
         foreach ($styles as $name => $style) {
             array_push($this->names, "<$name:");
             array_push($this->styles, "\e[" . implode(';', $style) . 'm');
@@ -70,7 +72,7 @@ class Writer
 
     public function write()
     {
-        if ($this->writer) {
+        if (isset($this->writer)) {
             $this->writer->write('');
             unset($this->writer);
         }
@@ -84,7 +86,7 @@ class Writer
     }
 
     public function spinner($iteration, $theme = 'link', $msg = 'Loading...') {
-        if (!$this->writer) {
+        if (!isset($this->writer)) {
             $this->writer = $this->withSeparator(self::CLEAR);
         }
         $frames = array('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏');
