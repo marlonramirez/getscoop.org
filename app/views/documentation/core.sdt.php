@@ -15,12 +15,15 @@
 
 <p>La clase <code>\Scoop\Context</code> es el punto de ignición del motor. No es un simple contenedor de configuración; es el orquestador que inicializa la <b>"burbuja" de ejecución inmutable</b>, encargándose de levantar el cargador de namespaces, el entorno y el Inyector de dependencias.</p>
 
-<pre><code class="language-php">\Scoop\Context::load('app/config');
+<pre><code class="language-php">\Scoop\Context::load('app/config', [
+    'storage' => 'app/storage',
+    'stateless' => true
+]);
 $app = new \Scoop\Bootstrap\Application();
 $app->run();
 </code></pre>
 
-<p>Una vez establecido el contexto, el sistema permite acceder a los componentes del núcleo de forma desacoplada:</p>
+<p>Una vez establecido el contexto enviando como parámetros la ubicación del archivo de configuración y un array opcional con la ubicación del storage y si la aplicación se ejecuta en modo stateless <i>(beta)</i>, el sistema permite acceder a los componentes del núcleo de forma desacoplada:</p>
 
 <p>
     <ul>

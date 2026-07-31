@@ -93,7 +93,7 @@ function test($expression)
 {
     global $matches;
     if (defined('REWRITER_FINALIZED')) return false;
-    return 0 < (integer)preg_match($expression, $_SERVER['SCRIPT_NAME'], $matches);
+    return 0 < (int) preg_match($expression, $_SERVER['SCRIPT_NAME'], $matches);
 }
 
 set_environment($_SERVER['REQUEST_URI']);
@@ -111,7 +111,7 @@ if (file_exists($page) && is_file($page)) {
     return false;
 }
 if (substr($uri, -1) !== '/') {
-    header('Location: ' . $uri . '/');
+    header('Location: ' . $uri . '/' . (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : ''));
     header('HTTP/1.1 308 Permanent Redirect');
     exit;
 }

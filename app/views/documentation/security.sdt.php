@@ -65,6 +65,10 @@ $db->update(['field' => $newData])->restrict('[id] = :id')->run(['id' => 1]);
     <li><b>raw</b>: Bytes crudos, solo para almacenamiento binario (BLOB)</li>
 </ul>
 
+<p class="doc-alert">
+    <b>Nota de Migración (v0.7.x a v0.8.x):</b> La clase <code>\Scoop\Persistence\Vault</code> ha sido marcada como <b>@deprecated</b>. Aunque sigue siendo funcional para mantener la compatibilidad, se recomienda migrar a <code>\Scoop\Security\Cipher</code>. Internamente, <code>Cipher</code> utiliza el algoritmo GCM (versión <code>$1:</code>) para nuevos datos, el cual es la evolución directa del motor de Vault, asegurando una transición fluida y mayor seguridad mediante el versionamiento de claves.
+</p>
+
 <h2>
     <a href="#csrf">Protección CSRF</a>
     <span class="anchor" id="csrf">...</span>

@@ -83,7 +83,7 @@
 
 <p>Cada Handler es resuelto por el <b>Injector</b>, lo que permite que el sistema de log sea totalmente extensible y configurable mediante inyección de dependencias.</p>
 
-<p>El código de <code>scoop/Persistence/DBC.php</code> y <code>scoop/Bootstrap/Application.php</code> dispara eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>ErrorOccurred</code>.</p>
+<p>El código de <code>scoop/Persistence/Connection.php</code> y <code>scoop/Bootstrap/Application.php</code> dispara eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>ErrorOccurred</code>.</p>
 
 <h2>
     <a href='#cache'>Caché distribuida</a>
@@ -222,7 +222,7 @@ $data = $this->cache->get('user_session_1');
     <li><b>Estilos de bloque:</b> <code>&lt;info:...!&gt;</code>, <code>&lt;danger:...!&gt;</code>, <code>&lt;done:...!&gt;</code>.</li>
 </ul>
 
-<p>Por defecto se usa el estandar output, pero se puede modificar mediante el método <code>withError</code> a estandard error, recordemos que Writer es una clase inmutable y tambien se puede modificar el separator con <code>withSeparator</code>.</p>
+<p>Por defecto se usa el standard output, pero se puede modificar mediante el método <code>withError</code> a standard error, recordemos que Writer es una clase inmutable y también se puede modificar el separator con <code>withSeparator</code>.</p>
 
 <h3>Procesamiento de la Petición (Request)</h3>
 

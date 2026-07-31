@@ -10,21 +10,20 @@ class CorsGuard
     {
         $this->config = $config;
     }
+
     public function process($request, $next)
     {
         $serverParams = $request->getServerParams();
+        $this->addOriginHeader($serverParams);
         if ($request->getMethod() === 'options') {
             return $this->getPreflightResponse($serverParams);
         }
-        return $this->addOriginHeader($next->handle($request), $serverParams);
+        return $next->handle($request);
     }
 
     private function getPreflightResponse($serverParams)
     {
-        $response = $this->addOriginHeader(
-            new \Scoop\Http\Message\Response(),
-            $serverParams
-        );
+        $response = new \Scoop\Http\Message\Response();
         if (isset($serverParams['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
             $response = $response->withHeader(
                 'Access-Control-Allow-Methods',
@@ -44,27 +43,27 @@ class CorsGuard
         return $response;
     }
 
-    private function addOriginHeader($response, $serverParams)
+    private function addOriginHeader($serverParams)
     {
         if (!isset($serverParams['HTTP_ORIGIN'])) {
-            return $response;
+            return;
         }
         $allowedOrigins = isset($this->config['origins']) ?
         array_map('trim', explode(',', $this->config['origins'])) :
         array($serverParams['HTTP_ORIGIN']);
         if (!$this->isOriginAllowed($serverParams['HTTP_ORIGIN'], $allowedOrigins)) {
-            return $response;
+            return;
         }
         if (!empty($this->config['expose-headers'])) {
-            $response = $response->withHeader('Access-Control-Expose-Headers', $this->config['expose-headers']);
+            header("Access-Control-Expose-Headers: {$this->config['expose-headers']}");
         }
-        $credentials = isset($this->config['credentials']) ? $this->config['credentials'] : true;
         $maxAge = isset($this->config['max-age']) ? $this->config['max-age'] :  86400;
-        return $response
-        ->withHeader('Access-Control-Allow-Origin', $serverParams['HTTP_ORIGIN'])
-        ->withHeader('Vary', 'Origin')
-        ->withHeader('Access-Control-Allow-Credentials', $credentials)
-        ->withHeader('Access-Control-Max-Age', $maxAge);
+        if (!isset($this->config['credentials']) || boolval($this->config['credentials'])) {
+            header('Access-Control-Allow-Credentials: true');
+        }
+        header("Access-Control-Allow-Origin: {$serverParams['HTTP_ORIGIN']}");
+        header('Vary: Origin');
+        header("Access-Control-Max-Age: $maxAge");
     }
 
     private function isOriginAllowed($requestOrigin, $allowedOrigins)
@@ -74,12 +73,8 @@ class CorsGuard
                 return true;
             }
             if (strpos($allowed, '*') !== false) {
-                $pattern = str_replace(
-                    array('\\*', '.', '/'),
-                    array('[^.]+', '\\.', '\\/'),
-                    preg_quote($allowed, '/')
-                );
-                if (preg_match('/^' . $pattern . '$/', $requestOrigin)) {
+                $pattern = str_replace('\\*', '[^.]+', preg_quote($allowed, '#'));
+                if (preg_match('#^' . $pattern . '$#i', $requestOrigin)) {
                     return true;
                 }
             }

@@ -305,7 +305,7 @@ graph LR
         E1 <== "Relation Mapper" ==> E2
     end
 
-    subgraph "Infraestructure Layer"
+    subgraph "Infrastructure Layer"
         R[Repository]
     end
 

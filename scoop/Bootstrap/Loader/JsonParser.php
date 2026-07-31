@@ -8,23 +8,23 @@ class JsonParser
 
     public function __construct(\Scoop\Bootstrap\Environment $environment)
     {
-        $storagePath = $environment->getConfig('storage', 'app/storage/');
-        $storagePath = rtrim($storagePath, '/') . '/';
-        $this->cachePath = "{$storagePath}cache/json/";
+        $this->cachePath = $environment->getStoragePath('cache/json');
     }
 
     public function load($url)
     {
         $cacheFile = "{$this->cachePath}{$url}.php";
+        if (is_readable($cacheFile)) {
+            $realFile = "$url.json";
+            if (!is_readable($realFile) || filemtime($cacheFile) > filemtime($realFile)) {
+                 return require $cacheFile;
+            }
+        }
         $realPath = dirname($cacheFile);
         if (!is_dir($realPath)) {
             mkdir($realPath, 0755, true);
-            return $this->getRealInfo($url);
         }
-        if (!is_readable($cacheFile) || filemtime("$url.json") > filemtime($cacheFile)) {
-            return $this->getRealInfo($url);
-        }
-        return require $cacheFile;
+        return $this->getRealInfo($url);
     }
 
     private function getRealInfo($url)

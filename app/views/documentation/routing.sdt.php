@@ -152,7 +152,7 @@ return array_merge($group, [
 
 <h3>Lógica de un Middleware</h3>
 
-<p>Un middleware debe implementar el método <code>process</code> según especificación PSR-15, este método recible dos parametros la request y el handler y debe retornar el Response.</p>
+<p>Un middleware debe implementar el método <code>process</code> según especificación PSR-15, este método recibe dos parámetros la request y el handler y debe retornar el Response.</p>
 
 <pre><code class="language-php">public function process(Request $request, Next $next): Response
 {

@@ -42,16 +42,23 @@ class Payload
         }
         $errors = $validator->getErrors();
         if ($this->request->isAjax()) {
-            header('HTTP/1.0 400 Bad Request');
-            header('Content-Type: application/json');
-            exit (json_encode(array('code' => 400, 'message' => $errors)));
+            $response = new \Scoop\Http\Message\Response(
+                400,
+                array('Content-Type' => 'application/json'), 
+                json_encode(array('code' => 400, 'message' => $errors))
+            );
+        } else {
+            $_SESSION['data-scoop'] += array(
+                'body' => $this->request->getParsedBody(),
+                'query' => $this->request->getQueryParams(),
+                'error' => $errors
+            );
+            $response = new \Scoop\Http\Message\Response(
+                302,
+                array('Location' => $_SERVER['HTTP_REFERER'])
+            );
         }
-        $_SESSION['data-scoop'] += array(
-            'body' => $this->request->getParsedBody(),
-            'query' => $this->request->getQueryParams(),
-            'error' => $errors
-        );
-        $this->request->goBack();
+        throw new \Scoop\Http\Exception\Unprocessable($response);
     }
 
     private function transform($data)
@@ -92,9 +99,10 @@ class Payload
             $instance = $reflection->newInstance();
             foreach ($data as $property => $value) {
                 if ($reflection->hasProperty($property)) {
-                    $prop = $reflection->getProperty($property);
-                    $prop->setAccessible(true);
-                    $prop->setValue($instance, $value);
+                    $accessor = \Closure::bind(function($entity, $name, $value) {
+                        $entity->$name = $value;
+                    }, null, $this->type);
+                    $accessor($instance, $property, $value);
                 }
             }
             return $instance;

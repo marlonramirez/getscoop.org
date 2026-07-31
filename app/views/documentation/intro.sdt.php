@@ -41,7 +41,7 @@
 
 <h3>Manejo de versiones</h3>
 
-<p>Esta guia esta basada en la versión estable de scoop a la fecha, la cual es la {{#view->getConfig('app.version')}}.
+<p>Esta guía está basada en la versión estable de scoop a la fecha, la cual es la {{#view->getConfig('app.version')}}.
 Esto es importante tenerlo en cuenta ya que algún ejemplo inicial puede no funcionar en versiones
 anteriores.</p>
 
@@ -227,16 +227,16 @@ graph TD
     <p>Esta fase se centra en eliminar la fricción del intérprete de PHP y maximizar el rendimiento del núcleo en entornos de ejecución tradicionales (FPM):</p>
 
     <p><ul>
-        <li><b>Ruteo Algorítmico:</b> Implementación de <i>Radix Tree</i> para garantizar búsquedas de rutas en tiempo constante $O(L)$, eliminando la dependencia de expresiones regulares lineales.</li>
-        <li><b>Hidratación de Alto Rendimiento:</b> Sustituir la API de <code>Reflection</code> por <code>\Closure::bind</code> para acceder a propiedades privadas de las entidades a velocidad de memoria nativa.</li>
-        <li><s><b>Security namespace:</b></s> Creación de middlewares para CORS y CSRF, cambio de Vault a Encrypter (finalmente Cipher) y sanetización de columnas en Persistence.</li>
+        <li><s><b>Ruteo Algorítmico:</b></s> Implementación de <i>Radix Tree</i> para garantizar búsquedas de rutas en tiempo constante $O(L)$, eliminando la dependencia de expresiones regulares lineales.</li>
+        <li><s><b>Hidratación de Alto Rendimiento:</b></s> Sustituir la API de <code>Reflection</code> por <code>\Closure::bind</code> para acceder a propiedades privadas de las entidades a velocidad de memoria nativa.</li>
+        <li><s><b>Security namespace:</b></s> Creación de middlewares para CORS y CSRF, cambio de Vault a Encrypter (finalmente Cipher) y saneamiento de columnas en Persistence.</li>
         <li><b>Inyección Pre-compilada:</b> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
         <li><b>Escaneo de Bajo Impacto:</b> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
         <li><b>Compliance:</b> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
-        <li><s><b>Interceptor Bus:</b> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</s></li>
+        <li><s><b>Interceptor Bus:</b></s> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
         <li><b>Gestión de Ámbitos (Scopes):</b> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
-            <pre><code class="language-php">'App\Domain\Respository\User' => [
-    'service' => 'App\Infraestructure\Repository\Factory\PostgresUser',
+            <pre><code class="language-php">'App\Domain\Repository\User' => [
+    'service' => 'App\Infrastructure\Repository\Factory\PostgresUser',
     'method' => 'create',
     'scope' => 'singleton'
 ]</code></pre>
@@ -252,7 +252,10 @@ graph TD
         <li><b>Aislamiento Físico:</b> Implementación de múltiples <b>Bounded Contexts</b> mediante instancias de <code>Context</code> independientes, garantizando que el acoplamiento entre módulos sea técnicamente imposible.</li>
         <li><b>Context Mapping:</b> Creación del sistema de <i>Bridges</i> para orquestar la comunicación y traducción de datos entre contextos de forma segura.</li>
         <li><b>Cambio de motor CSS:</b> Cambiar stylus por un sistema más moderno como Lightning CSS (o PostCSS).</li>
+        <li><b>Redirecciones persistentes:</b> Evolución de los métodos <code>goBack()</code> y <code>redirect()</code>. Actualmente son imperativos y finalizan la ejecución (exit). En la v0.9 devolverán un objeto <code>Response</code>, permitiendo que el ciclo de vida de la aplicación finalice correctamente en entornos de ejecución continua.</li>
+        <li><b>Stateless mode:</b> Ajuste integral del motor para operar sin dependencias de <code>$_SESSION</code> de forma nativa, permitiendo una escalabilidad total en arquitecturas distribuidas y entornos serverless.</li>
         <li><b>Circuit breaker:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16)</li>
+        <li><b>Persistencia Determinista (Worker Ready):</b> Migración de la responsabilidad del <code>EntityManager::flush()</code> y <code>Connection::commit()</code>. Se eliminará la dependencia de <code>register_shutdown_function</code> (ineficaz en entornos persistentes) en favor de un cierre de ciclo de vida gestionado explícitamente por la Application. Esto garantiza la integridad atómica de los datos y previene la fuga de estado entre peticiones concurrentes en el mismo worker.</li>
         <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR</b>.</li>
     </ul></p>
 </div>

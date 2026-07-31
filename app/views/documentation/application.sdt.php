@@ -63,7 +63,7 @@
 ├─ .htaccess
 ├─ composer.json
 ├─ Dockerfile
-├─ gulpfile.js
+├─ vite.config.js
 ├─ index.php
 ├─ jsconfig.json
 ├─ package.json
@@ -90,20 +90,20 @@ entre esto tenemos:</p>
     <li><b>views/:</b> En esta carpeta es donde se deben referenciar los archivos de templates o vistas.</li>
     <li><b>config.php:</b> Este es el archivo principal de configuración, el cual se referencia al momento de cargar el entorno.</li>
     <li><b>ice:</b> Este es el archivo donde se ejecutan los comandos de consola del sistema.</li>
-    <li><b>phpcs.xml:</b> En este archivo se encuentran las reglas del lintter php.</li>
+    <li><b>phpcs.xml:</b> En este archivo se encuentran las reglas del linter php.</li>
     <li><b>router.php:</b> Este archivo sirve como sistema rewrite para el servidor php standalone.</li>
 </ul></p>
 
 <h3>public</h3>
 
-<p>Contiene todo los assets compilados y listos para ser entregado al cliente, además de imagenes, archivos usados
-para la indexación en motores de busqueda y fuente de letras. Normalmente no deben ser modificados más que para agregar, modificar o eliminar
+<p>Contiene todos los assets compilados y listos para ser entregado al cliente, además de imágenes, archivos usados
+para la indexación en motores de búsqueda y fuente de letras. Normalmente no deben ser modificados más que para agregar, modificar o eliminar
 assets de la aplicación.</p>
 
 <p><ul>
     <li><b>css/:</b> En esta carpeta es donde se deben referenciar los archivos css transpilados y minificados.</li>
     <li><b>fonts/:</b> En esta carpeta es donde se deben referenciar los archivos de fuentes de letras.</li>
-    <li><b>images/:</b> En esta carpeta es donde se deben referenciar los archivos de imagenes.</li>
+    <li><b>images/:</b> En esta carpeta es donde se deben referenciar los archivos de imágenes.</li>
     <li><b>js/:</b> En esta carpeta es donde se deben referenciar los archivos javascript transpilados y minificados.</li>
     <li><b>favicon:</b> Este archivo es el que se carga por defecto como icono en el template principal de la aplicación.</li>
     <li><b>humans.txt:</b> Este archivo es el que se carga por defecto para ser leido por humanos en el template principal de la aplicación.</li>
@@ -220,7 +220,7 @@ $request->redirect($route->withMessage('Factura creada correctamente'), 303);
 
 <h3>Middlewares</h3>
 
-<p>La configuración anterior permite la declaración simple de listeners o subscriptores, pero estos pueden ser decorados con middlewares de diversas manera. La primera es mediante la misma configuración.</p>
+<p>La configuración anterior permite la declaración simple de listeners o subscriptores, pero estos pueden ser decorados con middlewares de diversas maneras. La primera es mediante la misma configuración.</p>
 
 <pre><code class="language-php">[
     'events' => [

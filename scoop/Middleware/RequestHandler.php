@@ -27,7 +27,7 @@ class RequestHandler
         $middlewareInstance = \Scoop\Context::inject(array_shift($this->middlewares));
         if (!method_exists($middlewareInstance, 'process')) {
             $className = get_class($middlewareInstance);
-            throw new \BadMethodCallException("Middleware $className does not implement process method");;
+            throw new \BadMethodCallException("Middleware $className does not implement process method");
         }
         return $middlewareInstance->process($request, new Next($this));
     }
@@ -59,8 +59,8 @@ class RequestHandler
         if ($reflectionParam->isDefaultValueAvailable()) {
             return $reflectionParam->getDefaultValue();
         }
-        $missingParameterException = new \InvalidArgumentException("'$paramName' parameter at position $position is missing.");
-        if (method_exists($this->transformer, 'transformMissingParameterException')) {
+        $missingParameterException = new \InvalidArgumentException("Required parameter '$paramName' at position $position is missing");
+        if ($this->transformer && method_exists($this->transformer, 'transformMissingParameterException')) {
             $missingParameterException = $this->transformer->transformMissingParameterException($missingParameterException);
         }
         throw $missingParameterException;
@@ -68,21 +68,36 @@ class RequestHandler
 
     private function processController($request)
     {
+        if (!is_string($this->controller)) {
+            $this->throwMissingMethod("Controller not support");
+        }
+        if (!class_exists($this->controller)) {
+            $missingControllerException = new \UnexpectedValueException("{$this->controller} not found");
+            if ($this->transformer && method_exists($this->transformer, 'transformMissingControllerException')) {
+                $missingControllerException = $this->transformer->transformMissingControllerException($missingControllerException);
+            }
+            throw $missingControllerException;
+        }
         $controller = \Scoop\Context::inject($this->controller);
         $controllerReflection = new \ReflectionClass($controller);
         if (!$controllerReflection->hasMethod($this->method)) {
-            $missingMethodException = new \BadMethodCallException("{$this->controller} does not implement {$this->method} method");
-            if (method_exists($this->transformer, 'transformMissingMethodException')) {
-                $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException);
-            }
-            throw $missingMethodException;
+            $this->throwMissingMethod("{$this->controller} does not implement {$this->method} method");
         }
         $callable = $controllerReflection->getMethod($this->method);
         $args = $this->getArguments($callable->getParameters(), $request);
         $response = $callable->invokeArgs($controller, $args);
-        if (method_exists($this->transformer, 'transformResponse')) {
+        if ($this->transformer && method_exists($this->transformer, 'transformResponse')) {
             $response = $this->transformer->transformResponse($response);
         }
         return $response;
+    }
+
+    private function throwMissingMethod($message)
+    {
+        $missingMethodException = new \BadMethodCallException($message);
+        if ($this->transformer && method_exists($this->transformer, 'transformMissingMethodException')) {
+            $missingMethodException = $this->transformer->transformMissingMethodException($missingMethodException, $this->method);
+        }
+        throw $missingMethodException;
     }
 }

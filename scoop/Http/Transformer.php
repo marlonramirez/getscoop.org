@@ -5,11 +5,15 @@ namespace Scoop\Http;
 class Transformer
 {
     public function transformMissingParameterException(\InvalidArgumentException $ex) {
-        return new \Scoop\Http\Exception\NotFound('not found [missing parameter]', $ex);
+        return new \Scoop\Http\Exception\NotFound('Page or resource not found [missing parameter]', $ex);
     }
 
-    public function transformMissingMethodException(\BadMethodCallException $ex) {
-        return new \Scoop\Http\Exception\MethodNotAllowed('without specific method', $ex);
+    public function transformMissingMethodException(\BadMethodCallException $ex, $method) {
+        return new \Scoop\Http\Exception\MethodNotAllowed("Resource does not support $method method", $method, $ex);
+    }
+
+    public function transformMissingControllerException(\UnexpectedValueException $ex) {
+        return new \Scoop\Http\Exception\NotFound('Page or resource not found', $ex);
     }
 
     public function transformResponse($response)
