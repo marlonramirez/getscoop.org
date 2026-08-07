@@ -8,13 +8,13 @@ class Relation
     const ONE_TO_MANY = 2;
     const MANY_TO_ONE = 3;
     const MANY_TO_MANY = 4;
-    private $many;
-    private $touched = array();
-    private $loaded = array();
     private $mapper;
     private $relationMap;
     private $manager;
     private $accessor;
+    private $many = array();
+    private $loaded = array();
+    private $previous = array();
 
     public function __construct($map, $mapper, $manager, $accessor)
     {
@@ -22,18 +22,13 @@ class Relation
         $this->mapper = $mapper;
         $this->manager = $manager;
         $this->accessor = $accessor;
-        $this->many = array();
     }
 
-    public function track($entity, $relation, $relatedEntities)
+    public function track($name, $ownerId, $relatedEntities)
     {
-        $mapperKey = $this->getPropertyRelation($relation)[1];
-        if ($mapperKey === null) {
-            return;
-        }
-        $idNames = $this->getRelationSchema($mapperKey)[1];
-        $ownerId = $this->getRelationValue($entity, $mapperKey, $idNames)[1];
-        $this->loaded[$mapperKey][$ownerId] = $this->indexById($relatedEntities, $mapperKey, $idNames);
+        $name = explode(':', $name)[1];
+        $this->loaded[$name][$ownerId] = $relatedEntities;
+        $this->previous[$name][$ownerId] = $relatedEntities;
     }
 
     public function add($entity, $relations)
@@ -49,19 +44,16 @@ class Relation
             if (is_array($relationEntity)) {
                 if ($mapperKey !== null) {
                     if (!isset($this->many[$mapperKey])) {
-                        $this->many[$mapperKey] = array();
+                        $this->many[$mapperKey] = new \SplObjectStorage();
                     }
-                    $this->touched[$mapperKey][] = $entity;
-                    $this->detachRemoved($entity, $mapperKey, $relationName, $relationEntity);
+                    $this->many[$mapperKey][$entity] = $relationEntity;
+                    $this->detachRemoved($entityName, $entity, $mapperKey, $relationName, $relation[0], $relationEntity);
                 }
                 foreach ($relationEntity as $e) {
                     if (!$this->mapper->contains($e)) {
                         $this->manager->save($e);
                     }
-                    if ($mapperKey !== null) {
-                        $this->many[$mapperKey][] = array($entity, $e);
-                    }
-                    $classRelated = $this->accessor->getDeclaringClass(get_class($e), $relationName);
+                    $classRelated = $this->accessor->getDeclaringClass($relation[0], $relationName);
                     if (!$classRelated) continue;
                     $relatedAccessor = $this->accessor->get($classRelated);
                     $value = $entity;
@@ -79,7 +71,7 @@ class Relation
                 if (!$this->mapper->contains($relationEntity)) {
                     $this->manager->save($relationEntity);
                 }
-                $classRelated = $this->accessor->getDeclaringClass(get_class($relationEntity), $relationName);
+                $classRelated = $this->accessor->getDeclaringClass($relation[0], $relationName);
                 if (!$classRelated) continue;
                 $relatedAccessor = $this->accessor->get($classRelated);
                 $value = $relatedAccessor($relationEntity, $relationName);
@@ -132,93 +124,80 @@ class Relation
     {
         foreach ($this->many as $key => $relation) {
             $sqo = new \Scoop\Persistence\SQO($this->relationMap[$key]['table']);
-            list($fields, $idNames) = $this->getRelationSchema($key);
-            $create = $sqo->create(array_values($fields));
-            $owners = new \SplObjectStorage();
-            $seen = array();
-            foreach (isset($this->touched[$key]) ? $this->touched[$key] : array() as $ownerEntity) {
-                if (isset($owners[$ownerEntity])) continue;
-                list($name, $value) = $this->getRelationValue($ownerEntity, $key, $idNames);
-                $sqo->delete()
-                ->restrict($fields[$name] . '=:ownerId')
-                ->run(array('ownerId' => $value));
-                $owners[$ownerEntity] = true;
-            }
-            foreach ($relation as $entities) {
-                $relationIds = array();
-                list($name, $value) = $this->getRelationValue($entities[0], $key, $idNames);
-                $fieldName = $fields[$name];
-                $relationIds[$fieldName] = $value;
-                if (!isset($owners[$entities[0]])) {
-                    $sqo->delete()
-                    ->restrict($fieldName . '=:ownerId')
-                    ->run(array('ownerId' => $relationIds[$fieldName]));
-                    $owners[$entities[0]] = true;
+            $fields = array();
+            $idNames = array();
+            foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
+                if (isset($definition['column'])) {
+                    $fields[$name] = $definition['column'];
+                    $idNames[$name] = $this->mapper->getIdName($name);
                 }
-                list($name, $value) = $this->getRelationValue($entities[1], $key, $idNames);
-                $relationIds[$fields[$name]] = $value;
-                ksort($relationIds);
-                $dedupeKey = implode(':', $relationIds);
-                if (isset($seen[$dedupeKey])) continue;
-                $seen[$dedupeKey] = true;
-                $create->create($relationIds);
+            }
+            $create = $sqo->create(array_values($fields));
+            foreach ($relation as $ownerEntity) {
+                list($ownerClass, $ownerId) = $this->getRelationValue($ownerEntity, $key, $idNames);
+                if (!isset($this->loaded[$key][$ownerId])) {
+                    $this->loaded[$key][$ownerId] = array();
+                }
+                $classNames = array_keys($this->relationMap[$key]['entities']);
+                $relationClass = $classNames[0] === $ownerClass ? $classNames[1] : $classNames[0];
+                $relatedEntities = $this->indexEntities($relationClass, $this->many[$key][$ownerEntity]);
+                $removed = array_diff_key($this->loaded[$key][$ownerId], $relatedEntities);
+                $added = array_diff_key($relatedEntities, $this->loaded[$key][$ownerId]);
+                $this->loaded[$key][$ownerId] = array_diff_key($this->loaded[$key][$ownerId], $removed);
+                if (!empty($removed)) {
+                    $relatedField = $fields[$relationClass];
+                    $sqo->delete()
+                    ->restrict($fields[$ownerClass] . '=:ownerId')
+                    ->restrict($relatedField . ' IN(:relatedIds)')
+                    ->run(array('ownerId' => $ownerId, 'relatedIds' => array_keys($removed)));
+                }
+                foreach ($added as $entity) {
+                    list($relatedClass, $relatedId) = $this->getRelationValue($entity, $key, $idNames);
+                    $create->create(array(
+                        $fields[$ownerClass] => $ownerId,
+                        $fields[$relatedClass] => $relatedId
+                    ));
+                    $this->loaded[$key][$ownerId][$relatedId] = $entity;
+                }
             }
             if ($create->hasData()) {
                 $create->run();
             }
         }
-        $this->many = array();
-        $this->touched = array();
+        $this->many =array();
     }
 
-    private function detachRemoved($entity, $mapperKey, $relationName, $currentEntities)
+    private function detachRemoved($entityClass, $entity, $mapperKey, $relationName, $relationClass, $entities)
     {
-        if (!isset($this->loaded[$mapperKey])) {
-            return;
+        $idName = $this->mapper->getIdName($entityClass);
+        $accessor = $this->accessor->get(
+            $this->accessor->getDeclaringClass($entityClass, $idName)
+        );
+        $ownerId = $accessor($entity, $idName);
+        if (!isset($this->previous[$mapperKey][$ownerId])) {
+            $this->previous[$mapperKey][$ownerId] = array();
         }
-        $idNames = $this->getRelationSchema($mapperKey)[1];
-        $ownerId = $this->getRelationValue($entity, $mapperKey, $idNames)[1];
-        if (!isset($this->loaded[$mapperKey][$ownerId])) {
-            return;
-        }
-        $currentIndexed = $this->indexById($currentEntities, $mapperKey, $idNames);
-        $removed = array_diff_key($this->loaded[$mapperKey][$ownerId], $currentIndexed);
+        $classDeclaring = $this->accessor->getDeclaringClass($relationClass, $relationName);
+        if (!$classDeclaring) return;
+        $accessor = $this->accessor->get($classDeclaring);
+        $relatedEntities = $this->indexEntities($relationClass, $entities);
+        $removed = array_diff_key($this->previous[$mapperKey][$ownerId], $relatedEntities);
+        $added = array_diff_key($relatedEntities, $this->previous[$mapperKey][$ownerId]);
+        $this->previous[$mapperKey][$ownerId] = array_diff_key($this->previous[$mapperKey][$ownerId], $removed);
         foreach ($removed as $removedEntity) {
-            $classRelated = $this->accessor->getDeclaringClass(get_class($removedEntity), $relationName);
-            if (!$classRelated) continue;
-            $relatedAccessor = $this->accessor->get($classRelated);
-            $value = $relatedAccessor($removedEntity, $relationName);
-            if (!is_array($value)) continue;
+            $value = $accessor($removedEntity, $relationName);
             $index = array_search($entity, $value, true);
             if ($index !== false) {
                 array_splice($value, $index, 1);
-                $relatedAccessor($removedEntity, $relationName, $value);
+                $accessor($removedEntity, $relationName, $value);
             }
         }
-        $this->loaded[$mapperKey][$ownerId] = $currentIndexed;
-    }
-
-    private function indexById($entities, $mapperKey, $idNames)
-    {
-        $indexed = array();
-        foreach ($entities as $e) {
-            list(, $id) = $this->getRelationValue($e, $mapperKey, $idNames);
-            $indexed[$id] = $e;
+        foreach ($added as $addedEntity) {
+            $value = $accessor($addedEntity, $relationName);
+            array_push($value, $entity);
+            $accessor($addedEntity, $relationName, $value);
+            $this->previous[$mapperKey][$ownerId][] = $addedEntity;
         }
-        return $indexed;
-    }
-
-    private function getRelationSchema($key)
-    {
-        $fields = array();
-        $idNames = array();
-        foreach ($this->relationMap[$key]['entities'] as $name => $definition) {
-            if (isset($definition['column'])) {
-                $fields[$name] = $definition['column'];
-                $idNames[$name] = $this->mapper->getIdName($name);
-            }
-        }
-        return array($fields, $idNames);
     }
 
     private function getRelationValue($entity, $key, $idNames)
@@ -228,9 +207,28 @@ class Relation
             throw new \UnexpectedValueException("$name not is present on $key relation");
         }
         $idName = $idNames[$name];
-        return array($name, $this->accessor->get(
+        $accessor = $this->accessor->get(
             $this->accessor->getDeclaringClass($name, $idName)
-        )($entity, $idName));
+        );
+        return array($name, $accessor($entity, $idName));
+    }
+
+    private function indexEntities($className, $entities)
+    {
+        $idName = $this->mapper->getIdName($className);
+        $accessor = $this->accessor->get(
+            $this->accessor->getDeclaringClass($className, $idName)
+        );
+        $result = array();
+        foreach ($entities as $entity) {
+            $id = $accessor($entity, $idName);
+            if ($id) {
+                $result[$id] = $entity;
+            } else {
+                $result[spl_object_hash($entity)] = $entity;
+            }
+        }
+        return $result;
     }
 
     private function getPropertyRelation($relation)

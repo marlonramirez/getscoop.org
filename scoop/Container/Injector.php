@@ -5,9 +5,12 @@ namespace Scoop\Container;
 abstract class Injector
 {
     private $rules = array();
+    private $providerMaps = array();
+    private $environment;
 
     public function __construct($environment)
     {
+        $this->environment = $environment;
         $this->setInstance('Scoop\Bootstrap\Environment', $environment);
         $this->bind($environment->getConfig('providers', array()));
     }
@@ -58,23 +61,24 @@ abstract class Injector
         if (!class_exists($className)) {
             throw new \Scoop\Container\Exception\NotFound("Class $className not found");
         }
-        $class = new \ReflectionClass($className);
-        if (!$class->isInstantiable()) {
-            throw new \Scoop\Container\Exception("Cannot inject $className because it cannot be instantiated", 1101);
-        }
-        $constructor = $class->getConstructor();
-        if ($constructor) {
-            $args = $this->getArguments($constructor->getParameters());
-            $instance = $class->newInstanceArgs($args);
+        $providers = $this->getDefinition($className);
+        if (empty($providers)) {
+            $instance = new $className();
         } else {
-            $instance = $class->newInstanceWithoutConstructor();
+            $class = new \ReflectionClass($className);
+            $instance = $class->newInstanceArgs(array_map(function ($provider) {
+                return \Scoop\Context::inject($provider);
+            }, $providers));
         }
-        if ($method && $class->hasMethod($method)) {
-            $instance = $class->getMethod($method)->invoke($instance);
+        if ($method) {
+            if (!is_callable(array($instance, $method))) {
+                throw new \Scoop\Container\Exception("Factory method $className:$method not found");
+            }
+            $instance = $instance->$method();
             if (!is_object($instance)) {
                 $type = gettype($instance);
                 throw new \Scoop\Container\Exception(
-                    "The factory method $className:$method returned $type and must resolve to an object instance."
+                    "Factory method $className:$method returned $type and must resolve to an object instance."
                 );
             }
         }
@@ -90,15 +94,82 @@ abstract class Injector
         }
     }
 
-    private function getArguments($params)
+    private function getDefinition($className)
     {
-        $args = array();
-        foreach ($params as $param) {
-            $class = method_exists($param, 'getType') ? $param->getType() : $param->getClass();
-            if ($class) {
-                $args[] = \Scoop\Context::inject($class->getName());
+        $providerPath = $this->environment->getStoragePath('cache/project');
+        if (!is_readable("{$providerPath}Scoop_providers.php")) {
+            return $this->getReflectionDefinition($className);
+        }
+        $normalizedName = $providerPath . str_replace('\\', '_', $className);
+        $providerFilePath = null;
+        $providerPrefixLength = 0;
+        $providerFiles = glob("{$providerPath}*providers.php");
+        foreach ($providerFiles as $filePath) {
+            $prefix = substr($filePath, 0, -13);
+            if (strpos($normalizedName, $prefix) === 0 && strlen($prefix) > $providerPrefixLength) {
+                $providerFilePath = $filePath;
+                $providerPrefixLength = strlen($prefix);
             }
         }
-        return $args;
+        if (!$providerFilePath) {
+            throw new \Scoop\Container\Exception("Provider map for $className not found", 1101);
+        }
+        if (!isset($this->providerMaps[$providerFilePath])) {
+            $this->providerMaps[$providerFilePath] = require $providerFilePath;
+        }
+        if (!array_key_exists($className, $this->providerMaps[$providerFilePath])) {
+            throw new \Scoop\Container\Exception("Providers for $className not found", 1101);
+        }
+        return $this->providerMaps[$providerFilePath][$className];
+    }
+
+    private function getReflectionDefinition($className)
+    {
+        $class = new \ReflectionClass($className);
+        if (!$class->isInstantiable()) {
+            throw new \Scoop\Container\Exception("Providers for $className not found", 1101);
+        }
+        $constructor = $class->getConstructor();
+        if (!$constructor) {
+            return array();
+        }
+        $providers = array();
+        $usesDefault = false;
+        $parameters = $constructor->getParameters();
+        foreach ($parameters as $parameter) {
+            $provider = $this->getParameterClass($parameter, $class);
+            $isDefault = $parameter->isDefaultValueAvailable();
+            if ($provider && !$usesDefault) {
+                $providers[] = $provider;
+                continue;
+            }
+            if (!$provider && $isDefault) {
+                $usesDefault = true;
+                continue;
+            }
+            throw new \Scoop\Container\Exception("Providers for $className not found", 1101);
+        }
+        return $providers;
+    }
+
+    private function getParameterClass($parameter, $class)
+    {
+        if (!method_exists($parameter, 'getType')) {
+            $provider = $parameter->getClass();
+            return $provider ? $provider->getName() : null;
+        }
+        $type = $parameter->getType();
+        if (!$type || !method_exists($type, 'isBuiltin') || $type->isBuiltin()) {
+            return null;
+        }
+        $provider = method_exists($type, 'getName') ? $type->getName() : (string) $type;
+        if ($provider === 'self') {
+            return $class->getName();
+        }
+        if ($provider === 'parent') {
+            $parent = $class->getParentClass();
+            return $parent ? $parent->getName() : null;
+        }
+        return ltrim($provider, '\\');
     }
 }

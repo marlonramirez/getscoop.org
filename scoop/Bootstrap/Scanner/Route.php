@@ -9,8 +9,8 @@ class Route extends \Scoop\Bootstrap\Scanner
         parent::__construct(
             $environment->getConfig('routes', 'app/routes'),
             '/(endpoint|middlewares)\.php$/',
-            $environment->getStoragePath('cache') . 'routes.php',
-            $environment->getStoragePath('cache') .'routes.meta.php'
+            array('routes' => $environment->getStoragePath('cache') . 'routes.php'),
+            $environment->getStoragePath('cache') . 'routes.meta.php'
         );
     }
 
@@ -18,8 +18,14 @@ class Route extends \Scoop\Bootstrap\Scanner
     {
         $map = array();
         $middlewaresMap = array();
+        $tree = array('s' => array(), 'd' => null);
         uksort($fileMap, function($a, $b) {
-            return substr_count($a, '/') - substr_count($b, '/');
+            $depthA = substr_count($a, '/');
+            $depthB = substr_count($b, '/');
+            if ($depthA !== $depthB) {
+                return $depthA - $depthB;
+            }
+            return strcmp(basename($b), basename($a));
         });
         foreach ($fileMap as $route) {
             if (isset($route['id'])) {
@@ -36,6 +42,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 if (isset($route['middlewares'])) {
                     $applicableMiddlewares = array_merge($applicableMiddlewares, $route['middlewares']);
                 }
+                $this->insert($tree, $route['url'], $id);
                 $map[$id] = array(
                     'url' => $route['url'],
                     'controller' => $route['controller'],
@@ -46,11 +53,7 @@ class Route extends \Scoop\Bootstrap\Scanner
                 $middlewaresMap[$route['url']] = $route['middlewares'];
             }
         }
-        $tree = array('s' => array(), 'd' => null);
-        foreach ($map as $id => $data) {
-            $this->insert($tree, $data['url'], $id);
-        }
-        return compact('map', 'tree');
+        return array('routes' => compact('map', 'tree'));
     }
 
     protected function check($filePath)

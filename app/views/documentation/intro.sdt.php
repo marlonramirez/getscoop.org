@@ -99,7 +99,7 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 <p>Para garantizar la inmutabilidad del entorno y la paridad entre desarrollo y producción, Scoop recomienda el uso de contenedores:</p>
 
 <p><ul>
-    <li><b>Docker:</b> Facilitamos la gestión de infraestructura mediante archivos de configuración en <code>.devcontainer/etc</code>. La imagen de producción está optimizada sobre <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html">webdevops/php-apache</a>.</li>
+    <li><b>Docker:</b> Facilitamos la gestión de infraestructura mediante archivos de configuración en <code>.devcontainer/docker/etc</code>. La imagen de producción está optimizada sobre <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html">webdevops/php-apache</a>.</li>
     <li><b>Dev Containers:</b> Implementamos la especificación de <a href="https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers">devcontainers</a> para un arranque instantáneo en entornos como GitHub Codespaces, asegurando que cada miembro del equipo trabaje sobre la misma infraestructura.</li>
 </ul></p>
 
@@ -227,11 +227,11 @@ graph TD
     <p>Esta fase se centra en eliminar la fricción del intérprete de PHP y maximizar el rendimiento del núcleo en entornos de ejecución tradicionales (FPM):</p>
 
     <p><ul>
-        <li><s><b>Ruteo Algorítmico:</b></s> Implementación de <i>Radix Tree</i> para garantizar búsquedas de rutas en tiempo constante $O(L)$, eliminando la dependencia de expresiones regulares lineales.</li>
-        <li><s><b>Hidratación de Alto Rendimiento:</b></s> Sustituir la API de <code>Reflection</code> por <code>\Closure::bind</code> para acceder a propiedades privadas de las entidades a velocidad de memoria nativa.</li>
+        <li><s><b>Ruteo Algorítmico:</b></s> Implementación de <i>Radix Tree</i> para garantizar búsquedas de rutas en tiempo $O(S)$, donde <code>S</code> es el número de segmentos de la ruta, eliminando la dependencia de expresiones regulares lineales.</li>
+        <li><s><b>Hidratación de Alto Rendimiento:</b></s> Sustituir el acceso repetitivo mediante <code>Reflection</code> por accesores basados en <code>\Closure::bind</code>, reduciendo su coste durante la hidratación de entidades.</li>
         <li><s><b>Security namespace:</b></s> Creación de middlewares para CORS y CSRF, cambio de Vault a Encrypter (finalmente Cipher) y saneamiento de columnas en Persistence.</li>
-        <li><b>Inyección Pre-compilada:</b> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
-        <li><b>Escaneo de Bajo Impacto:</b> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
+        <li><s><b>Inyección Pre-compilada:</b></s> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
+        <li><s><b>Escaneo de Bajo Impacto:</b></s> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
         <li><b>Compliance:</b> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
         <li><s><b>Interceptor Bus:</b></s> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
         <li><b>Gestión de Ámbitos (Scopes):</b> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.

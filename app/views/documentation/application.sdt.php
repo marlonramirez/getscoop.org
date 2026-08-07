@@ -17,12 +17,14 @@
 
 <p>Scoop propone una organización física que separa la configuración del motor de la lógica del negocio. Aunque la estructura es configurable, la preestablecida garantiza un arranque sólido para la mayoría de proyectos:</p>
 
-<pre><code class="language-shell">├─ .devcontainers
-|   ├─ etc
-|   |   ├─ httpd
-|   |   |    └─ custom.conf
-|   |   └─ php
-|   |        └─ php.ini
+<pre><code class="language-shell">├─ .devcontainer
+|   ├─ docker
+|   |   └─ etc
+|   |       ├─ httpd
+|   |       |   └─ vhost.common.d
+|   |       |       └─ auth.conf
+|   |       └─ php
+|   |           └─ php.ini
 |   ├─ devcontainer.json
 |   ├─ docker-compose.yml
 |   └─ Dockerfile
@@ -31,11 +33,12 @@
 |   |    ├─ lang
 |   |    |    ├─ en.php
 |   |    |    └─ es.php
-|   |    ├─ routes.php
+|   |    ├─ db.php
 |   |    └─ providers.php
 |   ├─ routes
 |   ├─ scripts
 |   ├─ storage
+|   ├─ structs
 |   ├─ styles
 |   ├─ views
 |   ├─ config.php
@@ -57,20 +60,22 @@
 ├─ src
 ├─ tests
 ├─ vendor
-├─ .dockignore
+├─ .dockerignore
 ├─ .gitattributes
 ├─ .gitignore
 ├─ .htaccess
 ├─ composer.json
+├─ composer.lock
 ├─ Dockerfile
-├─ vite.config.js
 ├─ index.php
 ├─ jsconfig.json
 ├─ package.json
+├─ package-lock.json
+├─ vite.config.js
 └─ README.md
 </code></pre>
 
-<h3>.devcontainers</h3>
+<h3>.devcontainer</h3>
 <p>Contiene los archivos de infraestructura que son utilizados tanto para configurar el entorno como para inyectar al contenedor docker;
     como en el caso de archivos php.ini y configuraciones de apache, para esto nos basamos en el uso de la imagen
     <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html#customization">webdevops/php-apache</a>.

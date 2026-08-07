@@ -2,7 +2,9 @@
 
 <p>Scoop proporciona el andamiaje táctico necesario pero se declara <b>agnóstico al modelo de negocio</b>. El motor no impone una creencia férrea sobre la implementación, otorgando soberanía total al arquitecto para diseñar la estrategia que mejor se adapte al problema. Para materializar esta visión, Scoop integra <b>EPM (Entity Persistence Management)</b>.</p>
 
-<p>EPM es un motor de persistencia basado en el patrón <b>Data Mapper</b> y diseñado bajo el principio de <b>Persistence Ignorance</b>. A diferencia de otros sistemas, tus entidades de dominio no heredan de clases del framework ni contienen anotaciones que corrompan su propósito. El mapeo se define de forma externa, garantizando que tu Dominio permanezca puro, imperturbable y altamente testeable.</p>
+<p>Entity Persist Manager (EPM) es un motor de persistencia basado en el patrón <b>Data Mapper</b> y diseñado bajo el principio de <b>Persistence Ignorance</b> e incluye mapa de identidad, seguimiento de cambios, persistencia diferida mediante <code>flush()</code>, relaciones, herencia y conversión de tipos. Las entidades de dominio no heredan de clases del framework ni requieren anotaciones: el mapeo se define externamente para mantener el dominio desacoplado y testeable.</p>
+
+<p class="doc-alert"><b>Carga explícita:</b> EPM prescinde deliberadamente del <i>Lazy Loading</i>. Las relaciones que forman parte de un agregado se solicitan mediante <code>aggregate()</code>, haciendo visible el alcance de la consulta y evitando accesos N+1 implícitos. Esta decisión no limita su condición de ORM; define su estrategia de carga.</p>
 
 <p><ul>
     <li><a href="#entities">Mapeo de Entidades POPO</a></li>

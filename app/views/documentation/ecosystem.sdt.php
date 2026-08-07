@@ -15,7 +15,7 @@
     <span class="anchor" id="exceptions">...</span>
 </h2>
 
-<p>En Scoop, las excepciones de dominio son ciudadanos de primera clase. El motor permite desacoplar la lógica de error del negocio de la respuesta de infraestructura mediante el <code>ExceptionManager</code>.</p>
+<p>En Scoop, las excepciones de dominio son ciudadanos de primera clase. El motor permite desacoplar la lógica de error del negocio de la respuesta de infraestructura mediante <code>Http\Error\Mapper</code>.</p>
 
 <p>Cualquier excepción puede ser mapeada a un código de estado HTTP específico, permitiendo además inyectar cabeceras personalizadas o definir vistas de error dedicadas.</p>
 
@@ -90,7 +90,7 @@
     <span class='anchor' id='cache'>...</span>
 </h2>
 
-<p>Scoop implementa un sistema de almacenamiento temporal que cumple simultáneamente con los estándares <b>PSR-6</b> (Cache Item Pool) para una gestión granular y <b>PSR-16</b> (Simple Cache) para operaciones rápidas. Esta dualidad permite que el motor se adapte tanto a necesidades complejas de persistencia diferida como a casos de uso de alto rendimiento.</p>
+<p>Scoop cumple funcionalmente con los contratos de <b>PSR-6</b> (Cache Item Pool) y <b>PSR-16</b> (Simple Cache), ofreciendo las operaciones y comportamientos definidos por ambos estándares. Las interfaces oficiales no se implementan directamente para preservar la retrocompatibilidad del core con PHP 5.4, por lo que el cumplimiento se expresa a nivel de contrato y API, no mediante vinculación nominal con las interfaces.</p>
 
 <h3>Arquitectura de Almacenamiento</h3>
 
@@ -172,6 +172,27 @@ $data = $this->cache->get('user_session_1');
 
 <pre><code class="language-shell">php app/ice notification</code></pre>
 
+<h3>Comandos del Sistema</h3>
+
+<p>ICE incluye comandos para las tareas habituales de desarrollo, mantenimiento y construcción del proyecto:</p>
+
+<ul>
+    <li><b><code>new</code>:</b> Genera artefactos iniciales, como nuevas estructuras de base de datos.</li>
+    <li><b><code>scan routes</code>:</b> Construye el mapa optimizado de rutas.</li>
+    <li><b><code>scan source</code>:</b> Analiza el código fuente y genera los mapas de tipos y dependencias utilizados por el sistema.</li>
+    <li><b><code>preload</code>:</b> Resuelve anticipadamente un recurso gestionado por los cargadores diferidos de <code>Environment</code>.</li>
+    <li><b><code>clean</code>:</b> Elimina artefactos temporales, como la caché general o las vistas procesadas.</li>
+    <li><b><code>dbup</code>:</b> Ejecuta las estructuras pendientes sobre la base de datos.</li>
+</ul>
+
+<pre><code class="language-shell">php app/ice scan source
+php app/ice scan routes
+php app/ice clean cache
+php app/ice clean views
+php app/ice dbup --name=default --schema=public</code></pre>
+
+<p>Todos los comandos exponen su ayuda mediante <code>--help</code>. Los escáneres reutilizan sus mapas mientras las fuentes no cambien; el flag <code>-f</code> fuerza su reconstrucción. No se recomienda modificar manualmente los archivos generados en la caché.</p>
+
 <h3>Anatomía de un Comando</h3>
 
 <p>Para crear un comando en Scoop, se debe definir una clase que implemente la lógica de ejecución y su propia ayuda. El motor de ICE requiere que la clase posea al menos dos métodos fundamentales:</p>
@@ -206,7 +227,7 @@ $data = $this->cache->get('user_session_1');
         $commands = $this->bus->getCommands();
         $this->writer->write($this->msg, '', 'Commands:');
         foreach ($commands as $command => $controller) {
-            $this->writer->write("$command => &lt;link!$controller.php!&gt;");
+            $this->writer->write("$command => &lt;link:$controller.php!&gt;");
         }
         $this->writer->write('', 'Run app/ice new COMMAND --help for more information');
     }
@@ -223,6 +244,37 @@ $data = $this->cache->get('user_session_1');
 </ul>
 
 <p>Por defecto se usa el standard output, pero se puede modificar mediante el método <code>withError</code> a standard error, recordemos que Writer es una clase inmutable y también se puede modificar el separator con <code>withSeparator</code>.</p>
+
+<h4>Indicadores de Actividad y Progreso</h4>
+
+<p><code>Writer</code> incorpora indicadores actualizables en la misma línea. El llamador controla la iteración del <i>spinner</i> o el avance del proceso, por lo que estos métodos pueden utilizarse dentro de cualquier ciclo de trabajo:</p>
+
+<pre><code class="language-php">foreach ($files as $iteration => $file) {
+    $writer->spinner($iteration, '&lt;link:[f]!&gt; Analizando fuentes...');
+    analyze($file);
+}
+$writer->write('&lt;done:Análisis completado!&gt;');
+
+$total = count($files);
+foreach ($files as $index => $file) {
+    compile($file);
+    $writer->progress($index + 1, $total, 'Compilando &lt;success:[f]!&gt; [p]%');
+}
+$writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
+
+<p>En los mensajes personalizados, <code>[f]</code> representa el cuadro animado o la barra, mientras que <code>[p]</code> representa el porcentaje. Al llamar posteriormente a <code>write()</code>, Writer limpia la animación pendiente antes de imprimir el resultado definitivo. La compatibilidad con terminales VT100 y el mecanismo alternativo para terminales sin dicho soporte se seleccionan automáticamente.</p>
+
+<h4>Personalización de Estilos</h4>
+
+<p>Los estilos utilizados por Writer se configuran en la sección <code>ice.styles</code> del <code>Environment</code>. Al definir esta sección, el mapa configurado reemplaza los estilos predeterminados:</p>
+
+<pre><code class="language-php">'ice' => [
+    'commands' => 'typeof:App\Command\CommandInterface',
+    'styles' => [
+        'link' => [\Scoop\Command\Style\Color::BLUE],
+        'success' => [\Scoop\Command\Style\Color::GREEN]
+    ]
+]</code></pre>
 
 <h3>Procesamiento de la Petición (Request)</h3>
 

@@ -87,7 +87,17 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
     <span class="anchor" id="injector">...</span>
 </h2>
 
-<p>La Inversión de Control es el mecanismo que permite a Scoop gestionar la construcción de objetos. El <code>Injector</code> no es un almacén pasivo, sino un motor de <b>resolución recursiva</b>: analiza qué necesita una clase para nacer y fabrica automáticamente todo su grafo de dependencias.</p>
+<p>La Inversión de Control es el mecanismo que permite a Scoop gestionar la construcción de objetos. El <code>Injector</code> no es un almacén pasivo, sino un motor de <b>resolución recursiva</b>: consulta qué necesita una clase en el mapa de dependencias y fabrica automáticamente todo su grafo.</p>
+
+<h3>Inyección Pre-compilada</h3>
+
+<p>Scoop analiza los constructores durante el proceso de escaneo y genera mapas PHP optimizados para Opcache. Esto retira del <i>Hot Path</i> el análisis repetitivo de sus parámetros sin perder la construcción diferida: una clase solo se instancia cuando se solicita al Injector.</p>
+
+<pre><code class="language-shell">php app/ice scan source</code></pre>
+
+<p>En desarrollo, el Injector mantiene los mapas sincronizados con el código fuente. En producción opera sobre los artefactos creados durante el <i>build</i>, por lo que el comando debe ejecutarse antes de desplegar. Puede forzarse la reconstrucción mediante <code>php app/ice scan source -f</code>.</p>
+
+<p>El autowiring admite dependencias de clase o interface y respeta los valores predeterminados de los parámetros opcionales. Cuando un constructor exige un valor primitivo o un parámetro sin tipo, su creación debe expresarse mediante una factoría configurada. Las dependencias del constructor de la propia factoría también son resueltas por el Injector.</p>
 
 <h3>Definición de Contratos (Providers)</h3>
 
@@ -189,7 +199,7 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 
 <p><ol>
     <li><b>Context & Environment:</b> Captura del entorno global y encapsulamiento en un objeto inmutable <code>ServerRequest</code> (PSR-7), asegurando un estado inicial determinista.</li>
-    <li><b>Routing:</b> Localización del <i>endpoint</i> y su jerarquía de middlewares. En producción, utiliza un <b>mapa pre-compilado</b> que garantiza una resolución O(1) sin I/O de disco.</li>
+    <li><b>Routing:</b> Localización del <i>endpoint</i> y su jerarquía de middlewares. En producción, utiliza un <b>mapa pre-compilado</b> que garantiza una resolución O(S) evitando escanear el sistema de archivos y puede ser servido eficientemente mediante OPcache.</li>
     <li><b>Atomic Dispatching (Control Hand-off):</b> El Inyector resuelve el grafo de dependencias e instancia el controlador. Aquí, el motor <b>cede el control al desarrollador</b>: se ejecuta la lógica de negocio (Controlador/Casos de Uso) tras procesar la cadena de middlewares.</li>
     <li><b>Response Transformation:</b> El motor recupera el control para normalizar el retorno del desarrollador (Array, Vista o Escalar) en una respuesta PSR-7 inmutable.</li>
     <li><b>Resource Cleanup:</b> Volcamiento del stream al buffer de salida e invocación de <code>gc_collect_cycles()</code> para liberar el grafo de objetos y cerrar conexiones antes de que el servidor entregue la respuesta final.</li>
@@ -239,4 +249,4 @@ graph TD
     style End fill:#3e4452,stroke:#abb2bf,color:#abb2bf
 </pre></p>
 
-<p class="doc-alert"><b>Mantenibilidad:</b> Cualquier excepción lanzada en el dominio es interceptada por el <code>ExceptionManager</code>, que decide la respuesta adecuada basada en tu configuración de <code>http.errors</code>.</p>
+<p class="doc-alert"><b>Mantenibilidad:</b> Cualquier excepción lanzada en el dominio es interceptada por <code>Http\Error\Mapper</code>, que decide la respuesta adecuada basada en tu configuración de <code>http.errors</code>.</p>

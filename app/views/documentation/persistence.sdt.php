@@ -83,7 +83,7 @@ SQL Server: [public].[users].[id]
 $column = $connection->quoteColumn('public.users.id');
 </code></pre>
 
-<p class="doc-alert"><b>Blindaje Léxico:</b> Scoop aplica una validación estricta a todos los identificadores (tablas, columnas, alias) mediante la expresión regular <code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>. Esto previene ataques de inyección de identificadores, garantizando que solo caracteres alfanuméricos y delimitadores controlados entren en la construcción de la sentencia.</p>
+<p class="doc-alert"><b>Blindaje Léxico:</b> Los identificadores procesados como tal se validan estrictamente (tablas, columnas, alias) mediante la expresión regular <code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>. Esto previene ataques de inyección de identificadores, garantizando que solo caracteres alfanuméricos y delimitadores controlados entren en la construcción de la sentencia; las expresiones SQL explícitas permanecen bajo responsabilidad del desarrollador.</p>
 
 <h3>quoteCriteria() - Sintaxis SQL Universal</h3>
 
@@ -101,7 +101,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 <ul>
     <li><b>Write Once, Run Anywhere:</b> Queries portables entre motores</li>
     <li><b>SQL Server como Base:</b> Sintaxis más restrictiva detecta errores temprano</li>
-    <li><b>Zero Overhead:</b> Simple string replacement, sin parsers complejos</li>
+    <li><b>Sobrecarga mínima:</b> Sustitución directa de cadenas, sin analizadores complejos.</li>
     <li><b>Expresiones Complejas:</b> Funciona con WHERE, HAVING, ORDER BY, GROUP BY, JOIN</li>
 </ul>
 
@@ -258,7 +258,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
     <span class="anchor" id="sqo">...</span>
 </h2>
 
-<p><b>SQO</b> constituye el motor atómico de persistencia de Scoop. Proporciona una interfaz orientada a objetos para interactuar con la base de datos de forma fluida y dinámica, eliminando la fragilidad de concatenar strings SQL manuales sin el peaje de rendimiento de un ORM pesado.</p>
+<p><b>SQO</b> constituye el motor atómico de persistencia de Scoop. Proporciona una interfaz orientada a objetos para interactuar con la base de datos de forma fluida y dinámica, eliminando la fragilidad de concatenar strings SQL manuales y ofreciendo control directo sobre las sentencias generadas.</p>
 
 <p>Para instanciar un objeto <code>SQO</code>, se debe indicar la tabla principal y, opcionalmente, un alias y el nombre del <i>bundle</i> de conexión:</p>
 

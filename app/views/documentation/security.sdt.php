@@ -12,7 +12,7 @@
     <span class="anchor" id="cipher">...</span>
 </h2>
 
-<p>La clase <code>Cipher</code> implementa un sistema de <b>encriptación versionada</b>, siendo el primer framework PHP con esta característica. Esto permite migrar algoritmos de encriptación de manera transparente sin necesidad de re-encriptar la base de datos completa.</p>
+<p>La clase <code>Cipher</code> incorpora un sistema de <b>encriptación versionada</b>. Esto permite migrar algoritmos de encriptación de manera transparente sin necesidad de re-encriptar la base de datos completa.</p>
 
 <pre><code class="language-php">class MyService
 {

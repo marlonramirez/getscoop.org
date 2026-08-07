@@ -10,7 +10,7 @@ class Assembler
     private $fieldResolver;
     private $relation;
 
-    public function __construct($map, $mapper, $accessor, Resolver\Field $fieldResolver, Relation $relation)
+    public function __construct($map, $mapper, $accessor, $fieldResolver, $relation)
     {
         $this->map = $map;
         $this->mapper = $mapper;
@@ -24,15 +24,16 @@ class Assembler
         $entityMap = $this->map['entities'][$name];
         $idColumn = $this->mapper->getTableId($name);
         $prefix = $alias !== 'r' ? $alias . '$a$' : '';
-        $id = $this->getId($entity);
-        $row = $this->findRow($prefix . $idColumn, $id, $rows);
+        $idOwner = $this->getId($entity);
+        $row = $this->findRow($prefix . $idColumn, $idOwner, $rows);
         foreach ($aggregateList as $name => $map) {
             $alias = $map['alias'];
             $className = $map['type'];
             $fields = $this->fieldResolver->fieldsFor($className, $alias);
             $prefix = $alias !== 'r' ? $alias . '$a$' : '';
             $idColumn = $prefix . $this->mapper->getTableId($className);
-            $relationType = $entityMap['relations'][$name][2];
+            $relation = $entityMap['relations'][$name];
+            $relationType = $relation[2];
             $isArray = $relationType === Relation::ONE_TO_MANY || $relationType === Relation::MANY_TO_MANY;
             $value = array();
             $id = $row[$idColumn];
@@ -48,8 +49,10 @@ class Assembler
                         }
                     }
                 }
+                if ($relationType === Relation::MANY_TO_MANY) {
+                    $this->relation->track($relation[1], $idOwner, $value);
+                }
                 $value = array_values($value);
-                $this->relation->track($entity, $entityMap['relations'][$name], $value);
             } else {
                 $value = $this->mapper->make($className, $id, $row, $fields);
                 if (!empty($map['aggregates'])) {
@@ -58,7 +61,8 @@ class Assembler
             }
             $className = $this->accessor->getDeclaringClass(get_class($entity), $name);
             if (!$className) continue;
-            $this->accessor->get($className)($entity, $name, $value);
+            $propertyAccessor = $this->accessor->get($className);
+            $propertyAccessor($entity, $name, $value);
         }
     }
 
@@ -78,6 +82,7 @@ class Assembler
             $className = $parent;
         }
         $idName = $this->mapper->getIdName($className);
-        return $this->accessor->get($className)($entity, $idName);
+        $accessor = $this->accessor->get($className);
+        return $accessor($entity, $idName);
     }
 }

@@ -10,7 +10,7 @@ class Mapper
     private $identityMap;
     private $hydrator;
     private $extractor;
-    private $statements;
+    private $statements = array();
 
     public function __construct($entityMap, $valueMap, $typeMapper, $accessor)
     {
@@ -20,7 +20,6 @@ class Mapper
         $this->identityMap = new Mapper\Identity();
         $this->hydrator = new Mapper\Hydrator($this->identityMap, $entityMap, $valueMap, $typeMapper, $accessor);
         $this->extractor = new Mapper\Extractor($entityMap, $valueMap, $typeMapper, $accessor);
-        $this->statements = array();
     }
 
     public function add($entity)
@@ -172,7 +171,8 @@ class Mapper
             $rootClassName = $parent;
         }
         $idName = $this->getIdName($rootClassName);
-        $id = $this->accessor->get($rootClassName)($entity, $idName);
+        $accessor = $this->accessor->get($rootClassName);
+        $id = $accessor($entity, $idName);
         return $className . ':' . ($id ? $id : spl_object_hash($entity));
     }
 

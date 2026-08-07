@@ -8,7 +8,7 @@ class Extractor
     private $valueMap;
     private $typeMapper;
     private $accessor;
-    private $fieldTypes;
+    private $fieldTypes = array();
 
     public function __construct($entityMap, $valueMap, $typeMapper, $accessor)
     {
@@ -16,7 +16,6 @@ class Extractor
         $this->valueMap = $valueMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
-        $this->fieldTypes = array();
     }
 
     public function getFields($entity, $className, $mapper)
@@ -32,7 +31,8 @@ class Extractor
                     $relatedClassName = $parent;
                 }
                 $idName = \Scoop\Persistence\Entity\Mapper::resolveIdName($this->entityMap, $relatedClassName);
-                $value = $this->accessor->get($relatedClassName)($value, $idName);
+                $relatedAccessor = $this->accessor->get($relatedClassName);
+                $value = $relatedAccessor($value, $idName);
             }
             $type = $propDef['type'];
             if (isset($this->valueMap[$type])) {
