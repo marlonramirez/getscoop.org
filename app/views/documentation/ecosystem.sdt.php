@@ -250,17 +250,17 @@ php app/ice dbup --name=default --schema=public</code></pre>
 <p><code>Writer</code> incorpora indicadores actualizables en la misma línea. El llamador controla la iteración del <i>spinner</i> o el avance del proceso, por lo que estos métodos pueden utilizarse dentro de cualquier ciclo de trabajo:</p>
 
 <pre><code class="language-php">foreach ($files as $iteration => $file) {
-    $writer->spinner($iteration, '&lt;link:[f]!&gt; Analizando fuentes...');
-    analyze($file);
+    $this->writer->spinner($iteration, '&lt;link:[f]!&gt; Analizando fuentes...');
+    $this->analyze($file);
 }
-$writer->write('&lt;done:Análisis completado!&gt;');
+$this->writer->write('&lt;done:Análisis completado!&gt;');
 
 $total = count($files);
 foreach ($files as $index => $file) {
-    compile($file);
-    $writer->progress($index + 1, $total, 'Compilando &lt;success:[f]!&gt; [p]%');
+    $this->compile($file);
+    $this->writer->progress($index + 1, $total, 'Compilando &lt;success:[f]!&gt; [p]%');
 }
-$writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
+$this->writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
 
 <p>En los mensajes personalizados, <code>[f]</code> representa el cuadro animado o la barra, mientras que <code>[p]</code> representa el porcentaje. Al llamar posteriormente a <code>write()</code>, Writer limpia la animación pendiente antes de imprimir el resultado definitivo. La compatibilidad con terminales VT100 y el mecanismo alternativo para terminales sin dicho soporte se seleccionan automáticamente.</p>
 
@@ -317,14 +317,16 @@ $writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
 <pre><code class="language-php">class Middleware
 {
     public function __construct(
-        private \Scoop\Bootstrap\Configuration $conf
+        private \Scoop\Bootstrap\Configuration $config,
+        private \Scoop\Http\Router $router
     ) {
     }
 
     public function process($request, $handler)
     {
-        $this->conf->setLanguage($request->getHeaderLine('Accept-Language'));
-        $handler->handle($request);
+        $language = $router->getCurrentRoute()->getParameter('lang');
+        $this->config->setLanguage($language);
+        return $handler->handle($request);
     }
 }
 </code></pre>

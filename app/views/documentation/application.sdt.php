@@ -140,7 +140,7 @@ assets de la aplicación.</p>
     {
         $required = new Required();
         $this->add('name', $required, new MinLength(8), new MaxLength(40))
-        ->add('password', $required, new Same('password2'));
+        ->add('password', $required, new Same('password2'))
         ->add('password2', $required);
         return parent::validate($data);
     }

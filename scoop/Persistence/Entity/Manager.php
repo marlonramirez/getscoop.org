@@ -9,20 +9,39 @@ class Manager
     private $mapper;
     private $relations;
     private $accessor;
+    private $saving;
+    private $builder;
     private $hasProperties = array();
+    private $queryPlans = array();
+    private $entityPlan;
+    private $extractor;
 
-    public function __construct($entities, $values, $relations, $types)
+    public function __construct($entities, $values, $relations, $types, $builder)
     {
-        $this->map = compact('entities', 'values', 'relations');
+        $this->builder = $builder;
+        $this->map = array('entities' => $entities, 'values' => $values, 'relations' => $relations);
+        $this->saving = new \SplObjectStorage();
         $this->accessor = new Accessor();
         $this->typeMapper = new Mapper\Type($types);
-        $this->mapper = new Mapper($entities, $values, $this->typeMapper, $this->accessor);
-        $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor);
+        $this->entityPlan = new Mapper\Plan();
+        $this->extractor = new Mapper\Extractor($entities, $values, $this->typeMapper, $this->accessor);
+        $this->mapper = new Mapper(
+            $entities,
+            $values,
+            $this->typeMapper,
+            $this->accessor,
+            $this->builder,
+            $this->entityPlan,
+            $this->extractor
+        );
+        $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor, $this->builder);
         register_shutdown_function(array($this, 'flush'));
     }
 
     public function save($entity)
     {
+        if (isset($this->saving[$entity])) return;
+        $this->saving[$entity] = true;
         $mapper = $this->getMapper(get_class($entity));
         if (isset($mapper['relations'])) {
             $this->relations->add($entity, $this->filterRelations(
@@ -34,9 +53,10 @@ class Manager
                 $mapper['relations'],
                 array(Relation::MANY_TO_MANY, Relation::ONE_TO_MANY)
             ));
-            return;
+        } else {
+            $this->mapper->add($entity);
         }
-        $this->mapper->add($entity);
+        unset($this->saving[$entity]);
     }
 
     public function remove($entity)
@@ -51,7 +71,23 @@ class Manager
     public function search($classEntity)
     {
         $this->getMapper($classEntity);
-        return new Query($this->mapper, $classEntity, $this->map, $this->accessor, $this->relations);
+        if (!isset($this->queryPlans[$classEntity])) {
+            $this->queryPlans[$classEntity] = new Query\Plan(
+                $classEntity,
+                $this->map,
+                $this->mapper,
+                $this->builder
+            );
+        }
+        return new Query(
+            $this->mapper,
+            $classEntity,
+            $this->map,
+            $this->accessor,
+            $this->relations,
+            $this->builder,
+            $this->queryPlans[$classEntity]
+        );
     }
 
     public function flush()
@@ -62,8 +98,23 @@ class Manager
 
     public function clean()
     {
-        $this->mapper = new Mapper($this->map['entities'], $this->map['values'], $this->typeMapper, $this->accessor);
-        $this->relations = new Relation($this->map['relations'], $this->mapper, $this, $this->accessor);
+        $this->saving = new \SplObjectStorage();
+        $this->mapper = new Mapper(
+            $this->map['entities'],
+            $this->map['values'],
+            $this->typeMapper,
+            $this->accessor,
+            $this->builder,
+            $this->entityPlan,
+            $this->extractor
+        );
+        $this->relations = new Relation(
+            $this->map['relations'],
+            $this->mapper,
+            $this,
+            $this->accessor,
+            $this->builder
+        );
     }
 
     private function getMapper($classEntity)

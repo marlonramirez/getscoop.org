@@ -95,7 +95,9 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 
 <pre><code class="language-shell">php app/ice scan source</code></pre>
 
-<p>En desarrollo, el Injector mantiene los mapas sincronizados con el código fuente. En producción opera sobre los artefactos creados durante el <i>build</i>, por lo que el comando debe ejecutarse antes de desplegar. Puede forzarse la reconstrucción mediante <code>php app/ice scan source -f</code>.</p>
+<p>El Injector utiliza las definiciones precompiladas cuando están disponibles. Si una clase todavía no figura en los mapas, obtiene sus dependencias mediante Reflection y conserva la definición durante la ejecución actual. Este <i>fallback</i> no solo permite trabajar con artefactos incompletos: también hace posible iniciar comandos como <code>ice scan routes</code> antes de que existan todos los mapas necesarios para resolver sus propias dependencias.</p>
+
+<p>Los mapas forman parte de los artefactos del <i>build</i> y deben regenerarse en cada despliegue que incorpore cambios de código. Puede forzarse su reconstrucción mediante <code>php app/ice scan source -f</code>.</p>
 
 <p>El autowiring admite dependencias de clase o interface y respeta los valores predeterminados de los parámetros opcionales. Cuando un constructor exige un valor primitivo o un parámetro sin tipo, su creación debe expresarse mediante una factoría configurada. Las dependencias del constructor de la propia factoría también son resueltas por el Injector.</p>
 

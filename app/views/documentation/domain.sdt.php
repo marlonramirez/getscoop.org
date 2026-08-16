@@ -49,7 +49,7 @@
     'entities' => [
         Invoice::class => [
             'table' => 'public.invoices',
-            'id' => 'invoiceId'
+            'id' => 'invoiceId',
             'properties' => [
                 'invoiceId' => ['type' => 'serial']
             ]
@@ -123,6 +123,8 @@
 <h3>Relaciones Muchos a Muchos (MANY_TO_MANY)</h3>
 
 <p>Estas relaciones requieren una definición externa para configurar la <b>tabla de rompimiento</b>. Se utiliza el sufijo <code>:nombre_relacion</code> para vincular la propiedad de la entidad con la configuración de la tabla de relación.</p>
+
+<p>EPM compara el estado cargado de la relación con su estado actual. Durante <code>flush()</code> solo inserta o elimina las filas de la tabla de rompimiento que realmente cambiaron y mantiene sincronizada la propiedad inversa del grafo de objetos.</p>
 
 <pre><code class="language-php">[
     'relations' => [

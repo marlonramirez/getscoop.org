@@ -9,10 +9,12 @@ class Field
     private $fields = array();
     private $joins = array();
 
-    public function __construct($map, $mapper)
+    public function __construct($map, $mapper, $fields = array(), $joins = array())
     {
         $this->map = $map;
         $this->mapper = $mapper;
+        $this->fields = $fields;
+        $this->joins = $joins;
     }
 
     public function addFields($entity, $table, $isOptional)

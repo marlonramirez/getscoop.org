@@ -3,6 +3,7 @@
 <p><ul>
     <li><a href="#routing">Sistema de rutas app/routes</a></li>
     <li><a href="#params">Parámetros dinámicos</a></li>
+    <li><a href="#defaults">Segmentos predeterminados e invisibles</a></li>
     <li><a href="#endpoint">Definición de Endpoints</a></li>
     <li><a href="#request-response">Request y Response</a></li>
     <li><a href="#middlewares">Jerarquía de Middlewares</a></li>
@@ -40,6 +41,45 @@
 </code></pre>
 
 <p>En este ejemplo, el valor "mi-primer-post" será capturado bajo la clave <code>slug</code>. Scoop garantiza la predictibilidad del ruteo mediante un algoritmo de prioridad que favorece los paths estáticos sobre los dinámicos (<code>[id]</code>), eliminando colisiones accidentales.</p>
+
+<h2>
+    <a href="#defaults">Segmentos predeterminados e invisibles</a>
+    <span class="anchor" id="defaults">...</span>
+</h2>
+
+<p>Un archivo <code>default.php</code> permite asignar un valor predeterminado a un segmento dinámico sin consumir el segmento actual de la URL. El caso clásico es la internacionalización: una misma estructura puede responder a <code>/es/path</code>, <code>/en/path</code>, <code>/du/path</code> y también a <code>/path</code>, utilizando en esta última el idioma predeterminado.</p>
+
+<pre><code class="language-shell">app/routes/
+├─ default.php
+└─ [language]/
+   └─ path/
+      └─ endpoint.php
+</code></pre>
+
+<p>El contenido de app/routes/default.php es algo parecido a:</p>
+
+<pre><code class="language-php">return [
+    'value' => 'es',
+    'match' => ['es', 'en', 'du']
+];
+</code></pre>
+
+<p>La propiedad <code>match</code> enumera los valores que deben consumirse desde la URL. Cuando el segmento recibido no pertenece a esa lista, Scoop asigna <code>value</code> al parámetro dinámico y evalúa el mismo segmento en el siguiente nivel. Por ello, <code>/en/path</code> produce <code>language = en</code>, mientras que <code>/path</code> produce <code>language = es</code>.</p>
+
+<h3>Segmentos invisibles</h3>
+
+<p>Las propiedades <code>value</code> y <code>match</code> son opcionales. Si se omite <code>match</code>, el segmento dinámico asociado no se expone en la URL. Si el array no declara <code>value</code>, Scoop utiliza el array completo como valor predeterminado. Esto permite agrupar rutas bajo un parámetro interno de forma similar a los directorios entre paréntesis de Next.js.</p>
+
+<pre><code class="language-shell">app/routes/
+├─ default.php
+└─ [group]/
+   └─ dashboard/
+      └─ endpoint.php
+</code></pre>
+
+<pre><code class="language-php">return ['value' => 'admin'];</code></pre>
+
+<p>La ruta pública será <code>/dashboard</code>, pero el controlador recibirá internamente <code>group = admin</code>. El nombre del directorio dinámico continúa identificando el parámetro y su valor queda definido por <code>default.php</code>. Como forma abreviada, el archivo también puede retornar directamente <code>'admin'</code>.</p>
 
 <h3>Validación de parámetros de ruta</h3>
 

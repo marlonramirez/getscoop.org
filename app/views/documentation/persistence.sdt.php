@@ -298,7 +298,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 <pre><code class="language-php">$creator = $books->create(['name', 'author', 'year']);
 if (($handle = fopen("test.csv", "r")) !== false) {
     while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-        $creator->create($data)
+        $creator->create($data);
     }
 }
 $creator->run();
