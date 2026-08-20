@@ -138,6 +138,8 @@
 
 <p>Scoop implementa objetos de <code>Request</code> y <code>Response</code> basados en PSR-7 con sistema de inmutabilidad y manejo de Streams nativo para la gestión de cuerpos de petición y respuesta. Esto garantiza que el motor pueda procesar flujos de datos masivos (descargas de archivos, payloads extensos) manteniendo una huella de memoria constante y mínima.</p>
 
+<p>Request, Response y Stream respetan los contratos semánticos de PSR-7, incluyendo validación de cabeceras, métodos y códigos de estado. Las interfaces oficiales no se vinculan nominalmente para preservar la compatibilidad del core con PHP 5.4.</p>
+
 <p>El manejo de archivos subidos en Scoop es totalmente orientado a objetos. Olvídate de manipular el array global <code>FILES</code>; accede a los archivos mediante <code>request->getUploadedFiles()</code>, obteniendo objetos inmutables con soporte para streaming y validación de errores nativa.</p>
 
 <pre><code class="language-php">public function post(Request $request): Response
@@ -196,7 +198,7 @@ return array_merge($group, [
 
 <pre><code class="language-php">public function process(Request $request, Next $next): Response
 {
-    if ($request->getMethod() !== 'get') {
+    if ($request->getMethod() !== 'GET') {
         return;
     }
     $data = $request->getQueryParams();

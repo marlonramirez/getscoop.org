@@ -11,10 +11,9 @@ class Manager
     private $accessor;
     private $saving;
     private $builder;
-    private $hasProperties = array();
-    private $queryPlans = array();
     private $entityPlan;
-    private $extractor;
+    private $queryPlans = array();
+    private $hasProperties = array();
 
     public function __construct($entities, $values, $relations, $types, $builder)
     {
@@ -23,16 +22,13 @@ class Manager
         $this->saving = new \SplObjectStorage();
         $this->accessor = new Accessor();
         $this->typeMapper = new Mapper\Type($types);
-        $this->entityPlan = new Mapper\Plan();
-        $this->extractor = new Mapper\Extractor($entities, $values, $this->typeMapper, $this->accessor);
+        $this->entityPlan = new Mapper\Plan($entities, $values, $this->typeMapper, $this->accessor);
         $this->mapper = new Mapper(
             $entities,
-            $values,
             $this->typeMapper,
             $this->accessor,
             $this->builder,
-            $this->entityPlan,
-            $this->extractor
+            $this->entityPlan
         );
         $this->relations = new Relation($relations, $this->mapper, $this, $this->accessor, $this->builder);
         register_shutdown_function(array($this, 'flush'));
@@ -101,12 +97,10 @@ class Manager
         $this->saving = new \SplObjectStorage();
         $this->mapper = new Mapper(
             $this->map['entities'],
-            $this->map['values'],
             $this->typeMapper,
             $this->accessor,
             $this->builder,
-            $this->entityPlan,
-            $this->extractor
+            $this->entityPlan
         );
         $this->relations = new Relation(
             $this->map['relations'],

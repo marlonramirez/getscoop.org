@@ -5,17 +5,13 @@ namespace Scoop\Persistence\Entity\Mapper;
 class Hydrator
 {
     private $identityMap;
-    private $entityMap;
-    private $valueMap;
     private $typeMapper;
     private $accessor;
     private $plan;
 
-    public function __construct($identityMap, $entityMap, $valueMap, $typeMapper, $accessor, $plan)
+    public function __construct($identityMap, $typeMapper, $accessor, $plan)
     {
         $this->identityMap = $identityMap;
-        $this->entityMap = $entityMap;
-        $this->valueMap = $valueMap;
         $this->typeMapper = $typeMapper;
         $this->accessor = $accessor;
         $this->plan = $plan;
@@ -48,7 +44,7 @@ class Hydrator
         $valueObjects = array();
         $accessor = $this->accessor->get($className);
         $snapshot = array();
-        $plan = $this->plan->get($className, $fields, $this->entityMap);
+        $plan = $this->plan->get($className, $fields);
         foreach ($plan as $field) {
             $name = $field['name'];
             $hasValue = array_key_exists($name, $row);

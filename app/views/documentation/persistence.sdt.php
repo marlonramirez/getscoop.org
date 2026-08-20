@@ -5,9 +5,9 @@
 <p><ul>
     <li><a href="#connection">Infraestructura de Conexión</a></li>
     <li><a href="#quoting">Sistema de Quoting Universal</a></li>
-    <li><a href="#builder">Builder Service (Factory)</a></li>
     <li><a href="#structs">Estructura como Código</a></li>
-    <li><a href="#sqo">Consultas Atómicas (SQO)</a></li>
+    <li><a href="#builder">Builder Service (Factory)</a></li>
+    <li><a href="#queries">Consultas Atómicas</a></li>
 </ul></p>
 
 <h2>
@@ -147,11 +147,51 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 </table>
 
 <h2>
-    <a href="#builder">Builder Service (Factory)</a>
+    <a href="#structs">Estructuras como Código</a>
+    <span class="anchor" id="structs">...</span>
+</h2>
+
+<p>Los <b>Structs</b> constituyen el sistema de versionamiento de base de datos de Scoop. A diferencia de las migraciones tradicionales que utilizan lenguajes intermedios, Scoop apuesta por el uso de <b>SQL nativo</b>. Esto garantiza que cada instrucción ejecutada sea transparente, aprovechando al máximo las capacidades específicas de cada motor (PostgreSQL, MySQL, etc.) sin el "impuesto de abstracción" de un Query Builder.</p>
+
+<p>Fiel al principio de inmutabilidad, un Struct no implementa mecanismos de <i>rollback</i> automáticos. Scoop fomenta una estrategia de <b>despliegue hacia adelante (Forward-only)</b>: cualquier modificación o corrección del esquema debe realizarse mediante un nuevo archivo de estructura, garantizando un histórico de cambios íntegro y predecible.</p>
+
+<h3>Creación de Estructuras</h3>
+
+<p>La ejecución de los Structs es estrictamente secuencial, basada en el peso lexicográfico de los archivos (usualmente determinado por un <i>timestamp</i>). Para garantizar el orden correcto y facilitar la organización, se utiliza el comando <code>new struct</code> del CLI <code>ice</code>.</p>
+
+<pre><code class="language-shell">php app/ice new struct --schema=auth --name=create_users_table</code></pre>
+
+<p>Parámetros soportados:</p>
+
+<p><ul>
+    <li><b><code>--schema</code>:</b> Permite organizar los archivos en subcarpetas lógicas. Esto facilita el aislamiento de estructuras por módulos o <b>Bounded Contexts</b>.</li>
+    <li><b><code>--name</code>:</b> Añade un sufijo descriptivo al nombre del archivo para facilitar su identificación manual más allá de la marca de tiempo.</li>
+</ul></p>
+
+<h3>Sincronización y Ejecución (dbup)</h3>
+
+<p>Una vez definidos los archivos SQL en el directorio <code>app/structs</code>, se utiliza el comando <code>dbup</code> para sincronizar el estado deseado con la base de datos física. Scoop rastrea internamente qué archivos han sido ejecutados para evitar duplicidades.</p>
+
+<pre><code class="language-shell">php app/ice dbup --name=default --schema=auth --user=postgres --password=$DB_PASSWORD</code></pre>
+
+<p>Opciones de ejecución:</p>
+
+<p><ul>
+    <li><b><code>--schema</code>:</b> Ejecuta únicamente los Structs contenidos en un directorio o "esquema" específico, permitiendo despliegues modulares.</li>
+    <li><b><code>--name</code>:</b> Especifica el <i>bundle</i> de conexión definido en la configuración (por defecto utiliza <code>default</code>).</li>
+    <li><b><code>--user</code> / <code>--password</code>:</b> Permite sobrescribir las credenciales de conexión en tiempo de ejecución, ideal para procesos de CI/CD o mantenimiento por parte de administradores de bases de datos (DBA).</li>
+</ul></p>
+
+<p class="doc-alert"><b>Ubicación Personalizada:</b> El directorio base de los archivos SQL se define por defecto en <code>app/structs</code>, pero puede ser modificado globalmente desde el archivo de configuración principal de la aplicación.</p>
+
+<h2>
+    <a href="#builder">Builder Service</a>
     <span class="anchor" id="builder">...</span>
 </h2>
 
-<p>El <code>Builder</code> es un servicio factory que crea instancias de consultas SQL (<code>SQO</code>). A partir de v0.8.1, se recomienda inyectar el Builder en lugar de instanciar SQO directamente, siguiendo el patrón de Dependency Injection.</p>
+<p>El <code>Builder</code> es el punto de entrada público para crear consultas SQL. Se recomienda inyectarlo en los repositorios y servicios de infraestructura, evitando acoplar la aplicación a las clases internas que materializan cada consulta.</p>
+
+<p>El bundle de conexión se define al construir el servicio. Si no se indica uno, utiliza <code>default</code>. El método <code>build()</code> recibe únicamente la tabla y un alias opcional.</p>
 
 <h3>Uso Básico</h3>
 
@@ -166,12 +206,12 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 
     public function listUsers()
     {
-        $users = $this->builder->build('users', 'u', 'default');
-        // Equivalente a (deprecado):
-        // $users = new \Scoop\Persistence\SQO('users', 'u', 'default');
+        $users = $this->builder->build('users', 'u');
     }
 }
 </code></pre>
+
+<p class="doc-alert"><b>Compatibilidad:</b> La clase <code>\Scoop\Persistence\SQO</code> permanece disponible para aplicaciones existentes, pero está deprecada. El código nuevo debe obtener sus consultas mediante <code>Builder</code>.</p>
 
 <h3>Patrón Repository</h3>
 
@@ -216,60 +256,22 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 </ul>
 
 <h2>
-    <a href="#structs">Estructuras como Código</a>
-    <span class="anchor" id="structs">...</span>
+    <a href="#queries">Consultas Atómicas</a>
+    <span class="anchor" id="queries">...</span>
 </h2>
 
-<p>Los <b>Structs</b> constituyen el sistema de versionamiento de base de datos de Scoop. A diferencia de las migraciones tradicionales que utilizan lenguajes intermedios, Scoop apuesta por el uso de <b>SQL nativo</b>. Esto garantiza que cada instrucción ejecutada sea transparente, aprovechando al máximo las capacidades específicas de cada motor (PostgreSQL, MySQL, etc.) sin el "impuesto de abstracción" de un Query Builder.</p>
+<p>Las consultas creadas por <code>Builder</code> proporcionan una interfaz fluida para interactuar con la base de datos, eliminando la fragilidad de concatenar strings SQL manuales y ofreciendo control directo sobre las sentencias generadas.</p>
 
-<p>Fiel al principio de inmutabilidad, un Struct no implementa mecanismos de <i>rollback</i> automáticos. Scoop fomenta una estrategia de <b>despliegue hacia adelante (Forward-only)</b>: cualquier modificación o corrección del esquema debe realizarse mediante un nuevo archivo de estructura, garantizando un histórico de cambios íntegro y predecible.</p>
+<p>Para iniciar una consulta se solicita al <code>Builder</code> la tabla principal y, opcionalmente, un alias:</p>
 
-<h3>Creación de Estructuras</h3>
-
-<p>La ejecución de los Structs es estrictamente secuencial, basada en el peso lexicográfico de los archivos (usualmente determinado por un <i>timestamp</i>). Para garantizar el orden correcto y facilitar la organización, se utiliza el comando <code>new struct</code> del CLI <code>ice</code>.</p>
-
-<pre><code class="language-shell">php app/ice new struct --schema=auth --name=create_users_table</code></pre>
-
-<p>Parámetros soportados:</p>
-
-<p><ul>
-    <li><b><code>--schema</code>:</b> Permite organizar los archivos en subcarpetas lógicas. Esto facilita el aislamiento de estructuras por módulos o <b>Bounded Contexts</b>.</li>
-    <li><b><code>--name</code>:</b> Añade un sufijo descriptivo al nombre del archivo para facilitar su identificación manual más allá de la marca de tiempo.</li>
-</ul></p>
-
-<h3>Sincronización y Ejecución (dbup)</h3>
-
-<p>Una vez definidos los archivos SQL en el directorio <code>app/structs</code>, se utiliza el comando <code>dbup</code> para sincronizar el estado deseado con la base de datos física. Scoop rastrea internamente qué archivos han sido ejecutados para evitar duplicidades.</p>
-
-<pre><code class="language-shell">php app/ice dbup --name=default --schema=auth --user=postgres --password=$DB_PASSWORD</code></pre>
-
-<p>Opciones de ejecución:</p>
-
-<p><ul>
-    <li><b><code>--schema</code>:</b> Ejecuta únicamente los Structs contenidos en un directorio o "esquema" específico, permitiendo despliegues modulares.</li>
-    <li><b><code>--name</code>:</b> Especifica el <i>bundle</i> de conexión definido en la configuración (por defecto utiliza <code>default</code>).</li>
-    <li><b><code>--user</code> / <code>--password</code>:</b> Permite sobrescribir las credenciales de conexión en tiempo de ejecución, ideal para procesos de CI/CD o mantenimiento por parte de administradores de bases de datos (DBA).</li>
-</ul></p>
-
-<p class="doc-alert"><b>Ubicación Personalizada:</b> El directorio base de los archivos SQL se define por defecto en <code>app/structs</code>, pero puede ser modificado globalmente desde el archivo de configuración principal de la aplicación.</p>
-
-<h2>
-    <a href="#sqo">Consultas Atómicas (SQO)</a>
-    <span class="anchor" id="sqo">...</span>
-</h2>
-
-<p><b>SQO</b> constituye el motor atómico de persistencia de Scoop. Proporciona una interfaz orientada a objetos para interactuar con la base de datos de forma fluida y dinámica, eliminando la fragilidad de concatenar strings SQL manuales y ofreciendo control directo sobre las sentencias generadas.</p>
-
-<p>Para instanciar un objeto <code>SQO</code>, se debe indicar la tabla principal y, opcionalmente, un alias y el nombre del <i>bundle</i> de conexión:</p>
-
-<pre><code class="language-php">$books = new \Scoop\Persistence\SQO('book', 'b', 'default');
+<pre><code class="language-php">$books = $builder->build('book', 'b');
 </code></pre>
 
-<p>Un objeto SQO provee métodos para orquestar las cuatro operaciones fundamentales (CRUD) y la recuperación de metadatos de identidad (<code>getLastId</code>).</p>
+<p>La consulta obtenida provee métodos para orquestar las cuatro operaciones fundamentales (CRUD) y recuperar metadatos de identidad mediante <code>getLastId()</code>.</p>
 
 <h3>Creación e Inserción de Datos</h3>
 
-<p>El método <code>create()</code> devuelve una factoría (<code>Builder\Factory</code>) que permite gestionar la inserción de datos bajo tres modalidades técnicas:</p>
+<p>El método <code>create()</code> devuelve un <code>Builder\Creator</code> que permite gestionar la inserción de datos bajo tres modalidades técnicas:</p>
 
 <h4>Inserción Atómica (Asociativa)</h4>
 
@@ -284,7 +286,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 
 <h4>Inserción Múltiple (Chaining)</h4>
 
-<p>SQO permite encadenar llamadas a <code>create()</code> para generar una única sentencia SQL de inserción múltiple, optimizando los tiempos de red y ejecución del motor de base de datos.</p>
+<p>La API permite encadenar llamadas a <code>create()</code> para generar una única sentencia SQL de inserción múltiple, optimizando los tiempos de red y ejecución del motor de base de datos.</p>
 
 <pre><code class="language-php">$books->create(['name' => 'It', 'author' => 'Stephen King'])
 ->create(['name' => 'The Shining', 'author' => 'Stephen King'])
@@ -306,7 +308,7 @@ $creator->run();
 
 <h4>INSERT SELECT</h4>
 
-<p>SQO permite realizar inserciones basadas en el resultado de una consulta previa pasando un objeto <code>Builder\Reader</code>.</p>
+<p>El Builder permite realizar inserciones basadas en el resultado de una consulta previa pasando un objeto <code>Builder\Reader</code>.</p>
 
 <pre><code class="language-php">$reader = $oldBooks->read('name', 'author')->filter('year > :year');
 $books->create(['name', 'author'], $reader)->run(['year' => 1989]);
@@ -361,7 +363,7 @@ $books->delete()->restrict('id = :id')->run(['id' => 1]);
 
 <h3 id="pagination">Paginación Nativa</h3>
 
-<p>SQO integra la paginación como un ciudadano de primera clase. El método <code>page()</code> automatiza la ejecución de dos consultas paralelas (obtención de datos y conteo total) para devolver una estructura de metadatos completa.</p>
+<p>La API de consultas integra la paginación como un ciudadano de primera clase. El método <code>page()</code> automatiza la ejecución de dos consultas (obtención de datos y conteo total) para devolver una estructura de metadatos completa.</p>
 
 <pre><code class="language-php">$result = $books->read()->page([
     'page' => 0,

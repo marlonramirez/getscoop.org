@@ -118,6 +118,27 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 ];
 </code></pre>
 
+<h3>Ámbitos de Vida (Scopes)</h3>
+
+<p>Los providers también admiten una definición por array para controlar el ciclo de vida de cada servicio:</p>
+
+<pre><code class="language-php">return [
+    UserRepository::class => [
+        'service' => PostgresUserRepositoryFactory::class,
+        'method' => 'create',
+        'scope' => 'singleton'
+    ]
+];
+</code></pre>
+
+<p><ul>
+    <li><b><code>request</code>:</b> ámbito predeterminado; reutiliza la instancia hasta que se limpia el Inyector en cada petición.</li>
+    <li><b><code>singleton</code>:</b> conserva la misma instancia dependiendo desl ciclo de vida del entorno, en FPM no hay diferencia con request, pero en entornos worker sobrevive entre peticiones.</li>
+    <li><b><code>prototype</code>:</b> crea una instancia nueva en cada resolución.</li>
+</ul></p>
+
+<p>Las definiciones abreviadas mediante nombre de clase o notación <code>Clase:Método</code> continúan disponibles y utilizan el ámbito <code>request</code>.</p>
+
 <h3>Factorías inteligentes</h3>
 
 <p>Cuando un objeto requiere una lógica de construcción que el autowiring no puede deducir (como inyectar <i>strings</i> de configuración o parámetros primitivos), Scoop emplea <b>Factorías</b> mediante el sufijo <code>:</code>.</p>

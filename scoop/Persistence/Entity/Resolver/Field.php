@@ -6,10 +6,10 @@ class Field
 {
     private $map;
     private $mapper;
-    private $fields = array();
-    private $joins = array();
+    private $fields;
+    private $joins;
 
-    public function __construct($map, $mapper, $fields = array(), $joins = array())
+    public function __construct($map, $mapper, $fields, $joins)
     {
         $this->map = $map;
         $this->mapper = $mapper;

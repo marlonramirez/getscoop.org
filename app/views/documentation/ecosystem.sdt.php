@@ -114,7 +114,7 @@ $data = $this->cache->get('user_session_1');
     <span class='anchor' id='http-client'>...</span>
 </h2>
 
-<p>Para la comunicación con servicios externos y la implementación de patrones como BFF o Microservicios, Scoop integra un <b>Cliente HTTP nativo</b> alineado con el estándar <b>PSR-18</b>. Está construido sobre <b>cURL</b>, eliminando la necesidad de dependencias externas pesadas (como Guzzle) y manteniendo el motor extremadamente ligero.</p>
+<p>Para la comunicación con servicios externos y la implementación de patrones como BFF o Microservicios, Scoop integra un <b>Cliente HTTP nativo</b> que cumple funcionalmente el contrato de <b>PSR-18</b>. Está construido sobre <b>cURL</b>, sin vincular nominalmente la interfaz oficial para preservar la compatibilidad con PHP 5.4.</p>
 
 <h3>Capacidades Técnicas</h3>
 

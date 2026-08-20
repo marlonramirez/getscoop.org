@@ -232,9 +232,9 @@ graph TD
         <li><s><b>Security namespace:</b></s> Creación de middlewares para CORS y CSRF, cambio de Vault a Encrypter (finalmente Cipher) y saneamiento de columnas en Persistence.</li>
         <li><s><b>Inyección Pre-compilada:</b></s> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
         <li><s><b>Escaneo de Bajo Impacto:</b></s> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
-        <li><b>Compliance:</b> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
+        <li><s><b>Compliance:</b></s> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
         <li><s><b>Interceptor Bus:</b></s> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
-        <li><b>Gestión de Ámbitos (Scopes):</b> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
+        <li><s><b>Gestión de Ámbitos (Scopes):</b></s> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
             <pre><code class="language-php">'App\Domain\Repository\User' => [
     'service' => 'App\Infrastructure\Repository\Factory\PostgresUser',
     'method' => 'create',
