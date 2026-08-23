@@ -133,9 +133,44 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 
 <p><ul>
     <li><b><code>request</code>:</b> ámbito predeterminado; reutiliza la instancia hasta que se limpia el Inyector en cada petición.</li>
-    <li><b><code>singleton</code>:</b> conserva la misma instancia dependiendo desl ciclo de vida del entorno, en FPM no hay diferencia con request, pero en entornos worker sobrevive entre peticiones.</li>
+    <li><b><code>singleton</code>:</b> conserva la misma instancia dependiendo del ciclo de vida del entorno; en FPM no hay diferencia con request, pero en entornos worker sobrevive entre peticiones.</li>
     <li><b><code>prototype</code>:</b> crea una instancia nueva en cada resolución.</li>
 </ul></p>
+
+<pre class="mermaid" style="text-align:center">
+flowchart LR
+    subgraph SOURCES ["Fuentes de resolución"]
+        direction TB
+        GET[Context::inject<br/>Normalizar provider]
+        CACHE[ice scan source<br/>Mapa de dependencias precompilado]
+        REFLECTION[Reflection fallback]
+        GET --> CACHE
+        CACHE -. Si no existe en el mapa .-> REFLECTION
+    end
+
+    CACHE --> GRAPH[Resolver grafo de dependencias]
+    REFLECTION --> GRAPH
+    GRAPH --> SCOPE{Scope}
+
+    SCOPE -->|request| REQUEST[Cache de la petición]
+    SCOPE -->|singleton| SINGLETON[Cache singleton]
+    SCOPE -->|prototype| PROTOTYPE[Nueva instancia]
+
+    REQUEST --> RESULT[Servicio resuelto]
+    SINGLETON --> RESULT
+    PROTOTYPE --> RESULT
+
+    CLEAN[Injector::clean] -. limpia .-> REQUEST
+    CLEAN -. conserva .-> SINGLETON
+
+    style SCOPE fill:#282c34,stroke:#d19a66,color:#abb2bf
+    style SOURCES fill:#21252b,stroke:#5c6370,color:#abb2bf
+    style CACHE fill:#3e4452,stroke:#98c379,color:#98c379
+    style REFLECTION fill:#3e4452,stroke:#e5c07b,color:#e5c07b
+    style REQUEST fill:#282c34,stroke:#61afef,color:#abb2bf
+    style SINGLETON fill:#282c34,stroke:#98c379,color:#abb2bf
+    style PROTOTYPE fill:#282c34,stroke:#c678dd,color:#abb2bf
+</pre>
 
 <p>Las definiciones abreviadas mediante nombre de clase o notación <code>Clase:Método</code> continúan disponibles y utilizan el ámbito <code>request</code>.</p>
 
@@ -228,48 +263,42 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
     <li><b>Resource Cleanup:</b> Volcamiento del stream al buffer de salida e invocación de <code>gc_collect_cycles()</code> para liberar el grafo de objetos y cerrar conexiones antes de que el servidor entregue la respuesta final.</li>
 </ol></p>
 
+<style>
+    .mermaid .messageText, .mermaid .loopText { fill:#3e4452 !important; }
+    .mermaid .labelText { fill:#f1f3f5 !important; }
+</style>
 <p><pre class="mermaid" style="text-align:center">
-graph TD
-    %% Nodos principales
-    Start((Request)) --> P1[1. Context & Environment]
-    P1 --> P2[2. Routing]
-    P2 --> P3[3. Atomic Dispatching]
+%%{init: {"themeVariables": {"signalTextColor": "#282c34", "labelTextColor": "#282c34", "loopTextColor": "#282c34", "actorTextColor": "#f1f3f5", "actorLineColor": "#5c6370", "signalColor": "#5c6370"}}}%%
+sequenceDiagram
+    participant Client
+    participant Application
+    participant Router
+    participant Pipeline as Middleware Pipeline
+    participant Controller
+    participant UseCase as Use Case
+    participant Domain
 
-    %% Detalle de la cesión de control en la Fase 3
-    subgraph HandOff ["Developer Sovereignty"]
-        P3 --> EXEC[Execute Controller Logic]
-        EXEC -.-> UC[Use Cases]
-        UC -.-> DOM[Domain]
-        DOM -.-> UC
-        UC -.-> EXEC
+    Client->>Application: Request
+    Application->>Application: Context & Environment
+    Application->>Router: route(request)
+
+    alt Ejecución correcta
+        Router->>Pipeline: Controller + middlewares
+        Pipeline->>Controller: Request
+        Controller->>UseCase: Execute
+        UseCase->>Domain: Business operation
+        Domain-->>UseCase: Result
+        UseCase-->>Controller: Result
+        Controller-->>Pipeline: Array / View / Scalar / Response
+        Pipeline-->>Application: Result
+        Application->>Application: Response Transformer
+    else Excepción en routing, middleware o controller
+        Router--xApplication: Throwable
+        Application->>Application: Http Error Mapper
     end
 
-    EXEC --> P4[4. Response transformation]
-
-    %% Ramificación de transformación
-    P4 -- "Array/Object" --> JSON[JSON Payload]
-    P4 -- "View" --> SDT[SDT Engine]
-    P4 -- "Scalar/String" --> TXT[Plain Text]
-    P4 -- "Response" --> P5[5. Resource Cleanup]
-
-    %% Cierre del ciclo
-    JSON & SDT & TXT --> P5[5. Resource Cleanup]
-    P5 --> End((Response))
-
-    %% Estilización para coherencia visual (Atom One Dark)
-    style P1 fill:#282c34,stroke:#61afef,stroke-width:2px,color:#abb2bf
-    style P2 fill:#282c34,stroke:#98c379,stroke-width:2px,color:#abb2bf
-    style P3 fill:#282c34,stroke:#d19a66,stroke-width:2px,color:#abb2bf
-    style P4 fill:#282c34,stroke:#c678dd,stroke-width:2px,color:#abb2bf
-    style P5 fill:#282c34,stroke:#e06c75,stroke-width:2px,color:#abb2bf
-
-    style HandOff fill:transparent,stroke:#d19a66,stroke-dasharray: 5 5,color:#d19a66
-    style EXEC fill:#3e4452,stroke:#d19a66,color:#d19a66
-    style UC fill:#3e4452,stroke:#d19a66,color:#d19a66
-    style DOM fill:#3e4452,stroke:#d19a66,color:#d19a66
-
-    style Start fill:#3e4452,stroke:#abb2bf,color:#abb2bf
-    style End fill:#3e4452,stroke:#abb2bf,color:#abb2bf
+    Application->>Application: Resource Cleanup
+    Application-->>Client: Response
 </pre></p>
 
 <p class="doc-alert"><b>Mantenibilidad:</b> Cualquier excepción lanzada en el dominio es interceptada por <code>Http\Error\Mapper</code>, que decide la respuesta adecuada basada en tu configuración de <code>http.errors</code>.</p>

@@ -299,51 +299,69 @@
 
 <p class="doc-alert"><b>Unit of Work:</b> El motor rastrea internamente los cambios en las entidades. Al invocar <code>$this->em->flush()</code>, Scoop genera y ejecuta atómicamente todas las sentencias SQL de actualización necesarias.</p>
 
-<p><pre class="mermaid" style="text-align:center">
-graph LR
-    subgraph "Domain Layer (Aggregates)"
-        E1[Entity A - Root]
-        E2[Entity B - Related]
-        VO[Value Objects]
-        E1 --- VO
-        E1 <== "Relation Mapper" ==> E2
-    end
+<h3>Flujo de lectura e hidratación</h3>
 
-    subgraph "Infrastructure Layer"
-        R[Repository]
-    end
+<style>
+    .mermaid .messageText, .mermaid .loopText { fill:#3e4452 !important; }
+    .mermaid .labelText { fill:#f1f3f5 !important; }
+</style>
+<pre class="mermaid" style="text-align:center">
+%%{init: {"themeVariables": {"signalTextColor": "#282c34", "labelTextColor": "#282c34", "actorTextColor": "#f1f3f5", "actorLineColor": "#5c6370", "signalColor": "#5c6370"}}}%%
+sequenceDiagram
+    participant Repository
+    participant Manager as Entity Manager
+    participant Query
+    participant Plan as Query Plan
+    participant Builder
+    participant Connection
+    participant Database
+    participant Mapper as Hydrator / Identity Map
+    participant Assembler as Aggregate Assembler
 
-    subgraph "Scoop EPM Core"
-        M[Manager]
-        MAP[Mapper]
-        REL[Relation Handler]
-        TM[Type Mapper]
-    end
+    Repository->>Manager: search / get
+    Manager->>Query: Crear consulta
+    Query->>Plan: Resolver campos, joins y discriminator
+    Query->>Builder: Construir Reader
+    Builder->>Connection: Ejecutar SQL
+    Connection->>Database: SELECT
+    Database-->>Connection: Rows
+    Connection-->>Query: Result
+    Query->>Mapper: Hidratar o reutilizar entidad
+    Mapper-->>Query: Aggregate root
+    Query->>Assembler: Ensamblar relaciones solicitadas
+    Assembler-->>Query: Aggregate root + relations
+    Query-->>Manager: Aggregate
+    Manager-->>Repository: Aggregate
+</pre>
 
-    subgraph "Infrastructure"
-        DBC[DBC / PDO]
-        DB[(Database)]
-    end
+<h3>Flujo de seguimiento y persistencia</h3>
 
-    %% Flujo de ejecución
-    R -- "1. Persist / Search" --> M
-    M -- "2. Hydrate / Extract" --> MAP
-    MAP -- "3. Main Fields" --> E1
+<pre class="mermaid" style="text-align:center">
+%%{init: {"themeVariables": {"signalTextColor": "#282c34", "labelTextColor": "#282c34", "actorTextColor": "#f1f3f5", "actorLineColor": "#5c6370", "signalColor": "#5c6370"}}}%%
+sequenceDiagram
+    participant Repository
+    participant Manager as Entity Manager
+    participant Identity as Identity Map / Unit of Work
+    participant Mapper as Mapper Plan
+    participant Relations as Relation Handler
+    participant Builder
+    participant Connection
+    participant Database
 
-    M -- "4. Link / Cascade" --> REL
-    REL -- "5. Object Graph" --> E2
-
-    MAP & REL --> TM
-    TM -- "6. Atomic SQL" --> DBC
-    DBC --> DB
-
-    %% Estilos Atom One Dark
-    style R fill:#e06c75,stroke:#333,color:#fff
-    style M fill:#61afef,stroke:#333,color:#fff
-    style REL fill:#d19a66,stroke:#333,color:#fff
-    style E1 fill:#98c379,stroke:#333,color:#fff
-    style E2 fill:#98c379,stroke:#333,color:#fff
-</pre></p>
+    Repository->>Manager: save / remove
+    Manager->>Identity: Adjuntar y conservar snapshot
+    Repository->>Manager: flush
+    Manager->>Mapper: Extraer estado y detectar cambios
+    Identity-->>Mapper: Snapshot persistido
+    Manager->>Relations: Calcular diferencias del grafo
+    Mapper->>Builder: INSERT / UPDATE / DELETE
+    Relations->>Builder: Cambios de relaciones
+    Builder->>Connection: Ejecutar sentencias
+    Connection->>Database: Transacción SQL
+    Database-->>Connection: Confirmación
+    Connection-->>Mapper: Resultado
+    Mapper->>Identity: Actualizar snapshot persistido
+</pre>
 
 <h2>
     <a href="#dsl">Abstracción de Consulta complejas</a>

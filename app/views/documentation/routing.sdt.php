@@ -27,6 +27,37 @@
 
 <p>El path por defecto <code>app/routes</code> puede ser modificado desde la configuración general mediante la clave <b>routes</b>.</p>
 
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;align-items:start">
+    <div>
+    <h3>Build Time</h3>
+    <pre class="mermaid" style="text-align:center">
+flowchart TB
+    FILES[app/routes] --> SCANNER[Route Scanner]
+    SCANNER --> TREE[Árbol de segmentos]
+    SCANNER --> MAP[Mapa de rutas por ID]
+    TREE & MAP --> CACHE[cache/routes.php]
+
+    style CACHE fill:#3e4452,stroke:#d19a66,color:#d19a66
+    </pre>
+    </div>
+
+    <div>
+    <h3>Run Time</h3>
+    <pre class="mermaid" style="text-align:center">
+flowchart TB
+    CACHE[cache/routes.php] --> MATCH[Resolver path]
+    REQUEST((Request)) --> MATCH
+    MATCH --> VALIDATOR[Route Validator]
+    VALIDATOR --> MIDDLEWARE[Middleware Pipeline]
+    MIDDLEWARE --> CONTROLLER[Controller]
+    CACHE --> GENERATE[Generar URL por ID]
+    ROUTE[Route / View Helper] --> GENERATE
+
+    style CACHE fill:#3e4452,stroke:#d19a66,color:#d19a66
+    </pre>
+    </div>
+</div>
+
 <h2>
     <a href="#params">Parámetros dinámicos</a>
     <span class="anchor" id="params">...</span>

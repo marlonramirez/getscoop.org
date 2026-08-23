@@ -254,7 +254,12 @@ graph TD
         <li><b>Cambio de motor CSS:</b> Cambiar stylus por un sistema más moderno como Lightning CSS (o PostCSS).</li>
         <li><b>Redirecciones persistentes:</b> Evolución de los métodos <code>goBack()</code> y <code>redirect()</code>. Actualmente son imperativos y finalizan la ejecución (exit). En la v0.9 devolverán un objeto <code>Response</code>, permitiendo que el ciclo de vida de la aplicación finalice correctamente en entornos de ejecución continua.</li>
         <li><b>Stateless mode:</b> Ajuste integral del motor para operar sin dependencias de <code>$_SESSION</code> de forma nativa, permitiendo una escalabilidad total en arquitecturas distribuidas y entornos serverless.</li>
-        <li><b>Circuit breaker:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16)</li>
+        <li><b>Circuit breaker y Fibers:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16) y Fibers para soporte de <code>PHP 8.1</code>.</li>
+        <li><b>EPM+structs:</b> Crear un comando para hacer diff de la base de datos actual y las entidades del sistema, generando un struct con los ajustes que se deben hacer para emparejar tanto la base de datos como el sistema de entidades.</li>
+        <li><b>Tooling externo:</b> Crear una extensión para poder llevar PHPStan hasta el nivel 10 es scoop, así como un plugin para VSCode que reconozca la sintaxis de SDT.</li>
+        <li><b>Directiva de Fragmentos:</b> Poder marcar bloques de código que se pueden renderizar de forma aislada para peticiones AJAX/HTMX.</li>
+        <li><b>Mapeo de errores SDT:</b> Que el compilador SDT inserte comentarios de referencia o que el Error\Mapper de Scoop traduzca la línea del archivo compilado a la línea original del <code>.sdt.php</code>.</li>
+        <li><b>Hooks de ciclo de vida:</b> Poder registrar listeners para eventos como PrePersist o PostUpdate a nivel de entidad (sin que la entidad lo sepa, vía configuración).</li>
         <li><b>Persistencia Determinista (Worker Ready):</b> Migración de la responsabilidad del <code>EntityManager::flush()</code> y <code>Connection::commit()</code>. Se eliminará la dependencia de <code>register_shutdown_function</code> (ineficaz en entornos persistentes) en favor de un cierre de ciclo de vida gestionado explícitamente por la Application. Esto garantiza la integridad atómica de los datos y previene la fuga de estado entre peticiones concurrentes en el mismo worker.</li>
         <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR</b>.</li>
     </ul></p>

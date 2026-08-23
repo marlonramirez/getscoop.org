@@ -25,7 +25,7 @@ jobs:
       - name: Build assets
         run: |
           npm install
-          npm start
+          npm run build
       - name: Clean up development files
         run: |
           rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
