@@ -222,9 +222,9 @@ graph TD
 </pre></p>
 
 <div class="roadmap-box">
-    <h3>v0.8.X: La Purificación del Hot Path</h3>
+    <h3>v0.8.X: Purificación del Hot Path y experiencia de desarrollo</h3>
 
-    <p>Esta fase se centra en eliminar la fricción del intérprete de PHP y maximizar el rendimiento del núcleo en entornos de ejecución tradicionales (FPM):</p>
+    <p>Esta fase se centra en reducir el trabajo del intérprete, mejorar la experiencia de desarrollo y consolidar el núcleo en modelos de ejecución donde la aplicación se inicia en cada petición.</p>
 
     <p><ul>
         <li><s><b>Ruteo Algorítmico:</b></s> Implementación de <i>Radix Tree</i> para garantizar búsquedas de rutas en tiempo $O(S)$, donde <code>S</code> es el número de segmentos de la ruta, eliminando la dependencia de expresiones regulares lineales.</li>
@@ -232,8 +232,10 @@ graph TD
         <li><s><b>Security namespace:</b></s> Creación de middlewares para CORS y CSRF, cambio de Vault a Encrypter (finalmente Cipher) y saneamiento de columnas en Persistence.</li>
         <li><s><b>Inyección Pre-compilada:</b></s> Generar mapas de dependencias estáticos dentro del IoC para eliminar el peaje del análisis de constructores en cada petición.</li>
         <li><s><b>Escaneo de Bajo Impacto:</b></s> Implementar lectura por tokens parciales (stream-based) en el descubrimiento de tipos para minimizar la huella de memoria en proyectos de gran escala.</li>
-        <li><s><b>Compliance:</b></s> Evolución de <code>\Scoop\Http\Message</code> para una alineación total con las especificaciones RFC y los contratos semánticos de PSR.</li>
+        <li><s><b>Alineación con estándares:</b></s> Evolución de <code>\Scoop\Http\Message</code> para respetar las especificaciones RFC y la semántica de PSR, sin implementar todavía las interfaces incompatibles con PHP 5.4.</li>
         <li><s><b>Interceptor Bus:</b></s> Inclusión de middlewares dentro de los listeners del Event Bus, habilitando la <b>Programación Orientada a Aspectos (AOP)</b> en el flujo de eventos.</li>
+        <li><b>Canalización y distribución de logs:</b> Simplificar la configuración de <i>handlers</i> y permitir múltiples destinos por nivel. De forma predeterminada, los mensajes se enviarán a la salida estándar; este comportamiento podrá desactivarse mediante <code>null</code> o reemplazarse por un array de <i>handlers</i>.</li>
+        <li><s><b>Depuración de vistas SDT:</b></s> En modo depuración, compilar las vistas sin minificación y conservar sus saltos de línea para que los errores del PHP generado señalen la línea correspondiente del <code>.sdt.php</code>. En producción se mantiene la minificación.</li>
         <li><s><b>Gestión de Ámbitos (Scopes):</b></s> Transición hacia definiciones de <i>providers</i> por array. Esto permite definir el ciclo de vida del objeto (<code>singleton</code>, <code>request</code>, <code>prototype</code>), una característica vital para entornos persistentes.
             <pre><code class="language-php">'App\Domain\Repository\User' => [
     'service' => 'App\Infrastructure\Repository\Factory\PostgresUser',
@@ -241,6 +243,7 @@ graph TD
     'scope' => 'singleton'
 ]</code></pre>
         </li>
+        <li><b>FrankenPHP en modo clásico:</b> Incorporar una configuración oficial de despliegue sobre Caddy y FrankenPHP manteniendo un ciclo PHP independiente por petición, como paso previo al soporte de procesos persistentes.</li>
     </ul></p>
 
     <h3>v0.9: Orquestación de Dominios Aislados</h3>
@@ -251,17 +254,15 @@ graph TD
         <li><b>Infraestructura Persistente:</b> Soporte nativo para <a href="https://frankenphp.dev/" target="_blank">FrankenPHP</a> (Worker Mode), permitiendo que el motor permanezca en memoria y elimine los tiempos de arranque.</li>
         <li><b>Aislamiento Físico:</b> Implementación de múltiples <b>Bounded Contexts</b> mediante instancias de <code>Context</code> independientes, garantizando que el acoplamiento entre módulos sea técnicamente imposible.</li>
         <li><b>Context Mapping:</b> Creación del sistema de <i>Bridges</i> para orquestar la comunicación y traducción de datos entre contextos de forma segura.</li>
-        <li><b>Cambio de motor CSS:</b> Cambiar stylus por un sistema más moderno como Lightning CSS (o PostCSS).</li>
-        <li><b>Redirecciones persistentes:</b> Evolución de los métodos <code>goBack()</code> y <code>redirect()</code>. Actualmente son imperativos y finalizan la ejecución (exit). En la v0.9 devolverán un objeto <code>Response</code>, permitiendo que el ciclo de vida de la aplicación finalice correctamente en entornos de ejecución continua.</li>
-        <li><b>Stateless mode:</b> Ajuste integral del motor para operar sin dependencias de <code>$_SESSION</code> de forma nativa, permitiendo una escalabilidad total en arquitecturas distribuidas y entornos serverless.</li>
+        <li><b>Actualización del motor CSS:</b> Sustituir Stylus por una alternativa moderna integrada con Vite, como Lightning CSS o PostCSS.</li>
+        <li><b>Redirecciones compatibles con procesos persistentes:</b> Evolución de <code>goBack()</code> y <code>redirect()</code>. En lugar de finalizar la ejecución mediante <code>exit</code>, devolverán un objeto <code>Response</code> para que la aplicación complete explícitamente su ciclo de vida.</li>
+        <li><b>Stateless mode:</b> Ajuste integral del motor para operar sin dependencias directas de <code>$_SESSION</code>, facilitando la ejecución distribuida y evitando estado residual entre peticiones.</li>
         <li><b>Circuit breaker y Fibers:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16) y Fibers para soporte de <code>PHP 8.1</code>.</li>
         <li><b>EPM+structs:</b> Crear un comando para hacer diff de la base de datos actual y las entidades del sistema, generando un struct con los ajustes que se deben hacer para emparejar tanto la base de datos como el sistema de entidades.</li>
-        <li><b>Tooling externo:</b> Crear una extensión para poder llevar PHPStan hasta el nivel 10 es scoop, así como un plugin para VSCode que reconozca la sintaxis de SDT.</li>
-        <li><b>Directiva de Fragmentos:</b> Poder marcar bloques de código que se pueden renderizar de forma aislada para peticiones AJAX/HTMX.</li>
-        <li><b>Mapeo de errores SDT:</b> Que el compilador SDT inserte comentarios de referencia o que el Error\Mapper de Scoop traduzca la línea del archivo compilado a la línea original del <code>.sdt.php</code>.</li>
+        <li><b>Tooling externo:</b> Crear una extensión para poder llevar PHPStan hasta el nivel 10 en Scoop, así como un plugin para VSCode que reconozca la sintaxis de SDT.</li>
         <li><b>Hooks de ciclo de vida:</b> Poder registrar listeners para eventos como PrePersist o PostUpdate a nivel de entidad (sin que la entidad lo sepa, vía configuración).</li>
         <li><b>Persistencia Determinista (Worker Ready):</b> Migración de la responsabilidad del <code>EntityManager::flush()</code> y <code>Connection::commit()</code>. Se eliminará la dependencia de <code>register_shutdown_function</code> (ineficaz en entornos persistentes) en favor de un cierre de ciclo de vida gestionado explícitamente por la Application. Esto garantiza la integridad atómica de los datos y previene la fuga de estado entre peticiones concurrentes en el mismo worker.</li>
-        <li><b>Interoperabilidad Estándar:</b> Implementación completa de <b>PSR</b>.</li>
+        <li><b>Interoperabilidad formal:</b> Elevar la versión mínima de PHP e implementar las interfaces PSR correspondientes sobre las APIs que ya respetan su semántica.</li>
     </ul></p>
 </div>
 

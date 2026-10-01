@@ -21,6 +21,7 @@
 <ul>
     <li><b>Ruteo Dinámico:</b> El <code>Router</code> invoca al escáner de rutas en cada petición para reflejar cambios inmediatos en <code>app/routes</code>.</li>
     <li><b>Autodescubrimiento de Tipos:</b> El <code>TypeMapper</code> escanea el <code>composer.json</code> y los directorios del proyecto para resolver implementaciones de interfaces al vuelo.</li>
+    <li><b>Trazabilidad de vistas SDT:</b> Las plantillas se compilan sin minificación y conservan sus saltos de línea. Cuando falla el PHP generado, el archivo <code>.debug.php</code> permite ubicar la línea correspondiente en el <code>.sdt.php</code> original.</li>
     <li><b>Visibilidad Total:</b> El <code>Http\Error\Mapper</code> renderiza trazas completas de errores (Stack Trace), archivos y líneas afectadas.</li>
 </ul>
 
@@ -31,7 +32,7 @@
     <li><b>Degradación de Rendimiento:</b> El escaneo constante de archivos (I/O) y el análisis de tokens de PHP eliminan las optimizaciones de caché, aumentando significativamente el tiempo de respuesta.</li>
 </ol>
 
-<p>Al desactivar el Debug Mode, el sistema dejará de escanear el sistema de archivos y confiará exclusivamente en los mapas compilados. Asegúrese de haber ejecutado los comandos de <code>ice scan</code> antes de pasar a un entorno inmutable.</p>
+<p>Al desactivar el Debug Mode, el sistema dejará de escanear el sistema de archivos y confiará exclusivamente en los mapas compilados. Las vistas volverán a utilizar archivos <code>.php</code> minificados, separados de los artefactos <code>.debug.php</code> de desarrollo. Asegúrese de haber ejecutado los comandos de <code>ice scan</code> antes de pasar a un entorno inmutable.</p>
 
 <h2>
     <a href="#quality">Estándares de Calidad</a>

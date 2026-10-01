@@ -27,7 +27,7 @@ class Body
     private function parse($body, $method, $contentType)
     {
         if (strpos($contentType, 'application/json') !== false) {
-            $this->parsedBody = json_decode($body, true);
+            $this->parsedBody = json_decode($body->getContents(), true);
             return;
         }
         if (strtoupper($method) === 'POST') {
@@ -35,15 +35,14 @@ class Body
             $this->uploadedFiles = $this->normalizeFiles($_FILES);
             return;
         }
-        if (!$body) {
-            return;
+        $content = $body->getContents();
+        if ($content) {
+            if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+                parse_str($content, $this->parsedBody);
+            } else {
+                $this->parsedBody = $this->parseMultipartBody($contentType, $content);
+            }
         }
-        if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-            parse_str($body, $this->parsedBody);
-            return;
-
-        }
-        $this->parsedBody = $this->parseMultipartBody($contentType, $body);
     }
 
     private function parseMultipartBody($contentType, $body)

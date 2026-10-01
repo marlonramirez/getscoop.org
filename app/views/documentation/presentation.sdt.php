@@ -18,10 +18,10 @@
 </h2>
 
 
-<p>Scoop abstrae la ubicación física de los recursos (CSS, JS, imágenes) permitiendo que la aplicación sea portable. Desde la versión 0.8, el motor integra <b>Vite</b> para gestionar el <i>Hot Module Replacement</i> (HMR) en desarrollo y la carga de activos optimizados en producción. La configuración de rutas se define de forma sencilla bajo la clave <code>asset</code>:</p>
+<p>Scoop abstrae la ubicación física de los recursos (CSS, JS, imágenes) permitiendo que la aplicación sea portable. Desde la versión 0.8, el motor integra <b>Vite</b> para gestionar el <i>Hot Module Replacement</i> (HMR) en desarrollo y la carga de activos optimizados en producción. La configuración de rutas se define de forma sencilla bajo la clave <code>assets</code>:</p>
 
 <pre><code class="language-php">[
-    'asset' => [
+    'assets' => [
         'path' => 'public/',
         'css' => 'css/',
         'js' => 'js/',
@@ -35,6 +35,8 @@
 <pre><code class="language-php-template">&lt;link rel="stylesheet" href="&#123;{#view->css('main.css')}&#125;"&gt;
 &lt;script src="&#123;{#view->js('app.js')}&#125;"&gt;&lt;/script&gt;
 </code></pre>
+
+<p>En producción, Vite genera rutas relativas para los recursos importados por el CSS o JavaScript compilado, como fuentes, imágenes y otros <i>chunks</i>. Esto no modifica las URLs generadas por <code>#view->css()</code>, <code>#view->js()</code> o <code>#view->img()</code>, que continúan utilizando <code>ROOT</code> y la configuración <code>assets</code>. En desarrollo, estos helpers apuntan al servidor de Vite para habilitar el HMR sin que el desarrollador tenga que intervenir.</p>
 
 <h2>
     <a href="#interpolation">Interpolación</a>
@@ -374,15 +376,18 @@ trabaja fuera del compilador SDT.</p>
 
 <p class="doc-alert"><b>Nota:</b> la salida de <code>#view->compose()</code> no está escapada por el motor, por lo que siempre debe invocarse con la sintaxis de salida en crudo <code>&#123;{=&nbsp;...&nbsp;}&#125;</code> y no con <code>&#123;{&nbsp;...&nbsp;}&#125;</code>.</p>
 
+<p>El renderizado anidado es aislado: cada vista sustituye temporalmente su helper y abre sus propios buffers. Al finalizar —incluso si se produce una excepción— Scoop restaura el helper de la vista llamadora y descarta únicamente los buffers abiertos por la vista que falló.</p>
+
 <h2>
     <a href="#cache">Cache y minificación</a>
     <span class="anchor" id="cache">...</span>
 </h2>
 
-<p>Durante la fase de transpilación, Scoop aplica optimizaciones agresivas:</p>
+<p>La estrategia de transpilación depende del entorno. En producción, Scoop aplica optimizaciones agresivas; en Debug Mode conserva la estructura y los saltos de línea de la fuente para facilitar el diagnóstico.</p>
 
 <p><ol>
-    <li><b>Limpieza de HTML:</b> Elimina comentarios y espacios en blanco redundantes, reduciendo el peso del archivo enviado al cliente.</li>
+    <li><b>Limpieza de HTML:</b> En producción elimina comentarios y espacios en blanco redundantes, reduciendo el peso del archivo enviado al cliente.</li>
     <li><b>Pre-compilación:</b> Convierte directivas SDT en sentencias PHP nativas listas para <b>Opcache</b>.</li>
     <li><b>Aislamiento de Scope:</b> Cada vista se renderiza en su propia instancia de objeto, evitando colisiones de variables globales.</li>
+    <li><b>Artefactos separados:</b> Desarrollo utiliza archivos <code>.debug.php</code> legibles; producción utiliza archivos <code>.php</code> minificados.</li>
 </ol></p>

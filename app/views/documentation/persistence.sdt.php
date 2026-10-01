@@ -353,6 +353,19 @@ $books->create(['name', 'author'], $reader)->run(['year' => 1989]);
 ->run(['name' => 'Angels']);
 </code></pre>
 
+<h4>Composición incremental</h4>
+
+<p>Las llamadas sucesivas a <code>order()</code> y <code>group()</code> son acumulativas. Cada llamada a <code>order()</code> puede definir su propia dirección; si se omite, se utiliza <code>ASC</code>. Esto permite que distintos criterios agreguen ordenamientos o agrupaciones sin reemplazar los definidos previamente.</p>
+
+<pre><code class="language-php">$query = $books->read('category', 'status')
+    ->group('category')
+    ->group('status')
+    ->order('status')
+    ->order('created_at', 'DESC');
+</code></pre>
+
+<p>El statement anterior implementara <code>GROUP BY category, status</code> y <code>ORDER BY status ASC, created_at DESC</code> dentro del SQL.</p>
+
 <h3>Actualización y Eliminación</h3>
 
 <p>Las operaciones de escritura (<code>update</code> y <code>delete</code>) exigen el uso de <code>restrict()</code> para delimitar el alcance de la operación, garantizando la seguridad de los datos.</p>
