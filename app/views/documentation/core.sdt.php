@@ -95,7 +95,7 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 
 <pre><code class="language-shell">php app/ice scan source</code></pre>
 
-<p>El Injector utiliza las definiciones precompiladas cuando están disponibles. Si una clase todavía no figura en los mapas, obtiene sus dependencias mediante Reflection y conserva la definición durante la ejecución actual. Este <i>fallback</i> no solo permite trabajar con artefactos incompletos: también hace posible iniciar comandos como <code>ice scan routes</code> antes de que existan todos los mapas necesarios para resolver sus propias dependencias.</p>
+<p>En producción, el Injector utiliza las definiciones precompiladas. Si una clase no figura en los mapas, obtiene sus dependencias mediante Reflection y conserva la definición durante la ejecución actual. Este <i>fallback</i> también permite iniciar comandos como <code>ice scan routes</code> antes de que existan todos los mapas necesarios para resolver sus propias dependencias.</p>
 
 <p>Los mapas forman parte de los artefactos del <i>build</i> y deben regenerarse en cada despliegue que incorpore cambios de código. Puede forzarse su reconstrucción mediante <code>php app/ice scan source -f</code>.</p>
 

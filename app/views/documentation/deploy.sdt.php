@@ -21,6 +21,7 @@
 <ul>
     <li><b>Ruteo Dinámico:</b> El <code>Router</code> invoca al escáner de rutas en cada petición para reflejar cambios inmediatos en <code>app/routes</code>.</li>
     <li><b>Autodescubrimiento de Tipos:</b> El <code>TypeMapper</code> escanea el <code>composer.json</code> y los directorios del proyecto para resolver implementaciones de interfaces al vuelo.</li>
+    <li><b>Inyección dinámica:</b> El Injector ignora completamente los mapas precompilados de dependencias y analiza los constructores mediante Reflection. De esta forma, los cambios en las firmas se reflejan sin ejecutar previamente <code>ice scan source</code>.</li>
     <li><b>Trazabilidad de vistas SDT:</b> Las plantillas se compilan sin minificación y conservan sus saltos de línea. Cuando falla el PHP generado, el archivo <code>.debug.php</code> permite ubicar la línea correspondiente en el <code>.sdt.php</code> original.</li>
     <li><b>Visibilidad Total:</b> El <code>Http\Error\Mapper</code> renderiza trazas completas de errores (Stack Trace), archivos y líneas afectadas.</li>
 </ul>

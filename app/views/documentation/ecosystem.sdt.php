@@ -23,8 +23,12 @@
     'errors' => [
         401 => [
             'title' => 'User not authorized',
-            'headers' => array('WWW-Authenticate' => 'Digest realm="' . $domain . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($domain) . '"')
-            'exceptions' => [NotAuthorized::class]
+            'headers' => [
+                'WWW-Authenticate' => 'Digest realm="' . $domain . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($domain) . '"'
+            ],
+            'exceptions' => [
+                NotAuthorized::class
+            ]
         ]
     ]
 ]
@@ -36,6 +40,63 @@
     <a href='#monitoring'>Monitoreo y Logging</a>
     <span class='anchor' id='monitoring'>...</span>
 </h2>
+
+<p>La configuración <code>log</code> define los handlers de los niveles <code>emergency</code>, <code>alert</code>, <code>critical</code>, <code>error</code>, <code>warning</code>, <code>notice</code>, <code>info</code> y <code>debug</code>. Cada nivel admite un array que asocia clases de handlers con sus argumentos de constructor y permite enviar un mensaje a múltiples destinos.</p>
+
+<p><code>all</code> es un helper que agrega handlers comunes a todos los niveles habilitados. Sus handlers se combinan con los del nivel específico. Si una clase aparece en ambos, se crea una sola instancia con los argumentos definidos en el nivel; esos argumentos reemplazan los configurados para esa clase en <code>all</code>.</p>
+
+<ul>
+    <li>Un nivel configurado explícitamente con <code>null</code> o <code>array()/[]</code> se silencia, incluso si <code>all</code> contiene handlers.</li>
+    <li><code>all =&gt; null</code> o <code>all =&gt; array()/[]</code> no agrega handlers comunes; no silencia los niveles.</li>
+    <li>Un nivel sin configuración utiliza los handlers de <code>all</code>. Si no hay handlers comunes, utiliza <code>Scoop\Log\Handler\Standard</code> y escribe en <code>stdout</code>.</li>
+    <li>Cuando hay handlers configurados, <code>stdout</code> no se agrega automáticamente. Para escribir también allí, incluye <code>Scoop\Log\Handler\Standard</code> en el array.</li>
+</ul>
+
+<pre><code class="language-php">return [
+    'all' =&gt; [
+        'Scoop\Log\Handler\File' =&gt; [],
+    ],
+    'error' =&gt; [
+        'Scoop\Log\Handler\Standard' =&gt; ['error' =&gt; true],
+    ],
+    'debug' =&gt; null,
+    'info' =&gt; [],
+];
+</code></pre>
+
+<p>En este ejemplo, <code>error</code> escribe en el archivo común y en <code>stderr</code>. <code>debug</code> e <code>info</code> están silenciados y los demás niveles escriben en el archivo común. Sin configuración de <code>log</code>, todos los niveles escriben en <code>stdout</code>.</p>
+
+<h3>Formato y recuperación de datos</h3>
+
+<p>Para los handlers <code>File</code> sin argumento <code>file</code>, la ruta predeterminada dentro del storage sigue el patrón <code>logs/&lt;app.name&gt;-YYYY-MM-DD.log</code>, donde <code>&lt;app.name&gt;</code> representa el nombre configurado de la aplicación. La fecha se obtiene del timestamp de cada registro; por ello, un worker que permanece activo después de medianoche escribe los nuevos registros en el archivo del nuevo día.</p>
+
+<h4>Plantillas para nombres de archivo</h4>
+
+<p>El argumento <code>file</code> admite plantillas dinámicas. <code>{level}</code> se reemplaza por el nivel del registro y los demás bloques se interpretan como formatos de fecha de <code>DateTime::format()</code>. Una ruta sin bloques permanece fija.</p>
+
+<pre><code class="language-php">'Scoop\Log\Handler\File' =&gt; [
+    'file' =&gt; 'app/storage/logs/{Y-m-d}/{level}.log'
+]</code></pre>
+
+<p>Este ejemplo separa los registros por día y nivel. El cambio de archivo no elimina ni comprime registros anteriores.</p>
+
+<h3>Inyección de dependencias de los handlers</h3>
+
+<p>Los argumentos escalares del constructor se configuran por nombre. Las dependencias declaradas mediante una clase o interfaz se resuelven automáticamente utilizando los providers y sus scopes; los parámetros opcionales conservan su valor predeterminado. Si falta un argumento requerido, el handler no puede crearse y el fallo se reporta mediante el mecanismo de errores de PHP.</p>
+
+<p>Los valores escalares, como <code>url</code> o una ruta <code>file</code> explícita, se proporcionan en la configuración. <code>formatter</code> admite un nombre de provider o una instancia; por defecto se utiliza <code>Scoop\Log\Formatter</code>. Los handlers personalizados pueden declarar dependencias de clase o interfaz en su constructor sin agregarlas manualmente al array.</p>
+
+<p>El logger construye un solo registro por llamada, con el mensaje interpolado, el contexto original, el nivel y el timestamp. Todos los handlers reciben ese registro. La interpolación convierte únicamente los valores cuyos placeholders aparecen en el mensaje; si esa conversión lanza una excepción o un error de PHP, sustituye el valor por una indicación del tipo de error y continúa.</p>
+
+<p>El formatter predeterminado utiliza <code>json_encode()</code>. Si la codificación falla, vacía el contexto y vuelve a intentarlo, conservando el mensaje. Si todavía falla, reemplaza el mensaje por <code>[message unavailable]</code> y reintenta. Esto permite recuperar el nivel y el timestamp del registro normal sin requerir <code>mbstring</code>. Los formatters personalizados pueden definir otra representación.</p>
+
+<h3>Fallos de los destinos y observabilidad</h3>
+
+<p>Si un handler lanza una <code>Exception</code> o un <code>Throwable</code> durante el envío, el logger reporta su representación completa mediante <code>error_log()</code>, incluyendo el tipo, mensaje, ubicación y pila de llamadas. El error no se propaga al llamador y el envío continúa con los demás handlers. El diagnóstico utiliza el mecanismo de errores de PHP, cuyo destino depende de la configuración del entorno, sin volver a invocar el logger ni generar un ciclo de reportes.</p>
+
+<p>Los valores retornados por los handlers, incluidos <code>false</code> y <code>null</code>, se ignoran y no generan un diagnóstico adicional. La fábrica también reporta las excepciones al construir un handler mediante <code>error_log()</code> y continúa con los demás. Conserva en caché los handlers creados correctamente; los omitidos no se reintentan durante la vida de esa fábrica. Los warnings de PHP y los errores al resolver la configuración general no quedan silenciados por esta política.</p>
+
+<p>El handler <code>Slack</code> delega el transporte al cliente HTTP inyectado; establece un timeout total de cinco segundos mediante <code>withOption(CURLOPT_TIMEOUT, 5)</code>, que devuelve una copia sin modificar el cliente compartido. Las demás opciones, incluida la configuración TLS, se conservan del cliente inyectado. Cada envío crea una petición POST independiente con cuerpo JSON. Las respuestas fuera del rango HTTP 200–299 y los fallos de codificación del payload generan una excepción, que el logger reporta sin impedir el envío a otros destinos. Los fallos de transporte se reportan del mismo modo. Puede proporcionarse una instancia de cliente mediante el argumento <code>httpClient</code> para reemplazar la dependencia resuelta automáticamente.</p>
 
 <p>El sistema de log de Scoop implementa el estándar <b>PSR-3</b> y se basa en una arquitectura de <b>Handlers</b>. Esto permite que un mismo mensaje sea procesado por múltiples canales (archivo, Slack, Email) dependiendo de su nivel de severidad.</p>
 
@@ -81,8 +142,6 @@
 ]
 </code></pre>
 
-<p>Cada Handler es resuelto por el <b>Injector</b>, lo que permite que el sistema de log sea totalmente extensible y configurable mediante inyección de dependencias.</p>
-
 <p>El código de <code>scoop/Persistence/Connection.php</code> y <code>scoop/Bootstrap/Application.php</code> dispara eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>ErrorOccurred</code>.</p>
 
 <h2>
@@ -122,6 +181,7 @@ $data = $this->cache->get('user_session_1');
     <li><b>Gestión de Streams:</b> Utiliza el motor de <i>Streams</i> de Scoop para manejar cuerpos de petición y respuesta de gran tamaño sin saturar la memoria RAM.</li>
     <li><b>Seguridad de Transporte:</b> Soporte nativo para protocolos modernos (TLS/SSL) y gestión automática de métodos HTTP (incluyendo verbos personalizados).</li>
     <li><b>Manejo de Excepciones:</b> Diferencia técnicamente entre errores de red (<code>NetworkException</code>) y errores de petición (<code>RequestException</code>), permitiendo una gestión de fallos granular en el Dominio.</li>
+    <li><b>Configuración Inmutable:</b> <code>withOption()</code> permite derivar un cliente con una opción de cURL adicional sin modificar la instancia compartida.</li>
 </ul></p>
 
 <pre><code class="language-php">public function get(): Response {
@@ -129,6 +189,15 @@ $data = $this->cache->get('user_session_1');
     return $this->httpClient->sendRequest($request);
 }
 </code></pre>
+
+<pre><code class="language-php">$client = $this->httpClient
+    ->withOption(CURLOPT_TIMEOUT, 5)
+    ->withOption(CURLOPT_CONNECTTIMEOUT, 2);
+
+$response = $client->sendRequest($request);
+</code></pre>
+
+<p>Si la opción ya contiene el mismo valor, <code>withOption()</code> puede devolver la misma instancia; en caso contrario devuelve una copia configurada. El cliente original permanece sin cambios.</p>
 
 <h2>
     <a href="#events">Catálogo de eventos</a>

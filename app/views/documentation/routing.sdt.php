@@ -173,6 +173,8 @@ flowchart TB
 
 <p>El manejo de archivos subidos en Scoop es totalmente orientado a objetos. Olvídate de manipular el array global <code>FILES</code>; accede a los archivos mediante <code>request->getUploadedFiles()</code>, obteniendo objetos inmutables con soporte para streaming y validación de errores nativa.</p>
 
+<p>Se recomienda utilizar <code>POST</code> para la carga de archivos. No obstante, Scoop también interpreta cuerpos <code>multipart/form-data</code> enviados mediante <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code> u otros métodos y expone sus campos y archivos mediante la misma API.</p>
+
 <pre><code class="language-php">public function post(Request $request): Response
 {
     $uploadedFiles = $request->getUploadedFiles();
