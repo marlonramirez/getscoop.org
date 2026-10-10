@@ -5,7 +5,7 @@
     <li><a href="#config">Gestión de la configuración</a></li>
     <li><a href="#injector">Inversión de control (IoC)</a></li>
     <li><a href="#extend">Extensibilidad del Núcleo</a></li>
-    <li><a href="#lifecycle">Ciclo de vida de una petición</a></li>
+    <li><a href="#lifecycle">Ejecución de la aplicación</a></li>
 </ul></p>
 
 <h2>
@@ -13,32 +13,48 @@
     <span class="anchor" id="context">...</span>
 </h2>
 
-<p>La clase <code>\Scoop\Context</code> es el punto de ignición del motor. No es un simple contenedor de configuración; es el orquestador que inicializa la <b>"burbuja" de ejecución inmutable</b>, encargándose de levantar el cargador de namespaces, el entorno y el Inyector de dependencias.</p>
+<p>La clase <code>\Scoop\Bootstrap\Application</code> administra el arranque, el <code>Environment</code> y su Inyector de dependencias. La API estática de <code>\Scoop\Context</code> está deprecada desde v0.8.5 y permanece como puente de compatibilidad. Para código nuevo, utiliza la instancia de Application en el punto de entrada y la inyección por constructor en los servicios.</p>
 
-<pre><code class="language-php">\Scoop\Context::load('app/config', [
-    'storage' => 'app/storage',
-    'stateless' => true
-]);
+<pre><code class="language-php">require 'scoop/Bootstrap/Application.php';
 $app = new \Scoop\Bootstrap\Application();
 $app->run();
 </code></pre>
 
-<p>Una vez establecido el contexto enviando como parámetros la ubicación del archivo de configuración y un array opcional con la ubicación del storage y si la aplicación se ejecuta en modo stateless <i>(beta)</i>, el sistema permite acceder a los componentes del núcleo de forma desacoplada:</p>
+<p>Sin argumentos, Application utiliza <code>app/config.php</code> y <code>app/storage</code>. Para cambiar estas ubicaciones, recibe la ruta, sin extensión, de un archivo PHP que retorna las opciones de arranque:</p>
+
+<pre><code class="language-php">return [
+    'config' => 'app/config',
+    'storage' => 'app/storage',
+    'stateless' => true,
+];
+</code></pre>
+
+<p>La ruta del archivo se pasa al constructor de Application:</p>
+
+<pre><code class="language-php">
+require 'scoop/Bootstrap/Application.php';
+$app = new \Scoop\Bootstrap\Application('app/runtime');
+$app->run();
+</code></pre>
+
+<p>La configuración de servicios continúa en el archivo indicado por <code>config</code>. Las opciones de arranque y los providers son arrays distintos; el constructor de Application no recibe directamente un array.</p>
 
 <p>
     <ul>
-        <li><b>inject:</b> Inyección de dependencias mediante service locator <code>Context::inject($provider)</code>.</li>
-        <li><b>Persistencia:</b> Gestión de conexiones y desconexiones mediante <code>Context::connect($bundle)</code>.</li>
-        <li><b>Resolución:</b> El método <code>Context::inject($id)</code> es la puerta de entrada para obtener cualquier servicio gestionado por el inyector.</li>
+        <li><b>Resolución:</b> <code>$app->inject($id)</code> obtiene un servicio desde el Inyector de esa aplicación.</li>
+        <li><b>Entorno:</b> <code>Environment::getInjector()</code> permite resolver servicios en factorías y componentes de infraestructura que necesitan acceso al contenedor.</li>
+        <li><b>Persistencia:</b> <code>Connection</code> dispone de una factoría para su resolución como provider; el nuevo formato utiliza las opciones directamente bajo <code>db</code>, sin bundles.</li>
     </ul>
 </p>
 
-<pre><code class="language-php">$service = \Scoop\Context::inject(MyServiceInterface::class);
-$db = \Scoop\Context::connect('default');
-$environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
+<pre><code class="language-php">$service = $app->inject(MyServiceInterface::class);
+$environment = $app->inject('\Scoop\Bootstrap\Environment');
+$injector = $environment->getInjector();
 </code></pre>
 
-<p class="doc-alert"><b>Evolución DX:</b> Desde la versión 0.6.4, se prioriza el uso de <code>Context::inject($id)</code>, eliminando la necesidad de interactuar directamente con las instancias internas del inyector.</p>
+<p><code>stateless</code> vale <code>false</code> por defecto. Configúralo como <code>true</code> para evitar el inicio automático de sesiones; el ejemplo anterior utiliza esa opción.</p>
+
+<p class="doc-alert"><b>Cambio previsto:</b> En futuras versiones, <code>stateless</code> será reemplazado por <code>stateful</code>, también con valor predeterminado <code>false</code>. La aplicación será stateless por defecto; <code>stateful =&gt; true</code> habilitará el inicio automático de sesiones. La opción de arranque <code>config</code> pasará a llamarse <code>map</code>. Estos cambios aún no se aplican a los ejemplos de la versión actual.</p>
 
 <h2>
     <a href="#config">Gestión de la configuración</a>
@@ -80,7 +96,7 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 ];
 </code></pre>
 
-<p class="doc-alert"><b>Optimización O(1):</b> El loader <code>typeof:</code> no escanea el disco en cada petición. En producción consulta un índice de tipos pre-calculado por <code>ice</code>, permitiendo el autodescubrimiento de servicios sin peaje de rendimiento.</p>
+<p>Antes de desplegar, ejecuta <code>php app/ice scan source</code> para generar los índices utilizados por <code>typeof:</code> e <code>instanceof:</code>.</p>
 
 <h2>
     <a href="#injector">Inversión de control (IoC)</a>
@@ -91,11 +107,11 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
 
 <h3>Inyección Pre-compilada</h3>
 
-<p>Scoop analiza los constructores durante el proceso de escaneo y genera mapas PHP optimizados para Opcache. Esto retira del <i>Hot Path</i> el análisis repetitivo de sus parámetros sin perder la construcción diferida: una clase solo se instancia cuando se solicita al Injector.</p>
+<p>Ejecuta el escaneo de código para preparar las dependencias de tus servicios:</p>
 
 <pre><code class="language-shell">php app/ice scan source</code></pre>
 
-<p>En producción, el Injector utiliza las definiciones precompiladas. Si una clase no figura en los mapas, obtiene sus dependencias mediante Reflection y conserva la definición durante la ejecución actual. Este <i>fallback</i> también permite iniciar comandos como <code>ice scan routes</code> antes de que existan todos los mapas necesarios para resolver sus propias dependencias.</p>
+<p>Las clases concretas resolubles mediante autowiring no necesitan un provider explícito. Las interfaces requieren un provider que indique su implementación.</p>
 
 <p>Los mapas forman parte de los artefactos del <i>build</i> y deben regenerarse en cada despliegue que incorpore cambios de código. Puede forzarse su reconstrucción mediante <code>php app/ice scan source -f</code>.</p>
 
@@ -137,42 +153,47 @@ $environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
     <li><b><code>prototype</code>:</b> crea una instancia nueva en cada resolución.</li>
 </ul></p>
 
+<p>Las definiciones abreviadas mediante nombre de clase o notación <code>Clase:Método</code> continúan disponibles y utilizan el ámbito <code>request</code>.</p>
+
+<p>El siguiente diagrama resume la resolución de un servicio y la reutilización de instancias según su scope. Los mapas precompilados se utilizan en producción; si no hay una definición disponible, el Inyector obtiene las dependencias mediante Reflection.</p>
+
 <pre class="mermaid" style="text-align:center">
 flowchart LR
+    GET["Resolver servicio"] --> EXISTS{"¿Instancia?"}
+    EXISTS -->|Sí| RESULT["Servicio"]
+    EXISTS -->|No| PROVIDER["Provider / clase"]
+
     subgraph SOURCES ["Fuentes de resolución"]
         direction TB
-        GET[Context::inject<br/>Normalizar provider]
-        CACHE[ice scan source<br/>Mapa de dependencias precompilado]
-        REFLECTION[Reflection fallback]
-        GET --> CACHE
-        CACHE -. Si no existe en el mapa .-> REFLECTION
+        MAP["Mapa disponible"]
+        REFLECTION["Reflection fallback"]
+        MAP -. Sin definición .-> REFLECTION
     end
 
-    CACHE --> GRAPH[Resolver grafo de dependencias]
-    REFLECTION --> GRAPH
-    GRAPH --> SCOPE{Scope}
+    PROVIDER --> MAP
+    MAP --> CREATE["Construir"]
+    REFLECTION --> CREATE
 
-    SCOPE -->|request| REQUEST[Cache de la petición]
-    SCOPE -->|singleton| SINGLETON[Cache singleton]
-    SCOPE -->|prototype| PROTOTYPE[Nueva instancia]
+    subgraph SCOPES ["Scopes"]
+        direction TB
+        REQUEST["request"]
+        SINGLETON["singleton"]
+        PROTOTYPE["prototype"]
+    end
 
-    REQUEST --> RESULT[Servicio resuelto]
+    CREATE --> REQUEST
+    CREATE --> SINGLETON
+    CREATE --> PROTOTYPE
+    REQUEST --> RESULT
     SINGLETON --> RESULT
     PROTOTYPE --> RESULT
 
-    CLEAN[Injector::clean] -. limpia .-> REQUEST
-    CLEAN -. conserva .-> SINGLETON
-
-    style SCOPE fill:#282c34,stroke:#d19a66,color:#abb2bf
     style SOURCES fill:#21252b,stroke:#5c6370,color:#abb2bf
-    style CACHE fill:#3e4452,stroke:#98c379,color:#98c379
-    style REFLECTION fill:#3e4452,stroke:#e5c07b,color:#e5c07b
+    style SCOPES fill:#21252b,stroke:#5c6370,color:#abb2bf
     style REQUEST fill:#282c34,stroke:#61afef,color:#abb2bf
     style SINGLETON fill:#282c34,stroke:#98c379,color:#abb2bf
     style PROTOTYPE fill:#282c34,stroke:#c678dd,color:#abb2bf
 </pre>
-
-<p>Las definiciones abreviadas mediante nombre de clase o notación <code>Clase:Método</code> continúan disponibles y utilizan el ámbito <code>request</code>.</p>
 
 <h3>Factorías inteligentes</h3>
 
@@ -182,11 +203,11 @@ flowchart LR
 
 <pre><code class="language-php">class LogFactory {
 
-    public function __construct(private Environment $env) {}
+    public function __construct(private \Scoop\Bootstrap\Environment $env) {}
 
-    public function create(): Logger {
+    public function create(): \Scoop\Log\Logger {
         $logConfig = $this->env->getConfig('log', []);
-        $handler = new \Scoop\Log\Factory\Handler($logConfig);
+        $handler = new \Scoop\Log\Factory\Handler($this->env->getInjector(), $logConfig);
         return new \Scoop\Log\Logger($handler);
     }
 }
@@ -208,8 +229,8 @@ flowchart LR
 <pre><code class="language-php">class CustomConfiguration extends \Scoop\Bootstrap\Configuration {
     public function setUp() {
         parent::setUp();
-        date_default_timezone_set($this->environment->getConfig('timezone'));
-        \ThirdParty\Library::init($this->environment->getConfig('api_key'));
+        date_default_timezone_set($this->context->getConfig('timezone'));
+        \ThirdParty\Library::init($this->context->getConfig('api_key'));
     }
 }
 </code></pre>
@@ -233,11 +254,11 @@ flowchart LR
 </code></pre>
 
 <h2>
-    <a href="#lifecycle">Ciclo de vida de una petición</a>
+    <a href="#lifecycle">Ejecución de la aplicación</a>
     <span class="anchor" id="lifecycle">...</span>
 </h2>
 
-<p>La clase <code>Application</code> orquesta la petición a través de un <i>pipeline</i> diseñado para la eficiencia en entornos clásicos (Apache/Nginx + FPM) y preparado estructuralmente para futuras implementaciones en entornos persistentes.</p>
+<p><code>Application::run()</code> atiende la petición HTTP usando las rutas, middlewares y controladores configurados. Los controladores reciben sus servicios por constructor y los datos de la petición mediante Request:</p>
 
 <pre><code class="language-php">class PostController {
 
@@ -253,52 +274,15 @@ flowchart LR
 }
 </code></pre>
 
-<h3>Fases del Ciclo de Vida:</h3>
+<h3>Uso desde controladores</h3>
 
-<p><ol>
-    <li><b>Context & Environment:</b> Captura del entorno global y encapsulamiento en un objeto inmutable <code>ServerRequest</code> (PSR-7), asegurando un estado inicial determinista.</li>
-    <li><b>Routing:</b> Localización del <i>endpoint</i> y su jerarquía de middlewares. En producción, utiliza un <b>mapa pre-compilado</b> que garantiza una resolución O(S) evitando escanear el sistema de archivos y puede ser servido eficientemente mediante OPcache.</li>
-    <li><b>Atomic Dispatching (Control Hand-off):</b> El Inyector resuelve el grafo de dependencias e instancia el controlador. Aquí, el motor <b>cede el control al desarrollador</b>: se ejecuta la lógica de negocio (Controlador/Casos de Uso) tras procesar la cadena de middlewares.</li>
-    <li><b>Response Transformation:</b> El motor recupera el control para normalizar el retorno del desarrollador (Array, Vista o Escalar) en una respuesta PSR-7 inmutable.</li>
-    <li><b>Resource Cleanup:</b> Volcamiento del stream al buffer de salida e invocación de <code>gc_collect_cycles()</code> para liberar el grafo de objetos y cerrar conexiones antes de que el servidor entregue la respuesta final.</li>
-</ol></p>
+<p>Un controlador puede devolver una <code>Response</code>, una <code>View</code>, un array o un valor escalar. Los arrays se entregan como JSON, las vistas como HTML y los escalares como texto. Para definir el código de estado y las cabeceras, devuelve una Response:</p>
 
-<style>
-    .mermaid .messageText, .mermaid .loopText { fill:#3e4452 !important; }
-    .mermaid .labelText { fill:#f1f3f5 !important; }
-</style>
-<p><pre class="mermaid" style="text-align:center">
-%%{init: {"themeVariables": {"signalTextColor": "#282c34", "labelTextColor": "#282c34", "loopTextColor": "#282c34", "actorTextColor": "#f1f3f5", "actorLineColor": "#5c6370", "signalColor": "#5c6370"}}}%%
-sequenceDiagram
-    participant Client
-    participant Application
-    participant Router
-    participant Pipeline as Middleware Pipeline
-    participant Controller
-    participant UseCase as Use Case
-    participant Domain
+<pre><code class="language-php">return new \Scoop\Http\Message\Response(
+    201,
+    ['Content-Type' => 'application/json'],
+    json_encode(['id' => $postId])
+);
+</code></pre>
 
-    Client->>Application: Request
-    Application->>Application: Context & Environment
-    Application->>Router: route(request)
-
-    alt Ejecución correcta
-        Router->>Pipeline: Controller + middlewares
-        Pipeline->>Controller: Request
-        Controller->>UseCase: Execute
-        UseCase->>Domain: Business operation
-        Domain-->>UseCase: Result
-        UseCase-->>Controller: Result
-        Controller-->>Pipeline: Array / View / Scalar / Response
-        Pipeline-->>Application: Result
-        Application->>Application: Response Transformer
-    else Excepción en routing, middleware o controller
-        Router--xApplication: Throwable
-        Application->>Application: Http Error Mapper
-    end
-
-    Application->>Application: Resource Cleanup
-    Application-->>Client: Response
-</pre></p>
-
-<p class="doc-alert"><b>Mantenibilidad:</b> Cualquier excepción lanzada en el dominio es interceptada por <code>Http\Error\Mapper</code>, que decide la respuesta adecuada basada en tu configuración de <code>http.errors</code>.</p>
+<p>Configura <code>http.errors</code> para asociar tus excepciones con respuestas HTTP. Las excepciones no mapeadas se propagan al llamador. Consulta <a href="{{#view->route('doc', 'ecosystem')}}#exceptions">Excepciones y respuestas de error</a> para definir estados, cabeceras y vistas.</p>

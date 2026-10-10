@@ -4,13 +4,13 @@ namespace Scoop\Log\Factory;
 
 class Handler
 {
+    private $injector;
     private $handlers;
-    private $instances;
 
-    public function __construct($handlers)
+    public function __construct(\Scoop\Container\Injector $injector, $handlers)
     {
+        $this->injector = $injector;
         $this->handlers = $handlers;
-        $this->instances = array();
     }
 
     public function create($level)
@@ -18,11 +18,8 @@ class Handler
         if (!defined('\\Scoop\\Log\\Level::' . strtoupper($level))) {
             throw new \InvalidArgumentException("$level not support level");
         }
-        if (isset($this->instances[$level])) {
-            return $this->instances[$level];
-        }
         if (array_key_exists($level, $this->handlers) && empty($this->handlers[$level])) {
-            return $this->instances[$level] = array();
+            return array();
         }
         $handlers = array_merge(
             isset($this->handlers['all']) ? $this->handlers['all'] : array(),
@@ -41,7 +38,7 @@ class Handler
                 error_log("Error writing log: $error");
             }
         }
-        return $this->instances[$level] = $instances;
+        return $instances;
     }
 
     private function createHandlerInstance($className, $args)
@@ -71,7 +68,7 @@ class Handler
             if (array_key_exists($name, $args)) {
                 $params[] = $args[$name];
             } else if ($provider = $this->getParameterProvider($param)) {
-                $params[] = \Scoop\Context::inject($provider);
+                $params[] = $this->injector->get($provider);
             } else if ($param->isDefaultValueAvailable()) {
                 $params[] = $param->getDefaultValue();
             } else {
@@ -108,7 +105,7 @@ class Handler
             $args['formatter'] = 'Scoop\Log\Formatter';
         }
         if (is_string($args['formatter'])) {
-            $args['formatter'] = \Scoop\Context::inject($args['formatter']);
+            $args['formatter'] = $this->injector->get($args['formatter']);
         }
         return $args;
     }

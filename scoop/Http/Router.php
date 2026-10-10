@@ -4,14 +4,16 @@ namespace Scoop\Http;
 
 class Router
 {
+    private $injector;
     private $tree;
     private $routes;
     private $current;
 
-    public function __construct(\Scoop\Bootstrap\Scanner\Route $scanner)
+    public function __construct(\Scoop\Bootstrap\Environment $context, \Scoop\Bootstrap\Scanner\Route $scanner)
     {
         if (DEBUG_MODE) $scanner->scan();
         $routes = require $scanner->getCacheFilePath('routes');
+        $this->injector = $context->getInjector();
         $this->routes = $routes['map'];
         $this->tree = $routes['tree'];
     }
@@ -36,6 +38,7 @@ class Router
                 }
             }
             $requestHandler = new \Scoop\Middleware\RequestHandler(
+                $this->injector,
                 $controller,
                 $method,
                 $route['middlewares'],
@@ -70,7 +73,7 @@ class Router
         if (!is_subclass_of($validatorName, '\Scoop\Validator')) {
             throw new \RuntimeException("Validator $validatorName not supported");
         }
-        $validator = \Scoop\Context::inject($validatorName);
+        $validator = $this->injector->get($validatorName);
         if (!$validator->validate($params)) {
             throw new \Scoop\Http\Exception\NotFound();
         }

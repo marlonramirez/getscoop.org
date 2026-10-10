@@ -1,19 +1,21 @@
 <div class="col-3 mark-stack-scoop">
     <span class="fa-stack">
         <i class="fa fa-circle fa-stack-2x"></i>
-        <i class="fa fa-leaf fa-stack-1x fa-inverse"></i>
+        <i class="fa fa-cubes fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>Código limpio</h2>
-    <p>La principal motivación de scoop es proporcionar al desarrollador una estructura inicial para la creación de aplicaciones web robustas basadas en Programación Orientada a Objetos, con este fin se ha generado todo un sistema que garantiza aspectos del código como la legibilidad, modularidad y accesibilidad; facilitando la creación de aplicaciones con arquitectura hexagonal, Domain Driven Disign y CQRS.</p>
+    <h2>Tu dominio, tus reglas</h2>
+    <p>Construye la arquitectura que tu proyecto necesita. Scoop te permite trabajar con DDD, arquitectura hexagonal, CQRS o capas, manteniendo tu dominio independiente del framework.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'application')}}#use-cases">Explora la arquitectura de aplicación &rarr;</a></p>
 </div>
 
 <div class="col-3 mark-stack-scoop">
     <span class="fa-stack">
         <i class="fa fa-circle fa-stack-2x"></i>
-        <i class="fa fa-microchip fa-stack-1x fa-inverse"></i>
+        <i class="fa fa-sitemap fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>IoC Recursivo</h2>
-    <p>El corazón de Scoop es un motor de inyección de dependencias basado en <b>reflexión recursiva</b> y autowiring inteligente. Mediante la sintaxis de factoría <code>Class:method</code>, permite resolver grafos de objetos complejos y parámetros primitivos sin ensuciar el Dominio, garantizando que cada componente nazca con sus dependencias listas para operar.</p>
+    <h2>Dependencias bajo control</h2>
+    <p>Conecta tus servicios sin mezclar construcción y negocio. Autowiring, factorías y scopes te permiten decidir cómo se crean tus objetos y cuánto viven.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'core')}}#injector">Conoce la inyección de dependencias &rarr;</a></p>
 </div>
 
 <div class="col-3 mark-stack-scoop">
@@ -21,8 +23,9 @@
         <i class="fa fa-circle fa-stack-2x"></i>
         <i class="fa fa-map-signs fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>System File Routing</h2>
-    <p>Inspirado en paradigmas modernos de archivos, el ruteo de Scoop se define mediante la jerarquía de directorios en <code>app/routes</code>. Este sistema elimina archivos de configuración masivos, permite parámetros dinámicos mediante <code>[id]</code> y orquesta una <b>herencia de middlewares</b> automática, optimizando el rendimiento mediante compilación estática.</p>
+    <h2>Rutas que puedes leer</h2>
+    <p>Organiza tus endpoints como organizas tus archivos. Define parámetros dinámicos, controladores y middlewares por directorio, con una estructura que puedes recorrer y entender.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'routing')}}#routing">Descubre File-System Routing &rarr;</a></p>
 </div>
 
 <div class="col-3 mark-stack-scoop">
@@ -30,24 +33,27 @@
         <i class="fa fa-circle fa-stack-2x"></i>
         <i class="fa fa-database fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>Persistencia DDD</h2>
-    <p>Mediante un <b>Query Builder</b> y un <b>Entity Persistence Manager</b> ofrece una persistencia transparente basada en el patrón Data Mapper. Scoop prohíbe el Lazy Loading para proteger el rendimiento, obligando a una carga explícita de agregados mediante <code>aggregate()</code> y utilizando <b>Closure Binding</b> para una hidratación de entidades a velocidad nativa.</p>
+    <h2>Persistencia sin ataduras</h2>
+    <p>Tus entidades representan el negocio, sin heredar del framework. Combina Query Builder y Data Mapper con carga explícita de relaciones para mantener el control sobre tus datos.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'persistence')}}#builder">Explora Query Builder</a> &middot; <a href="{{#view->route('doc', 'domain')}}#entities">Conoce EPM &rarr;</a></p>
 </div>
 
 <div class="col-3 mark-stack-scoop">
     <span class="fa-stack">
         <i class="fa fa-circle fa-stack-2x"></i>
-        <i class="fa fa-file-code-o fa-stack-1x fa-inverse"></i>
+        <i class="fa fa-puzzle-piece fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>Templates dinámicos</h2>
-    <p>El sistema de plantillas <b>Simple Dynamic Template</b> es un transpilador que optimiza el renderizado en servidor. Permite inyectar servicios directamente en la vista con el símbolo <code>#</code>, crear <b>Smart Components</b> con lógica de clase y aplicar una minificación agresiva de HTML, garantizando un aislamiento total del scope y una latencia de respuesta mínima.</p>
+    <h2>Vistas que puedes componer</h2>
+    <p>Construye interfaces con Simple Dynamic Template. Reutiliza plantillas, combina componentes con lógica de clase y accede a servicios desde tus vistas con una sintaxis sencilla.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'presentation')}}#components">Descubre las plantillas y componentes &rarr;</a></p>
 </div>
 
 <div class="col-3 mark-stack-scoop">
     <span class="fa-stack">
         <i class="fa fa-circle fa-stack-2x"></i>
-        <i class="fa fa-terminal fa-stack-1x fa-inverse"></i>
+        <i class="fa fa-rocket fa-stack-1x fa-inverse"></i>
     </span>
-    <h2>Ecosistema ICE</h2>
-    <p>El <b>Interface Command Environment</b> permite extender la potencia de Scoop a la terminal. No es solo un CLI de ayuda; es un bus de comandos que reutiliza los mismos servicios de aplicación y contextos que la capa web. Gracias a sus <b>Lazy Loaders</b> dinámicos, automatiza tareas de infraestructura, escaneo de tipos y gestión de <i>structs</i> de base de datos.</p>
+    <h2>Del desarrollo al despliegue</h2>
+    <p>Prepara tu aplicación con Docker, Dev Containers y FrankenPHP. ICE te acompaña con comandos para preparar el proyecto y automatizar tareas propias.</p>
+    <p class="feature-links"><a href="{{#view->route('doc', 'deploy')}}#frankenphp">Prepara tu despliegue &rarr;</a></p>
 </div>

@@ -1,12 +1,14 @@
 {
     "name": "Simple Charectiristics of PHP Oriented Object",
     "dockerComposeFile": "docker-compose.yml",
-    "service": "docs",
+    "service": "webapp",
+    "overrideCommand": false,
     "forwardPorts": [8000],
     "workspaceFolder": "/app",
     "shutdownAction": "stopCompose",
     "postCreateCommand": "npm install && composer install",
-    "postAttachCommand": "npm run dev",
+    "postStartCommand": "php app/ice dbup",
+    "postAttachCommand": "./node_modules/.bin/vite",
 	"customizations": {
 		"vscode": {
 			"extensions": [

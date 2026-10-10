@@ -4,13 +4,41 @@ namespace Scoop\View;
 
 abstract class Service
 {
+    private static $context = null;
+    private static $injector = null;
     private static $services = array();
+
+    public static function setUp(\Scoop\Bootstrap\Environment $context)
+    {
+        self::$context = $context;
+        self::$injector = $context->getInjector();
+    }
+
+    public static function reset()
+    {
+        self::$context = null;
+        self::$injector = null;
+        self::$services = array();
+    }
+
+    public static function getContext()
+    {
+        return self::$context;
+    }
+
+    public static function takeSnapshot()
+    {
+        return self::$services;
+    }
+
+    public static function restore($services)
+    {
+        self::$services = $services;
+    }
 
     public static function inject($name, $className)
     {
-        $previous = isset(self::$services[$name]) ? self::$services[$name] : null;
         self::$services[$name] = $className;
-        return $previous;
     }
 
     public static function get($name)
@@ -20,7 +48,7 @@ abstract class Service
         }
         $service = self::$services[$name];
         if (is_string($service)) {
-            $service = \Scoop\Context::inject($service);
+            $service = self::$injector->get($service);
         }
         return $service;
     }

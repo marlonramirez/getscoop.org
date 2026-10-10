@@ -60,6 +60,18 @@
     .fa-github
         color #000
 
+.features-grid
+    display grid
+    grid-template-columns repeat(3, minmax(0, 1fr))
+    grid-auto-rows 1fr
+    column-gap 3%
+    > .mark-stack-scoop
+        display flex
+        flex-direction column
+        align-items center
+        width auto
+        margin 0
+
 .mark-stack-scoop
     text-align center
     h2
@@ -69,7 +81,16 @@
     .fa-stack
     h2
         color #4a3216
+    .feature-links
+        margin-top auto
 
+@media (max-width: 900px)
+    .features-grid
+        grid-template-columns repeat(2, minmax(0, 1fr))
+
+@media (max-width: 580px)
+    .features-grid
+        grid-template-columns minmax(0, 1fr)
 .doc-alert, .doc-danger
     border-radius .5em
     background-color #FCF8E3

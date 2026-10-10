@@ -43,7 +43,7 @@
 
 <p>La configuración <code>log</code> define los handlers de los niveles <code>emergency</code>, <code>alert</code>, <code>critical</code>, <code>error</code>, <code>warning</code>, <code>notice</code>, <code>info</code> y <code>debug</code>. Cada nivel admite un array que asocia clases de handlers con sus argumentos de constructor y permite enviar un mensaje a múltiples destinos.</p>
 
-<p><code>all</code> es un helper que agrega handlers comunes a todos los niveles habilitados. Sus handlers se combinan con los del nivel específico. Si una clase aparece en ambos, se crea una sola instancia con los argumentos definidos en el nivel; esos argumentos reemplazan los configurados para esa clase en <code>all</code>.</p>
+<p><code>all</code> es un helper que agrega handlers comunes a todos los niveles habilitados. Sus handlers se combinan con los del nivel específico. Si un handler aparece en ambos, prevalecen los argumentos definidos para ese nivel.</p>
 
 <ul>
     <li>Un nivel configurado explícitamente con <code>null</code> o <code>array()/[]</code> se silencia, incluso si <code>all</code> contiene handlers.</li>
@@ -64,11 +64,13 @@
 ];
 </code></pre>
 
-<p>En este ejemplo, <code>error</code> escribe en el archivo común y en <code>stderr</code>. <code>debug</code> e <code>info</code> están silenciados y los demás niveles escriben en el archivo común. Sin configuración de <code>log</code>, todos los niveles escriben en <code>stdout</code>.</p>
+<p>En este ejemplo, <code>error</code> combina el handler heredado de <code>all</code> con el handler específico del nivel, por lo que escribe en el archivo común y en <code>stderr</code>. <code>debug</code> e <code>info</code> están silenciados. Los demás niveles utilizan únicamente <code>File</code>; ninguno de ellos agrega <code>Standard</code> ni escribe en <code>stdout</code>.</p>
+
+<p class="doc-alert"><b>Fallback predeterminado:</b> <code>Standard</code> y <code>stdout</code> se utilizan automáticamente solo cuando el nivel no tiene handlers propios ni heredados desde <code>all</code>. Por tanto, este fallback no se aplica al ejemplo anterior.</p>
 
 <h3>Formato y recuperación de datos</h3>
 
-<p>Para los handlers <code>File</code> sin argumento <code>file</code>, la ruta predeterminada dentro del storage sigue el patrón <code>logs/&lt;app.name&gt;-YYYY-MM-DD.log</code>, donde <code>&lt;app.name&gt;</code> representa el nombre configurado de la aplicación. La fecha se obtiene del timestamp de cada registro; por ello, un worker que permanece activo después de medianoche escribe los nuevos registros en el archivo del nuevo día.</p>
+<p>Si no configuras <code>file</code>, File escribe en <code>logs/&lt;app.name&gt;-YYYY-MM-DD.log</code> dentro del storage de la aplicación.</p>
 
 <h4>Plantillas para nombres de archivo</h4>
 
@@ -86,17 +88,13 @@
 
 <p>Los valores escalares, como <code>url</code> o una ruta <code>file</code> explícita, se proporcionan en la configuración. <code>formatter</code> admite un nombre de provider o una instancia; por defecto se utiliza <code>Scoop\Log\Formatter</code>. Los handlers personalizados pueden declarar dependencias de clase o interfaz en su constructor sin agregarlas manualmente al array.</p>
 
-<p>El logger construye un solo registro por llamada, con el mensaje interpolado, el contexto original, el nivel y el timestamp. Todos los handlers reciben ese registro. La interpolación convierte únicamente los valores cuyos placeholders aparecen en el mensaje; si esa conversión lanza una excepción o un error de PHP, sustituye el valor por una indicación del tipo de error y continúa.</p>
+<p>El formatter predeterminado genera registros JSON con mensaje, contexto, nivel y fecha. Puedes sustituirlo mediante el argumento <code>formatter</code>.</p>
 
-<p>El formatter predeterminado utiliza <code>json_encode()</code>. Si la codificación falla, vacía el contexto y vuelve a intentarlo, conservando el mensaje. Si todavía falla, reemplaza el mensaje por <code>[message unavailable]</code> y reintenta. Esto permite recuperar el nivel y el timestamp del registro normal sin requerir <code>mbstring</code>. Los formatters personalizados pueden definir otra representación.</p>
+<h3>Entrega de logs</h3>
 
-<h3>Fallos de los destinos y observabilidad</h3>
+<p><code>Standard</code> escribe inmediatamente. <code>File</code> y <code>Slack</code> realizan entrega diferida mediante <code>Logger::flush()</code>. Para escribir archivos inmediatamente, configura <code>shouldDefered =&gt; false</code>.</p>
 
-<p>Si un handler lanza una <code>Exception</code> o un <code>Throwable</code> durante el envío, el logger reporta su representación completa mediante <code>error_log()</code>, incluyendo el tipo, mensaje, ubicación y pila de llamadas. El error no se propaga al llamador y el envío continúa con los demás handlers. El diagnóstico utiliza el mecanismo de errores de PHP, cuyo destino depende de la configuración del entorno, sin volver a invocar el logger ni generar un ciclo de reportes.</p>
-
-<p>Los valores retornados por los handlers, incluidos <code>false</code> y <code>null</code>, se ignoran y no generan un diagnóstico adicional. La fábrica también reporta las excepciones al construir un handler mediante <code>error_log()</code> y continúa con los demás. Conserva en caché los handlers creados correctamente; los omitidos no se reintentan durante la vida de esa fábrica. Los warnings de PHP y los errores al resolver la configuración general no quedan silenciados por esta política.</p>
-
-<p>El handler <code>Slack</code> delega el transporte al cliente HTTP inyectado; establece un timeout total de cinco segundos mediante <code>withOption(CURLOPT_TIMEOUT, 5)</code>, que devuelve una copia sin modificar el cliente compartido. Las demás opciones, incluida la configuración TLS, se conservan del cliente inyectado. Cada envío crea una petición POST independiente con cuerpo JSON. Las respuestas fuera del rango HTTP 200–299 y los fallos de codificación del payload generan una excepción, que el logger reporta sin impedir el envío a otros destinos. Los fallos de transporte se reportan del mismo modo. Puede proporcionarse una instancia de cliente mediante el argumento <code>httpClient</code> para reemplazar la dependencia resuelta automáticamente.</p>
+<p>Los handlers personalizados deben controlar y reportar sus errores sin afectar a los demás destinos. Si realizan entrega diferida, deben proporcionar un método público <code>flush()</code>.</p>
 
 <p>El sistema de log de Scoop implementa el estándar <b>PSR-3</b> y se basa en una arquitectura de <b>Handlers</b>. Esto permite que un mismo mensaje sea procesado por múltiples canales (archivo, Slack, Email) dependiendo de su nivel de severidad.</p>
 
@@ -142,7 +140,7 @@
 ]
 </code></pre>
 
-<p>El código de <code>scoop/Persistence/Connection.php</code> y <code>scoop/Bootstrap/Application.php</code> dispara eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>ErrorOccurred</code>.</p>
+<p>Puedes registrar listeners para eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code>, <code>RequestFinished</code> y <code>ErrorOccurred</code>.</p>
 
 <h2>
     <a href='#cache'>Caché distribuida</a>
@@ -208,7 +206,8 @@ $response = $client->sendRequest($request);
 
 <ul>
     <li><code>Scoop\Http\Event\ErrorOccurred:</code> Se dispara ante cualquier excepción no capturada en el ciclo de vida de la aplicación. Permite acceder a la excepción mediante <code>getError()</code> y al estado HTTP sugerido con <code>getStatusCode()</code>.</li>
-    <li><code>Scoop\Persistence\Event\ConnectionOpened:</code> Notifica la apertura física de una conexión al bundle de base de datos. Provee acceso al objeto mediante <code>getConnection()</code>, ideal para auditoría o inyectar configuraciones de sesión SQL (ej. <code>SET TIMEZONE</code>).</li>
+    <li><code>Scoop\Http\Event\RequestFinished:</code> Notifica la finalización de la petición durante el cierre de Application. Permite registrar listeners para tareas posteriores al procesamiento; <code>getTime()</code> devuelve un <code>DateTime</code> con el momento de creación del evento, no la duración de la petición.</li>
+    <li><code>Scoop\Persistence\Event\ConnectionOpened:</code> Notifica la apertura de una conexión de base de datos. Provee acceso al objeto mediante <code>getConnection()</code>, ideal para auditoría o inyectar configuraciones de sesión SQL (ej. <code>SET TIMEZONE</code>).</li>
     <li><code>Scoop\Persistence\Event\ConnectionClosed:</code> Se dispara al cerrar la conexión o destruir el objeto Connection, permitiendo tareas de limpieza o métricas de tiempo de uso.</li>
 </ul>
 

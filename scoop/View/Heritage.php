@@ -4,14 +4,16 @@ namespace Scoop\View;
 
 class Heritage
 {
+    private $injector;
     private $parent;
     private $templates;
 
-    public function __construct(\Scoop\Bootstrap\Environment $environment)
+    public function __construct(\Scoop\Bootstrap\Environment $context)
     {
+        $this->injector = $context->getInjector();
         $this->templates = array_merge(
             array('sdt.php' => 'Scoop\View\Template'),
-            $environment->getConfig('templates', array())
+            $context->getConfig('templates', array())
         );
         ob_start();
     }
@@ -24,7 +26,7 @@ class Heritage
             isset($this->templates[$infoPath['extension']])
         ) ? $infoPath['extension'] : 'sdt.php';
         $path = $infoPath['dirname'] . '/' . $infoPath['filename'];
-        $template = \Scoop\Context::inject($this->templates[$ext]);
+        $template = $this->injector->get($this->templates[$ext]);
         return $template->parse($path);
     }
 
@@ -49,11 +51,13 @@ class Heritage
 
     public static function parseBlocks($content, $parent)
     {
-        $content = str_replace('$', '\$', $content);
-        $res =preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#', function ($matches) use (&$parent) {
+        $res = preg_replace_callback('#@block\[(\w+)\]\s*(.*?):block#s', function ($matches) use (&$parent) {
             $parent = str_replace("@slot[{$matches[1]}]", trim($matches[2]), $parent, $count);
             return $count ? '' : $matches[0];
         }, $content);
-        return preg_replace('#@slot(?!\[)#', trim($res), $parent);
+        $res = trim($res);
+        return preg_replace_callback('#@slot(?!\[)#', function () use ($res) {
+            return $res;
+        }, $parent);
     }
 }

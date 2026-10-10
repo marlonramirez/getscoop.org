@@ -243,7 +243,7 @@ graph TD
     'scope' => 'singleton'
 ]</code></pre>
         </li>
-        <li><b>FrankenPHP en modo clásico:</b> Incorporar una configuración oficial de despliegue sobre Caddy y FrankenPHP manteniendo un ciclo PHP independiente por petición, como paso previo al soporte de procesos persistentes.</li>
+        <li><s><b>FrankenPHP en modo clásico:</b></s> Incorporar una configuración oficial de despliegue sobre Caddy y FrankenPHP manteniendo un ciclo PHP independiente por petición, como paso previo al soporte de procesos persistentes.</li>
     </ul></p>
 
     <h3>v0.9: Orquestación de Dominios Aislados</h3>
@@ -261,7 +261,7 @@ graph TD
         <li><b>EPM+structs:</b> Crear un comando para hacer diff de la base de datos actual y las entidades del sistema, generando un struct con los ajustes que se deben hacer para emparejar tanto la base de datos como el sistema de entidades.</li>
         <li><b>Tooling externo:</b> Crear una extensión para poder llevar PHPStan hasta el nivel 10 en Scoop, así como un plugin para VSCode que reconozca la sintaxis de SDT.</li>
         <li><b>Hooks de ciclo de vida:</b> Poder registrar listeners para eventos como PrePersist o PostUpdate a nivel de entidad (sin que la entidad lo sepa, vía configuración).</li>
-        <li><b>Persistencia Determinista (Worker Ready):</b> Migración de la responsabilidad del <code>EntityManager::flush()</code> y <code>Connection::commit()</code>. Se eliminará la dependencia de <code>register_shutdown_function</code> (ineficaz en entornos persistentes) en favor de un cierre de ciclo de vida gestionado explícitamente por la Application. Esto garantiza la integridad atómica de los datos y previene la fuga de estado entre peticiones concurrentes en el mismo worker.</li>
+        <li><b>Persistencia Determinista (Worker Ready):</b> Eliminar el commit automático al destruir conexiones. Query Builder dejará la gestión de transacciones al consumidor, mediante llamadas explícitas a <code>beginTransaction()</code>, <code>commit()</code> y <code>rollBack()</code>. Entity Manager administrará la persistencia transaccional mediante su <b>Unit of Work</b>, confirmando los cambios si la operación completa tiene éxito y revirtiéndolos si falla.</li>
         <li><b>Interoperabilidad formal:</b> Elevar la versión mínima de PHP e implementar las interfaces PSR correspondientes sobre las APIs que ya respetan su semántica.</li>
     </ul></p>
 </div>

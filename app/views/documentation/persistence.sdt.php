@@ -19,41 +19,49 @@
 
 <p class="doc-alert"><b>Deprecación:</b> La clase <code>DBC</code> (Data Base Connection) está deprecada desde v0.8. Use <code>Connection</code> en su lugar. DBC permanece disponible para compatibilidad hacia atrás.</p>
 
-<h3>Configuración de Bundles</h3>
+<h3>Configuración de la conexión</h3>
 
-<p>Scoop permite definir múltiples conexiones de forma declarativa bajo la clave <code>db</code> en el archivo de configuración. Cada conexión se empaqueta como un <b>bundle</b> identificado por un nombre clave, permitiendo que una misma aplicación orqueste diferentes fuentes de datos simultáneamente.</p>
+<p>La factoría <code>Scoop\Persistence\Factory\Connection:create</code> utiliza una única definición de conexión directamente bajo <code>db</code>. Este cambio de versión sustituye el formato anterior de bundles como <code>db.default</code>.</p>
 
 <pre><code class="language-php">[
     'db' => [
-        'default' => [
-            'database' => 'scoop',
-            'user' => 'scoop',
-            'password' => '1s4Gr34tB00t5tr4p',
-            'host' => 'localhost',
-            'port' => 5432,
-            'driver' => 'pgsql'
-        ],
-        'auth' => [
-            'database' => 'auth',
-            'user' => 'scoop',
-            'password' => 'myS1st3m4uth',
-            'host' => 'localhost',
-            'port' => 3306,
-            'driver' => 'mysql'
-        ]
+        'database' => 'scoop',
+        'user' => 'scoop',
+        'password' => 'secret',
+        'host' => 'localhost',
+        'port' => 5432,
+        'driver' => 'pgsql'
+    ],
+    'providers' => [
+        'Scoop\Persistence\Connection' => 'Scoop\Persistence\Factory\Connection:create'
     ]
 ]
 </code></pre>
 
+<p><code>database</code> y <code>user</code> son obligatorios. Para conservar el formato anterior o usar una key configuration diferente se necesita una factoría propia.</p>
+
+<p>Si omites las opciones adicionales, se utilizan <code>host =&gt; '127.0.0.1'</code>, <code>driver =&gt; 'pgsql'</code>, contraseña vacía y el puerto predeterminado del driver.</p>
+
 <h3>Gestión del Ciclo de Vida</h3>
 
-<p>Para invocar una conexión, se utiliza el <b>Contexto</b> del motor. El método <code>Context::connect()</code> actúa como un gestor de estado que recupera la instancia solicitada. Si no se suministra un parámetro, el motor asume el bundle <code>default</code>.</p>
+<p>Recibe <code>Connection</code> por inyección de constructor. La API estática <code>Context::connect()</code> y el rollback global <code>Context::reset()</code> están deprecados. El código que administra una transacción debe decidir su resultado directamente sobre la conexión utilizada.</p>
 
-<pre><code class="language-php">$db = \Scoop\Context::connect();
-$authDb = \Scoop\Context::connect('auth');
+<pre><code class="language-php">$connection->beginTransaction();
+try {
+    // Operaciones de la unidad transaccional.
+    $connection->commit();
+} catch (\Exception $error) {
+    $connection->rollBack();
+    throw $error;
+} catch (\Throwable $error) {
+    $connection->rollBack();
+    throw $error;
+}
 </code></pre>
 
-<p class="doc-alert"><b>Lazy Handshake (Rendimiento Crítico):</b> Definir múltiples bundles no penaliza el rendimiento del sistema. Scoop implementa una política de conexión perezosa: el motor no abre el socket de conexión física ni consume recursos de red hasta el instante exacto en que un componente solicita el bundle. Esto es vital para arquitecturas de microservicios o BFFs que solo requieren persistencia en rutas específicas.</p>
+<p>Cuando utilizas Entity Manager dentro de una transacción explícita, llama a <code>flush()</code> antes de <code>commit()</code> para incluir los cambios pendientes.</p>
+
+<p>Obtener una Connection no abre la conexión física; esta se abre cuando ejecutas una operación de base de datos. Así como ejecutar __destruct solo destruye la coexión real haciendo una desconexión de la base de datos, pero puedo volverme a conectar reusando el objecto.</p>
 
 <h2>
     <a href="#quoting">Sistema de Quoting Universal</a>
@@ -66,7 +74,7 @@ $authDb = \Scoop\Context::connect('auth');
 
 <p>El método <code>quoteColumn()</code> aplica automáticamente el quote correcto según el motor de base de datos conectado:</p>
 
-<pre><code class="language-php">$connection = \Scoop\Context::connect();
+<pre><code class="language-php">$connection = $app->inject(\Scoop\Persistence\Connection::class);
 
 /** Auto-detecta el motor y aplica quotes correctos:
 MySQL: `users`

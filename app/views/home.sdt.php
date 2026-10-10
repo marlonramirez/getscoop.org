@@ -9,7 +9,7 @@
         <i class="fa fa-download"></i> Descargar <small>(v. {{#view->getConfig('app.version')}})</small>
     </a>
 </div>
-<div class="main">
+<div class="main features-grid">
     @import 'features'
 </div>
 <div class="info">

@@ -4,42 +4,112 @@ namespace Scoop\Bootstrap;
 
 class Application
 {
-    private $environment;
+    private static $loader;
+    private $context;
+    private $injector;
+    private $dispatcher;
 
-    public function __construct()
+    public function __construct($fileContext = '')
     {
-        $this->environment = \Scoop\Context::inject('\Scoop\Bootstrap\Environment');
-        $this->enableCORS();
+        $default = array();
+        if (class_exists('\Scoop\Context')) {
+            if (\Scoop\Context::getLoader()) {
+                self::$loader = \Scoop\Context::getLoader();
+            }
+            $default = \Scoop\Context::get();
+        }
+        $options = array_merge(array(
+            'config' => 'app/config',
+            'storage' => 'app/storage',
+            'stateless' => false
+        ), $fileContext ? require $fileContext . '.php' : $default);
+        if (!isset(self::$loader)) {
+            self::$loader = $this->load($options['storage']);
+        }
+        \Scoop\Context::load($this);
+        $this->context = new \Scoop\Bootstrap\Environment($options);
+        $this->injector = $this->context->getInjector();
+        $this->dispatcher = $this->inject('Scoop\Event\Dispatcher');
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $this->enableCORS();
+        }
     }
 
     public function run()
     {
-        $requestType = $this->environment->getConfig('request', '\Scoop\Http\Message\Server\Request');
-        $router = \Scoop\Context::inject('\Scoop\Http\Router');
-        $request = \Scoop\Context::inject($requestType);
+        $requestType = $this->context->getConfig('request', 'Scoop\Http\Message\Server\Request');
+        $router = $this->inject('Scoop\Http\Router');
+        $request = $this->inject($requestType);
+        $this->inject('Scoop\Bootstrap\Configuration')->setUp();
+        \Scoop\View\Service::setUp($this->context);
         try {
             $response = $router->route($request);
-            $this->printResponse($response);
+            $entityManager = $this->findDependency('Scoop\Persistence\Entity\Manager');
+            if ($entityManager) {
+                $entityManager->flush();
+            }
         } catch (\Exception $ex) {
-            $this->manageError($ex, $request->isAjax());
+            $response = $this->manageError($ex, $request->isAjax());
         } catch (\Throwable $ex) {
-            $this->manageError($ex, $request->isAjax());
+            $response = $this->manageError($ex, $request->isAjax());
         }
-        gc_collect_cycles();
+        $this->printResponse($response);
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        $this->terminate();
+    }
+
+    public function terminate()
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+        try {
+            $this->dispatcher->dispatch(new \Scoop\Http\Event\RequestFinished());
+        } catch (\Exception $ex) {
+            error_log($ex);
+        } catch (\Throwable $ex) {
+            error_log($ex);
+        }
+        \Scoop\View\Service::reset();
+        $logger = $this->findDependency('Scoop\Log\Logger');
+        $entityManager = $this->findDependency('Scoop\Persistence\Entity\Manager');
+        if ($entityManager) {
+            $entityManager->clean();
+        }
+        if ($logger) {
+            $logger->flush();
+        }
+        $this->injector->clean();
+    }
+
+    public function inject($id)
+    {
+        return $this->injector->get($id);
+    }
+
+    private function findDependency($id)
+    {
+        if (!is_callable(array($this->injector, 'contains')) || $this->injector->contains($id)) {
+            return $this->inject($id);
+        }
     }
 
     private function manageError($ex, $isAjax)
     {
-        $exceptionManager = \Scoop\Context::inject('\Scoop\Http\Error\Mapper');
-        $dispatcher = \Scoop\Context::inject('\Scoop\Event\Dispatcher');
+        $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
+        $status = $exceptionManager->getStatusCode($ex);
+        $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
         \Scoop\Context::reset();
         if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
-            return $this->printResponse($ex->getResponse());
+            return $ex->getResponse();
         }
-        $status = $exceptionManager->getStatusCode($ex);
-        $dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
-        if (!$status) throw $ex;
-        $this->printResponse($exceptionManager->map($ex, $isAjax, $status));
+        if ($status) {
+            return $exceptionManager->map($ex, $isAjax, $status);
+        }
+        $this->terminate();
+        throw $ex;
     }
 
     private function printResponse($response)
@@ -71,6 +141,29 @@ class Application
         fclose($resource);
     }
 
+    private function load($storagePath)
+    {
+        if (is_readable('vendor/autoload.php')) {
+            return require 'vendor/autoload.php';
+        }
+        require 'scoop/Bootstrap/Loader.php';
+        require 'scoop/Bootstrap/Loader/JsonParser.php';
+        $loader = new \Scoop\Bootstrap\Loader();
+        $path = trim($storagePath, '/') . '/cache/json/';
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        $jsonLoader = new \Scoop\Bootstrap\Loader\JsonParser($path);
+        $conf = $jsonLoader->load('composer');
+        if (isset($conf['autoload']['psr-4'])) {
+            foreach ($conf['autoload']['psr-4'] as $key => $value) {
+                $loader->set($key, $value);
+            }
+        }
+        $loader->register(true);
+        return $loader;
+    }
+
     /**
      * @deprecated
      * @see middleware CorsGuard
@@ -78,7 +171,7 @@ class Application
      */
     private function enableCORS()
     {
-        $cors = $this->environment->getConfig('cors');
+        $cors = $this->context->getConfig('cors');
         if (!$cors) {
             return;
         }
