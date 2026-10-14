@@ -1,0 +1,103 @@
+.app-icon {
+  vertical-align: -.2em;
+  background: currentColor;
+  width: 1.25em;
+  height: 1.25em;
+  mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+.icon-download {
+  mask-image: url("@icon/download.svg");
+}
+
+.icon-brand-twitter {
+  mask-image: url("@icon/brand-twitter.svg");
+}
+
+.icon-brand-github {
+  mask-image: url("@icon/brand-github.svg");
+}
+
+.icon-tool {
+  mask-image: url("@icon/tool.svg");
+}
+
+.icon-heart-handshake {
+  mask-image: url("@icon/heart-handshake.svg");
+}
+
+.icon-users {
+  mask-image: url("@icon/users.svg");
+}
+
+.icon-mail {
+  mask-image: url("@icon/mail.svg");
+}
+
+.icon-chevrons-right {
+  mask-image: url("@icon/chevrons-right.svg");
+}
+
+.icon-book {
+  mask-image: url("@icon/book.svg");
+}
+
+.icon-database {
+  mask-image: url("@icon/database.svg");
+}
+
+.icon-rocket {
+  mask-image: url("@icon/rocket.svg");
+}
+
+.icon-packages {
+  mask-image: url("@icon/packages.svg");
+}
+
+.icon-sitemap {
+  mask-image: url("@icon/sitemap.svg");
+}
+
+.icon-directions {
+  mask-image: url("@icon/directions.svg");
+}
+
+.icon-puzzle {
+  mask-image: url("@icon/puzzle.svg");
+}
+
+.icon-zoom-out {
+  mask-image: url("@icon/zoom-out.svg");
+}
+
+.icon-zoom-in {
+  mask-image: url("@icon/zoom-in.svg");
+}
+
+.icon-x {
+  mask-image: url("@icon/x.svg");
+}
+
+.icon-arrows-maximize {
+  mask-image: url("@icon/arrows-maximize.svg");
+}
+
+.icon-arrows-minimize {
+  mask-image: url("@icon/arrows-minimize.svg");
+}
+
+.icon-refresh {
+  mask-image: url("@icon/refresh.svg");
+}
+
+.icon-badge {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.icon-badge .app-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+}

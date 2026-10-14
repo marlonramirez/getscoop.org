@@ -41,7 +41,7 @@
 ]
 </code></pre>
 
-<p class="doc-alert"><b>Seguridad de la Clave:</b> La clave debe tener al menos 32 caracteres y ser criptográficamente segura. Use <code>openssl_random_pseudo_bytes(32)</code> o un generador de contraseñas confiable. <b>NUNCA</b> versione la clave en control de código fuente.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Seguridad de la Clave:</b> La clave debe tener al menos 32 caracteres y ser criptográficamente segura. Use <code>openssl_random_pseudo_bytes(32)</code> o un generador de contraseñas confiable. <b>NUNCA</b> versione la clave en control de código fuente.</p>
 
 <h3>Derivación de Clave (PBKDF2)</h3>
 
@@ -65,7 +65,7 @@ $db->update(['field' => $newData])->restrict('[id] = :id')->run(['id' => 1]);
     <li><b>raw</b>: Bytes crudos, solo para almacenamiento binario (BLOB)</li>
 </ul>
 
-<p class="doc-alert">
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning">
     <b>Nota de Migración (v0.7.x a v0.8.x):</b> La clase <code>\Scoop\Persistence\Vault</code> ha sido marcada como <b>@deprecated</b>. Aunque sigue siendo funcional para mantener la compatibilidad, se recomienda migrar a <code>\Scoop\Security\Cipher</code>. Internamente, <code>Cipher</code> utiliza el algoritmo GCM (versión <code>$1:</code>) para nuevos datos, el cual es la evolución directa del motor de Vault, asegurando una transición fluida y mayor seguridad mediante el versionamiento de claves.
 </p>
 
@@ -176,7 +176,7 @@ fetch('/api/users', {
 
 <p>Si no se configura el middleware de CORS pero se incluye en la pila, se aceptara cualquier petición hecha a los endpoints.</p>
 
-<p class="doc-alert"><b>Importante:</b> Nunca use <code>'*'</code> (wildcard total) en origins si <code>credentials</code> está habilitado. Los navegadores modernos bloquean esta combinación por seguridad. Use una lista explícita de dominios o wildcards de subdominios específicos.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Importante:</b> Nunca use <code>'*'</code> (wildcard total) en origins si <code>credentials</code> está habilitado. Los navegadores modernos bloquean esta combinación por seguridad. Use una lista explícita de dominios o wildcards de subdominios específicos.</p>
 
 <h3>Preflight Requests</h3>
 
@@ -248,7 +248,7 @@ fetch('https://api.example.com/users', {
 
 <p>Al registrar este middleware en la raíz de <code>app/routes/middlewares.php</code>, toda la aplicación quedará protegida contra ataques de Clickjacking, MIME-sniffing y fugas de procedencia (Referrer).</p>
 
-<p class="doc-alert"><b>¿Por qué no es automático?</b> Porque Scoop respeta tus casos de uso. Si una sección de tu aplicación necesita ser cargada en un iframe externo o requiere una política CSP relajada, tienes la libertad total de configurar o excluir este middleware en esa rama del ruteo.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>¿Por qué no es automático?</b> Porque Scoop respeta tus casos de uso. Si una sección de tu aplicación necesita ser cargada en un iframe externo o requiere una política CSP relajada, tienes la libertad total de configurar o excluir este middleware en esa rama del ruteo.</p>
 
 <h3>Almacenamiento de Claves</h3>
 

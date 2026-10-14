@@ -1,0 +1,47 @@
+footer {
+  width: 90%;
+  text-align: center;
+  clear: both;
+  background: light-dark(#333, var(--surface));
+  color: light-dark(#e5eaf2, var(--on-surface));
+  border-radius: .9em;
+  margin: 1em auto;
+  padding: 1em;
+  position: relative;
+}
+
+footer a {
+  color: light-dark(#fff, var(--on-surface));
+}
+
+footer a:hover {
+  color: var(--primary);
+}
+
+#mirdware-social {
+  font-size: .8em;
+  position: absolute;
+  bottom: 1em;
+  right: 15px;
+}
+
+#mirdware-social a {
+  padding: 0 5px;
+}
+
+@media (max-width: 1024px) {
+  footer {
+    padding: 1.5em 0;
+  }
+}
+
+@media (max-width: 580px) {
+  #mirdware-social {
+    padding: 0;
+    position: static;
+  }
+
+  footer {
+    width: 100%;
+  }
+}

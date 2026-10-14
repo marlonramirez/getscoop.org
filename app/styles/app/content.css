@@ -1,0 +1,113 @@
+body {
+  color: var(--on-surface);
+  background: var(--background);
+  margin-top: 0;
+  padding-top: 0;
+}
+
+[id] {
+  scroll-margin-top: calc(var(--site-header-height, 7rem) + 1rem);
+}
+
+.main {
+  width: 90%;
+  margin-inline: auto;
+  color: var(--on-surface);
+}
+
+code {
+  background: color-mix(in srgb, var(--surface) 94%, var(--on-surface));
+  border-radius: 3px;
+  padding: .2em 0;
+}
+
+.main a {
+  color: var(--info);
+}
+
+.main a:hover {
+  text-decoration: underline;
+}
+
+.main a:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 3px;
+}
+
+.main .h-green {
+  color: var(--on-surface);
+}
+
+.main .h-green > .app-icon {
+  color: var(--primary);
+}
+
+#welcome ~ .main, #welcome ~ .info {
+  line-height: 1.6;
+}
+
+:where(#welcome ~ .main, #welcome ~ .info) p {
+  text-align: left;
+  margin: 1rem 0;
+  line-height: 1.6;
+}
+
+#welcome ~ .main h2, #welcome ~ .info h2 {
+  line-height: 1.3;
+}
+
+.data-contributor {
+  margin: 1em 0;
+  padding: 0;
+  font-size: .85em;
+  list-style: none;
+}
+
+.data-contributor li:first-child {
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.data-contributor .app-icon {
+  margin-right: .5em;
+  font-size: 1.3em;
+}
+
+.data-contributor .icon-brand-twitter {
+  color: #55acee;
+}
+
+.data-contributor .icon-mail {
+  color: #ffb515;
+}
+
+.data-contributor .icon-brand-github {
+  color: var(--on-surface);
+}
+
+.main.error {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: calc(100vh - 181px);
+}
+
+.col-3 {
+  display: inline-block;
+  vertical-align: top;
+  width: 30%;
+  margin: 0 1.5%;
+}
+
+@media (max-width: 900px) {
+  .col-3 {
+    width: 45%;
+  }
+}
+
+@media (max-width: 580px) {
+  .col-3 {
+    width: 100%;
+    margin: 0;
+  }
+}

@@ -1,0 +1,111 @@
+#nav-docs {
+  float: left;
+  width: 250px;
+  transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+  position: sticky;
+  top: calc(var(--site-header-height, 7rem) + 1rem);
+}
+
+#nav-docs.active {
+  transform: translateX(255px);
+}
+
+#nav-docs ul {
+  border: 1px solid color-mix(in srgb, var(--outline) 45%, var(--surface));
+  padding: calc(var(--space-unit) * 2) 0;
+}
+
+#nav-docs ul li a {
+  color: var(--on-surface);
+  height: auto;
+  padding: calc(var(--space-unit) * 3);
+  border-radius: 0;
+  line-height: 1.4;
+}
+
+#nav-docs ul li:hover {
+  background: color-mix(in srgb, var(--surface) 92%, var(--on-surface));
+}
+
+#nav-docs ul li:hover i {
+  margin-top: 0;
+  display: block;
+}
+
+#nav-docs ul li.active i {
+  margin-top: 0;
+  display: block;
+}
+
+#nav-docs ul li:hover a {
+  color: var(--primary);
+}
+
+#nav-docs ul li.active a {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  box-shadow: inset 3px 0 var(--primary);
+}
+
+#menu-list {
+  float: right;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizelegibility;
+  margin-right: -30px;
+  font-size: 1.5em;
+  font-style: normal;
+  display: none;
+  -o-transform: scale(1);
+  color: var(--on-surface);
+  font-family: inherit;
+}
+
+@media (max-width: 900px) {
+  #nav-docs {
+    margin-left: calc(-255px - 5%);
+  }
+}
+
+@media (max-width: 900px) {
+  #menu-list {
+    display: block;
+  }
+}
+
+#nav-docs a {
+  text-decoration: none;
+}
+
+#nav-docs a:hover {
+  text-decoration: none;
+}
+
+#nav-docs a:focus {
+  text-decoration: none;
+}
+
+#nav-docs ul li a:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+}
+
+#nav-docs li .app-icon {
+  visibility: hidden;
+}
+
+#nav-docs li:hover .app-icon {
+  visibility: visible;
+}
+
+#nav-docs li.active .app-icon {
+  visibility: visible;
+}
+
+#menu-list:before {
+  content: "";
+  background: currentColor;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-block;
+  mask: url("@icon/menu-2.svg") center / contain no-repeat;
+}

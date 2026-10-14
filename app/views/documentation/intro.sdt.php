@@ -58,7 +58,7 @@ anteriores.</p>
 
 <p>Para la persistencia, Scoop utiliza <b>PDO</b> como capa de abstracción nativa, garantizando la homogeneidad en el tratamiento de datos con motores como MySQL, PostgreSQL, SQL Server o cualquier sistema con soporte para drivers estándar.</p>
 
-<p class="doc-alert"><b>Developer Experience (DX):</b> Desde la versión 0.6.1, Scoop incluye un servidor integrado que se levanta automáticamente al iniciar el entorno de desarrollo, eliminando la necesidad de configurar servidores locales externos para pruebas rápidas.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Developer Experience (DX):</b> Desde la versión 0.6.1, Scoop incluye un servidor integrado que se levanta automáticamente al iniciar el entorno de desarrollo, eliminando la necesidad de configurar servidores locales externos para pruebas rápidas.</p>
 
 <h3>Servidores Web y Ruteo</h3>
 
@@ -99,7 +99,7 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 <p>Para garantizar la inmutabilidad del entorno y la paridad entre desarrollo y producción, Scoop recomienda el uso de contenedores:</p>
 
 <p><ul>
-    <li><b>Docker:</b> Facilitamos la gestión de infraestructura mediante archivos de configuración en <code>.devcontainer/docker/etc</code>. La imagen de producción está optimizada sobre <a href="https://dockerfile.readthedocs.io/en/latest/content/DockerImages/dockerfiles/php-apache.html">webdevops/php-apache</a>.</li>
+    <li><b>Docker:</b> La configuración se distribuye entre <code>.devcontainer/common</code>, <code>.devcontainer/dev</code> y <code>.devcontainer/prod</code>. Desarrollo y producción utilizan FrankenPHP con PHP 8.5 en modo clásico. Consulta <a href="{{#view->route('doc', 'deploy')}}#frankenphp">el despliegue con Docker</a>.</li>
     <li><b>Dev Containers:</b> Implementamos la especificación de <a href="https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/introduction-to-dev-containers">devcontainers</a> para un arranque instantáneo en entornos como GitHub Codespaces, asegurando que cada miembro del equipo trabaje sobre la misma infraestructura.</li>
 </ul></p>
 
@@ -108,7 +108,7 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
 
 <p><ul>
     <li><b>Composer:</b> Orquestador esencial para la gestión de dependencias PHP y el autoloader de clases.</li>
-    <li><b>NodeJS y npm:</b> Motor necesario para el procesamiento de activos del front-end.</li>
+    <li><b>NodeJS y npm:</b> Necesarios para procesar los activos del front-end. El toolchain actual requiere Node 22.18+ de la rama 22 o Node 24.11+; los contenedores utilizan Node 24.</li>
     <li><b>Vite (v0.8.0):</b> Scoop integra <b>Vite</b> como automatizador de activos por defecto, proporcionando una experiencia de desarrollo instantánea gracias a su sistema de HMR (Hot Module Replacement), sustituyendo el flujo de trabajo anterior basado en Gulp.</li>
 </ul></p>
 
@@ -157,15 +157,19 @@ location ~ \.(htaccess|htpasswd|ini|log|bak)$ {
     <li><b>Optimización inicial:</b> Prepara los assets para ser servidos de forma eficiente.</li>
 </ol></p>
 
-<p class="doc-alert"><b>Configuración de Red:</b> Si necesitas apuntar el proxy de desarrollo a un host diferente, puedes configurar la variable de entorno <code>PHP_HOST</code> en tu sistema.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Configuración de Red:</b> Si necesitas apuntar el proxy de desarrollo a un host diferente, puedes configurar la variable de entorno <code>PHP_HOST</code> en tu sistema.</p>
 
 <h3>Preparación para Producción</h3>
 
 <p>Cuando el sistema esté listo para ser desplegado, utiliza el modo de producción para garantizar que Scoop aplique todas las optimizaciones de rendimiento (minificación de assets y optimización de autoloader):</p>
 
-<pre><code class="language-shell">npm install && composer install --optimize-autoloader --no-dev && npm start</code></pre>
+<pre><code class="language-shell">npm ci
+composer install --optimize-autoloader --no-dev
+npm run build
+composer build
+</code></pre>
 
-<p>Para verificar que la instalación es correcta, accede a <a href="http://localhost:8000">http://localhost:8000</a>. Deberías ver la pantalla de bienvenida del motor, confirmando que tu estructura está lista para la fase de arquitectura.</p>
+<p><code>npm run build</code> genera los assets y <code>composer build</code> prepara los índices de clases, rutas y JSON. Estos comandos no levantan un servidor. Para verificar el entorno de desarrollo iniciado con <code>npm run dev</code>, accede a <a href="http://localhost:8000">http://localhost:8000</a>; en producción utiliza la URL del servidor configurado.</p>
 
 <h2>
     <a href="#roadmap">Roadmap de evolución</a>

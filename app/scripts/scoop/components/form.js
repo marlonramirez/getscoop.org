@@ -1,4 +1,4 @@
-import {Component} from 'scalar';
+import { Component, inject } from 'scalar';
 import Resource from '@spawm/resource';
 import Messenger from '../services/Messenger';
 import FormService from '../services/Form';
@@ -30,10 +30,10 @@ function removeErrors(form) {
 
 function submit($, form) {
   $.loading = true;
-  $.inject(Messenger).close();
+  $._messenger.close();
   removeErrors(form);
   if (!form.checkValidity) validate(form);
-  $.submit($.inject(FormService).toObject(form), form);
+  $.submit($._form.toObject(form), form);
 }
 
 function reset(form) {
@@ -43,7 +43,14 @@ function reset(form) {
   }
 }
 
+@inject(Messenger, FormService)
 export default class Form extends Component {
+  constructor(messenger, form) {
+    super();
+    this._messenger = messenger;
+    this._form = form;
+  }
+
   listen() {
     return {
       '.input': {
@@ -59,7 +66,9 @@ export default class Form extends Component {
       form.resource = {};
     }
     if (!form.resource[form.action]) {
-      const options = {};
+      const options = {
+        redirect: false
+      };
       if (form.enctype !== 'multipart/form-data') {
         options.headers = {'Content-Type': 'application/json'};
       }
@@ -76,28 +85,27 @@ export default class Form extends Component {
   }
 
   fail(res) {
-    try {
-      const errors = JSON.parse(res.message);
-      let focused = false;
-      for (const key in errors) {
-        const input = document.getElementById(key.replace(/_/g, '-'));
-        if (input) {
-          const container = input.parentNode;
-          if (!focused) {
-            input.focus();
-            focused = true;
-          }
-          container.classList.add('error');
-          container.dataset.tooltip = errors[key];
+    if (typeof res.message === 'string') {
+      return this._messenger.showError(res.message);
+    }
+    const { message } = res;
+    let focused = false;
+    for (const key in message) {
+      const input = document.getElementById(key.replace(/_/g, '-'));
+      if (input) {
+        const container = input.parentNode;
+        if (!focused) {
+          input.focus();
+          focused = true;
         }
+        container.classList.add('error');
+        container.dataset.tooltip = message[key];
       }
-    } catch (ex) {
-      this.inject(Messenger).showError(res.message);
     }
   }
 
   done(res, form) {
-    this.inject(Messenger).showSuccess(res);
+    this._messenger.showSuccess(res);
     if (form.method.toLowerCase() === 'post') {
       form.reset();
       return reset(form);

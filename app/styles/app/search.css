@@ -1,0 +1,136 @@
+.search-container {
+  flex: 0 500px;
+  margin: 0 1em;
+  transition: transform .2s;
+}
+
+.search-form {
+  position: relative;
+  border-color: var(--outline);
+}
+
+.search-form input {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  width: 100%;
+  padding: 10px 45px;
+  font-size: 14px;
+  transition: all .3s;
+  color: var(--on-surface);
+  background: var(--surface);
+  border-color: var(--outline);
+}
+
+.search-form input:focus {
+  transform: scale(1.01);
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  left: 15px;
+}
+
+.search-shortcut {
+  pointer-events: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  position: absolute;
+  right: 15px;
+  color: var(--secondary);
+  background: var(--surface);
+  border-color: var(--outline);
+}
+
+.search-results-dropdown {
+  z-index: 1000;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  max-height: 400px;
+  padding: 10px;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  box-shadow: 0 10px 25px #0000001a;
+  border-color: var(--outline);
+}
+
+.result-item {
+  padding: 12px 15px;
+  transition: background .2s;
+  position: relative;
+  border-color: var(--outline);
+}
+
+.result-item:hover {
+  background: color-mix(in srgb, var(--surface) 90%, var(--primary));
+}
+
+.result-item.active {
+  background: color-mix(in srgb, var(--surface) 90%, var(--primary));
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+}
+
+.result-preview {
+  font-size: 12px;
+  background: none;
+}
+
+.no-results {
+  padding: 20px;
+  font-size: 14px;
+}
+
+.search-results-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results-dropdown::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--outline);
+}
+
+.search-icon svg path {
+  stroke: var(--secondary);
+}
+
+header .search-container {
+  min-width: 0;
+  margin: 0;
+}
+
+.search-form input::placeholder {
+  color: var(--secondary);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-form input {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-container {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-item {
+    transition: none;
+  }
+}

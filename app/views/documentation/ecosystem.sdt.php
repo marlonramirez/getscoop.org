@@ -34,7 +34,7 @@
 ]
 </code></pre>
 
-<p class="doc-alert"><b>Observabilidad:</b> El sistema detecta automáticamente si la petición es Ajax/JSON o una navegación estándar, devolviendo el formato de error adecuado (un Payload JSON o un renderizado SDT) de forma transparente.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Observabilidad:</b> El sistema detecta automáticamente si la petición es Ajax/JSON o una navegación estándar, devolviendo el formato de error adecuado (un Payload JSON o un renderizado SDT) de forma transparente.</p>
 
 <h2>
     <a href='#monitoring'>Monitoreo y Logging</a>
@@ -66,7 +66,7 @@
 
 <p>En este ejemplo, <code>error</code> combina el handler heredado de <code>all</code> con el handler específico del nivel, por lo que escribe en el archivo común y en <code>stderr</code>. <code>debug</code> e <code>info</code> están silenciados. Los demás niveles utilizan únicamente <code>File</code>; ninguno de ellos agrega <code>Standard</code> ni escribe en <code>stdout</code>.</p>
 
-<p class="doc-alert"><b>Fallback predeterminado:</b> <code>Standard</code> y <code>stdout</code> se utilizan automáticamente solo cuando el nivel no tiene handlers propios ni heredados desde <code>all</code>. Por tanto, este fallback no se aplica al ejemplo anterior.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Fallback predeterminado:</b> <code>Standard</code> y <code>stdout</code> se utilizan automáticamente solo cuando el nivel no tiene handlers propios ni heredados desde <code>all</code>. Por tanto, este fallback no se aplica al ejemplo anterior.</p>
 
 <h3>Formato y recuperación de datos</h3>
 
@@ -140,7 +140,7 @@
 ]
 </code></pre>
 
-<p>Puedes registrar listeners para eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code>, <code>RequestFinished</code> y <code>ErrorOccurred</code>.</p>
+<p>Puedes registrar listeners para eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>RequestFinished</code>. Para observar errores al terminar la petición, consulta <code>RequestFinished::getError()</code>.</p>
 
 <h2>
     <a href='#cache'>Caché distribuida</a>
@@ -164,7 +164,7 @@
 $data = $this->cache->get('user_session_1');
 </code></pre>
 
-<p class="doc-alert"><b>Rendimiento de Autor:</b> El sistema soporta <b>Deferred Saving</b> (Guardado Diferido). Puedes preparar múltiples cambios en el pool y ejecutarlos atómicamente al final del ciclo de vida mediante el método <code>commit()</code>, optimizando las operaciones de I/O.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Rendimiento de Autor:</b> El sistema soporta <b>Deferred Saving</b> (Guardado Diferido). Puedes preparar múltiples cambios en el pool y ejecutarlos atómicamente al final del ciclo de vida mediante el método <code>commit()</code>, optimizando las operaciones de I/O.</p>
 
 <h2>
     <a href='#http-client'>HTTP Client</a>
@@ -205,8 +205,8 @@ $response = $client->sendRequest($request);
 <p>Scoop es un motor observable. El núcleo dispara <a href="{{#view->route('doc', 'application')}}#events">eventos</a> clave que permiten extender el comportamiento del sistema sin modificar el código fuente:</p>
 
 <ul>
-    <li><code>Scoop\Http\Event\ErrorOccurred:</code> Se dispara ante cualquier excepción no capturada en el ciclo de vida de la aplicación. Permite acceder a la excepción mediante <code>getError()</code> y al estado HTTP sugerido con <code>getStatusCode()</code>.</li>
-    <li><code>Scoop\Http\Event\RequestFinished:</code> Notifica la finalización de la petición durante el cierre de Application. Permite registrar listeners para tareas posteriores al procesamiento; <code>getTime()</code> devuelve un <code>DateTime</code> con el momento de creación del evento, no la duración de la petición.</li>
+    <li class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><code>Scoop\Http\Event\ErrorOccurred:</code> Deprecado desde v0.8.6 en favor de <code>RequestFinished</code>. Sigue emitiéndose por compatibilidad cuando Application captura una excepción durante el enrutamiento o el flush de entidades; no cubre todos los errores del arranque o del cierre.</li>
+    <li><code>Scoop\Http\Event\RequestFinished:</code> Se emite en <code>Application::terminate()</code>, antes de limpiar los servicios y vaciar los logs. <code>getError()</code> devuelve la excepción capturada o <code>null</code>; <code>getStatusCode()</code> devuelve el estado mapeado para ese error o <code>null</code> si no hubo mapeo de error. <code>getTime()</code> devuelve un <code>DateTime</code> con el momento de creación del evento, no la duración de la petición. Las excepciones sin mapear también ejecutan la terminación antes de propagarse.</li>
     <li><code>Scoop\Persistence\Event\ConnectionOpened:</code> Notifica la apertura de una conexión de base de datos. Provee acceso al objeto mediante <code>getConnection()</code>, ideal para auditoría o inyectar configuraciones de sesión SQL (ej. <code>SET TIMEZONE</code>).</li>
     <li><code>Scoop\Persistence\Event\ConnectionClosed:</code> Se dispara al cerrar la conexión o destruir el objeto Connection, permitiendo tareas de limpieza o métricas de tiempo de uso.</li>
 </ul>
@@ -248,7 +248,7 @@ $response = $client->sendRequest($request);
     <li><b><code>new</code>:</b> Genera artefactos iniciales, como nuevas estructuras de base de datos.</li>
     <li><b><code>scan routes</code>:</b> Construye el mapa optimizado de rutas.</li>
     <li><b><code>scan source</code>:</b> Analiza el código fuente y genera los mapas de tipos y dependencias utilizados por el sistema.</li>
-    <li><b><code>preload</code>:</b> Resuelve anticipadamente un recurso gestionado por los cargadores diferidos de <code>Environment</code>.</li>
+    <li><b><code>preload</code>:</b> Resuelve anticipadamente un recurso gestionado por los cargadores diferidos de <code>Context</code>.</li>
     <li><b><code>clean</code>:</b> Elimina artefactos temporales, como la caché general o las vistas procesadas.</li>
     <li><b><code>dbup</code>:</b> Ejecuta las estructuras pendientes sobre la base de datos.</li>
 </ul>
@@ -334,7 +334,7 @@ $this->writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
 
 <h4>Personalización de Estilos</h4>
 
-<p>Los estilos utilizados por Writer se configuran en la sección <code>ice.styles</code> del <code>Environment</code>. Al definir esta sección, el mapa configurado reemplaza los estilos predeterminados:</p>
+<p>Los estilos utilizados por Writer se configuran en la sección <code>ice.styles</code> del archivo de configuración. Al definir esta sección, el mapa configurado reemplaza los estilos predeterminados:</p>
 
 <pre><code class="language-php">'ice' => [
     'commands' => 'typeof:App\Command\CommandInterface',

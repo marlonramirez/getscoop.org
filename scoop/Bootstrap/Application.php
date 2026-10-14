@@ -8,6 +8,8 @@ class Application
     private $context;
     private $injector;
     private $dispatcher;
+    private $error;
+    private $status;
 
     public function __construct($fileContext = '')
     {
@@ -27,7 +29,7 @@ class Application
             self::$loader = $this->load($options['storage']);
         }
         \Scoop\Context::load($this);
-        $this->context = new \Scoop\Bootstrap\Environment($options);
+        $this->context = new \Scoop\Context($options);
         $this->injector = $this->context->getInjector();
         $this->dispatcher = $this->inject('Scoop\Event\Dispatcher');
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -42,6 +44,8 @@ class Application
         $request = $this->inject($requestType);
         $this->inject('Scoop\Bootstrap\Configuration')->setUp();
         \Scoop\View\Service::setUp($this->context);
+        $this->error = null;
+        $this->status = null;
         try {
             $response = $router->route($request);
             $entityManager = $this->findDependency('Scoop\Persistence\Entity\Manager');
@@ -66,7 +70,7 @@ class Application
             session_write_close();
         }
         try {
-            $this->dispatcher->dispatch(new \Scoop\Http\Event\RequestFinished());
+            $this->dispatcher->dispatch(new \Scoop\Http\Event\RequestFinished($this->error, $this->status));
         } catch (\Exception $ex) {
             error_log($ex);
         } catch (\Throwable $ex) {
@@ -91,7 +95,8 @@ class Application
 
     private function findDependency($id)
     {
-        if (!is_callable(array($this->injector, 'contains')) || $this->injector->contains($id)) {
+        $method = 'contains';
+        if (!is_callable(array($this->injector, $method)) || $this->injector->$method($id)) {
             return $this->inject($id);
         }
     }
@@ -99,14 +104,15 @@ class Application
     private function manageError($ex, $isAjax)
     {
         $exceptionManager = $this->inject('Scoop\Http\Error\Mapper');
-        $status = $exceptionManager->getStatusCode($ex);
-        $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $status));
+        $this->status = $exceptionManager->getStatusCode($ex);
+        $this->error = $ex;
+        $this->dispatcher->dispatch(new \Scoop\Http\Event\ErrorOccurred($ex, $this->status));
         \Scoop\Context::reset();
         if ($ex instanceof \Scoop\Http\Exception\Unprocessable) {
             return $ex->getResponse();
         }
-        if ($status) {
-            return $exceptionManager->map($ex, $isAjax, $status);
+        if ($this->status) {
+            return $exceptionManager->map($ex, $isAjax, $this->status);
         }
         $this->terminate();
         throw $ex;

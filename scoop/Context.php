@@ -2,7 +2,9 @@
 
 namespace Scoop;
 
-class Context
+require_once __DIR__ . '/Bootstrap/Environment.php';
+
+class Context extends Bootstrap\Environment
 {
     private static $connections = array();
     private static $context;

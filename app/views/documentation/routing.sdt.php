@@ -122,7 +122,7 @@ flowchart TB
 ];
 </code></pre>
 
-<p class="doc-alert"><b>Comportamiento Fail-fast:</b> Si el validador de la ruta falla, el motor aborta la petición y lanza una excepción <code>NotFound</code> (404), garantizando que el sistema nunca procese identificadores con formato inválido.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Comportamiento Fail-fast:</b> Si el validador de la ruta falla, el motor aborta la petición y lanza una excepción <code>NotFound</code> (404), garantizando que el sistema nunca procese identificadores con formato inválido.</p>
 
 <h2>
     <a href="#endpoint">Definición de endpoints</a>
@@ -160,7 +160,7 @@ flowchart TB
 ];
 </code></pre>
 
-<p class="doc-alert"><b>Nota técnica:</b> Si el controlador es una clase invocable (implementa <code>__invoke</code>), el motor lo ejecutará directamente. De lo contrario, buscará un método con el mismo nombre que el verbo HTTP (get, post, etc.).</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Nota técnica:</b> Si el controlador es una clase invocable (implementa <code>__invoke</code>), el motor lo ejecutará directamente. De lo contrario, buscará un método con el mismo nombre que el verbo HTTP (get, post, etc.).</p>
 
 <h2>
     <a href="#request-response">Request y Response</a>
@@ -246,4 +246,4 @@ return array_merge($group, [
 }
 </code></pre>
 
-<p class="doc-alert"><b>Optimización de Producción:</b> Aunque en desarrollo Scoop escanea el sistema de archivos en cada petición, en producción se debe ejecutar el comando <code>app/ice scan routes</code>. Esto genera un mapa de rutas inmutable en memoria y evita el costo de descubrir controladores en el sistema de archivos durante cada petición.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Optimización de Producción:</b> Aunque en desarrollo Scoop escanea el sistema de archivos en cada petición, en producción se debe ejecutar el comando <code>app/ice scan routes</code>. Esto genera un mapa de rutas inmutable en memoria y evita el costo de descubrir controladores en el sistema de archivos durante cada petición.</p>

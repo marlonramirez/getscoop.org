@@ -6,15 +6,15 @@
     <h1>Scoop</h1>
     <h2>Simple Components of Object-Oriented Programming</h2>
     <a href="{{#view->route('welcome')}}#download" class="btn download">
-        <i class="fa fa-download"></i> Descargar <small>(v. {{#view->getConfig('app.version')}})</small>
+        <span class="app-icon icon-download inline-block shrink-0" aria-hidden="true"></span> Descargar <small>(v. {{#view->getConfig('app.version')}})</small>
     </a>
 </div>
-<div class="main features-grid">
+<div class="main features-grid grid gap-y-xl my-xl">
     @import 'features'
 </div>
-<div class="info">
+<div class="info bg-surface text-on-surface py-xl overflow-auto">
     @import 'about'
 </div>
-<div class="main">
+<div class="main my-xl">
     @import 'credits'
 </div>

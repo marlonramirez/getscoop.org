@@ -1,0 +1,134 @@
+:root {
+  --site-header-height: 7rem;
+  --site-logo-width: clamp(8rem, 15vw, 12.5rem);
+  --site-documentation-width: 6rem;
+  --site-side-width: max(var(--site-logo-width), 10.25rem);
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-sizing: border-box;
+  grid-template-columns: minmax(var(--site-side-width), 1fr) minmax(0, 32rem) minmax(var(--site-side-width), 1fr);
+  gap: .75rem;
+  height: var(--site-header-height);
+  padding: .5rem 5%;
+  border-bottom: 1px solid color-mix(in srgb, var(--outline) 45%, var(--surface));
+}
+
+header .logo {
+  position: static;
+  width: var(--site-logo-width);
+}
+
+header .search-container {
+  position: relative;
+  margin: 0 auto;
+}
+
+header .header-actions {
+  justify-self: end;
+  position: static;
+  gap: 1rem;
+}
+
+header .header-actions ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+header .header-actions li {
+  position: static;
+  margin: 0;
+}
+
+header nav li a {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  width: var(--site-documentation-width);
+  color: var(--on-surface);
+  font-weight: 900;
+  text-align: center;
+}
+
+header nav li a > span:last-child {
+  font-size: .8rem;
+}
+
+header .icon-badge {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+/* The sticky header is the containing block for both underlines, including on mobile. */
+
+header .logo::before, header nav a::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 5px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .2s ease;
+}
+
+header .logo::before {
+  left: 5%;
+  width: var(--site-logo-width);
+}
+
+header nav a::before {
+  right: 5%;
+  width: var(--site-documentation-width);
+}
+
+header .logo:hover::before, header .logo:focus-visible::before,
+header nav a:hover::before, header nav a:focus-visible::before {
+  transform: scaleX(1);
+}
+
+@media (max-width: 580px) {
+  :root {
+    --site-header-height: 10rem;
+    --site-documentation-width: 5.5rem;
+  }
+
+  header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) 3rem;
+    gap: .5rem;
+  }
+
+  header .search-container {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: none;
+  }
+
+  header .header-actions {
+    gap: .75rem;
+  }
+
+  header .icon-badge {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  header nav li a > span:last-child {
+    font-size: .75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  header .logo::before, header nav a::before {
+    transition: none;
+  }
+}

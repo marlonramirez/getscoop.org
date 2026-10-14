@@ -2,6 +2,10 @@
 
 namespace Scoop\Http\Event;
 
+/**
+ * @deprecated use RequestFinished instead
+ * @since 0.8.6
+ */
 class ErrorOccurred
 {
     private $exception;

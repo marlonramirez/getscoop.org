@@ -1,6 +1,6 @@
 <p>Las vistas en Scoop se gestionan mediante el motor SDT (Scoop Dynamic Template). Su función es actuar como un aislante térmico entre la presentación y la lógica de aplicación. Un archivo <code>.sdt.php</code> es transpilado a PHP nativo y almacenado en caché, aprovechando al máximo el Opcache del servidor.</p>
 
-<p class="doc-alert">Aunque sea posible usar código PHP directamente sobre la plantilla, no es un uso aconsejable para mantener la pureza de la arquitectura.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning">Aunque sea posible usar código PHP directamente sobre la plantilla, no es un uso aconsejable para mantener la pureza de la arquitectura.</p>
 
 <p><ul>
     <li><a href="#assets">Gestión de activos</a></li>
@@ -234,7 +234,7 @@ fetch('/api/users', {
 ]
 </code></pre>
 
-<p class="doc-alert"><b>Importante:</b> La directiva <code>&#64;csrf</code> solo inyecta el token. El middleware <code>CsrfGuard</code> es necesario para validarlo en el servidor. Sin el middleware, el token se genera pero no se valida.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Importante:</b> La directiva <code>&#64;csrf</code> solo inyecta el token. El middleware <code>CsrfGuard</code> es necesario para validarlo en el servidor. Sin el middleware, el token se genera pero no se valida.</p>
 
 <h2>
     <a href="#components">Arquitectura de componentes</a>
@@ -374,7 +374,7 @@ trabaja fuera del compilador SDT.</p>
 &lt;?php $children = ob_get_clean() ?&gt;
 &#123;{= #view->compose('modal', array('title' => 'Confirm action'), $children) }&#125;</code></pre>
 
-<p class="doc-alert"><b>Nota:</b> la salida de <code>#view->compose()</code> no está escapada por el motor, por lo que siempre debe invocarse con la sintaxis de salida en crudo <code>&#123;{=&nbsp;...&nbsp;}&#125;</code> y no con <code>&#123;{&nbsp;...&nbsp;}&#125;</code>.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Nota:</b> la salida de <code>#view->compose()</code> no está escapada por el motor, por lo que siempre debe invocarse con la sintaxis de salida en crudo <code>&#123;{=&nbsp;...&nbsp;}&#125;</code> y no con <code>&#123;{&nbsp;...&nbsp;}&#125;</code>.</p>
 
 <p>El renderizado anidado es aislado: cada vista sustituye temporalmente su helper y abre sus propios buffers. Al finalizar —incluso si se produce una excepción— Scoop restaura el helper de la vista llamadora y descarta únicamente los buffers abiertos por la vista que falló.</p>
 

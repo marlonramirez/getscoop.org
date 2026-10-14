@@ -17,7 +17,7 @@
 
 <p>La clase <code>Connection</code> constituye el adaptador de bajo nivel de Scoop. Este componente encapsula la lógica de <b>PDO</b> para garantizar un tratamiento de datos homogéneo, permitiendo que la aplicación interactúe con diversos motores (MySQL, PostgreSQL, SQLite, SQL Server) de forma transparente para el Dominio.</p>
 
-<p class="doc-alert"><b>Deprecación:</b> La clase <code>DBC</code> (Data Base Connection) está deprecada desde v0.8. Use <code>Connection</code> en su lugar. DBC permanece disponible para compatibilidad hacia atrás.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Deprecación:</b> La clase <code>DBC</code> (Data Base Connection) está deprecada desde v0.8. Use <code>Connection</code> en su lugar. DBC permanece disponible para compatibilidad hacia atrás.</p>
 
 <h3>Configuración de la conexión</h3>
 
@@ -91,7 +91,7 @@ SQL Server: [public].[users].[id]
 $column = $connection->quoteColumn('public.users.id');
 </code></pre>
 
-<p class="doc-alert"><b>Blindaje Léxico:</b> Los identificadores procesados como tal se validan estrictamente (tablas, columnas, alias) mediante la expresión regular <code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>. Esto previene ataques de inyección de identificadores, garantizando que solo caracteres alfanuméricos y delimitadores controlados entren en la construcción de la sentencia; las expresiones SQL explícitas permanecen bajo responsabilidad del desarrollador.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Blindaje Léxico:</b> Los identificadores procesados como tal se validan estrictamente (tablas, columnas, alias) mediante la expresión regular <code>/^[a-zA-Z_][a-zA-Z0-9_\.\$]*$/</code>. Esto previene ataques de inyección de identificadores, garantizando que solo caracteres alfanuméricos y delimitadores controlados entren en la construcción de la sentencia; las expresiones SQL explícitas permanecen bajo responsabilidad del desarrollador.</p>
 
 <h3>quoteCriteria() - Sintaxis SQL Universal</h3>
 
@@ -117,39 +117,39 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 
 <p>El sistema de quoting soporta completamente los siguientes motores:</p>
 
-<table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface">
     <thead>
         <tr>
-            <th>Motor</th>
-            <th>Quote Character</th>
-            <th>Ejemplo</th>
+            <th scope="col">Motor</th>
+            <th scope="col">Quote Character</th>
+            <th scope="col">Ejemplo</th>
         </tr>
     </thead>
     <tbody>
         <tr>
-            <td>MySQL</td>
-            <td><code>`</code> (backtick)</td>
-            <td><code>`users`.`name`</code></td>
+            <td data-label="Motor"><span>MySQL</span></td>
+            <td data-label="Quote Character"><span><code>`</code> (backtick)</span></td>
+            <td data-label="Ejemplo"><span><code>`users`.`name`</code></span></td>
         </tr>
         <tr>
-            <td>PostgreSQL</td>
-            <td><code>"</code> (double quote)</td>
-            <td><code>"users"."name"</code></td>
+            <td data-label="Motor"><span>PostgreSQL</span></td>
+            <td data-label="Quote Character"><span><code>"</code> (double quote)</span></td>
+            <td data-label="Ejemplo"><span><code>"users"."name"</code></span></td>
         </tr>
         <tr>
-            <td>SQLite</td>
-            <td><code>"</code> (double quote)</td>
-            <td><code>"users"."name"</code></td>
+            <td data-label="Motor"><span>SQLite</span></td>
+            <td data-label="Quote Character"><span><code>"</code> (double quote)</span></td>
+            <td data-label="Ejemplo"><span><code>"users"."name"</code></span></td>
         </tr>
         <tr>
-            <td>SQL Server</td>
-            <td><code>[]</code> (brackets)</td>
-            <td><code>[users].[name]</code></td>
+            <td data-label="Motor"><span>SQL Server</span></td>
+            <td data-label="Quote Character"><span><code>[]</code> (brackets)</span></td>
+            <td data-label="Ejemplo"><span><code>[users].[name]</code></span></td>
         </tr>
         <tr>
-            <td>FreeTDS (dblib)</td>
-            <td><code>[]</code> (brackets)</td>
-            <td><code>[users].[name]</code></td>
+            <td data-label="Motor"><span>FreeTDS (dblib)</span></td>
+            <td data-label="Quote Character"><span><code>[]</code> (brackets)</span></td>
+            <td data-label="Ejemplo"><span><code>[users].[name]</code></span></td>
         </tr>
     </tbody>
 </table>
@@ -190,7 +190,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
     <li><b><code>--user</code> / <code>--password</code>:</b> Permite sobrescribir las credenciales de conexión en tiempo de ejecución, ideal para procesos de CI/CD o mantenimiento por parte de administradores de bases de datos (DBA).</li>
 </ul></p>
 
-<p class="doc-alert"><b>Ubicación Personalizada:</b> El directorio base de los archivos SQL se define por defecto en <code>app/structs</code>, pero puede ser modificado globalmente desde el archivo de configuración principal de la aplicación.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Ubicación Personalizada:</b> El directorio base de los archivos SQL se define por defecto en <code>app/structs</code>, pero puede ser modificado globalmente desde el archivo de configuración principal de la aplicación.</p>
 
 <h2>
     <a href="#builder">Builder Service</a>
@@ -219,7 +219,7 @@ $where = $connection->quoteCriteria('[status] = :status AND [user].[id] = :id');
 }
 </code></pre>
 
-<p class="doc-alert"><b>Compatibilidad:</b> La clase <code>\Scoop\Persistence\SQO</code> permanece disponible para aplicaciones existentes, pero está deprecada. El código nuevo debe obtener sus consultas mediante <code>Builder</code>.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Compatibilidad:</b> La clase <code>\Scoop\Persistence\SQO</code> permanece disponible para aplicaciones existentes, pero está deprecada. El código nuevo debe obtener sus consultas mediante <code>Builder</code>.</p>
 
 <h3>Patrón Repository</h3>
 

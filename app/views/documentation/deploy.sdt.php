@@ -90,11 +90,11 @@ app/ice preload json:composer
 
 <p>Este proceso transforma la jerarquía de archivos y las definiciones dinámicas en mapas PHP optimizados para <b>Opcache</b>. El mapa de rutas evita descubrir controladores durante la petición, mientras que los mapas de fuentes permiten resolver tipos y argumentos de constructor sin volver a inspeccionar cada firma. Estos comandos se encuentran en el <code>composer.json</code> mediante el comando <code>build</code>. Es imperativo que este proceso finalice con éxito antes del despliegue, ya que la versión de producción dependerá de los artefactos generados para su ejecución.</p>
 
-<p class="doc-alert"><b>Caché de construcción:</b> Los mapas generados forman parte de los artefactos del despliegue y no deben editarse manualmente. Si se necesita reconstruirlos sin esperar cambios en las fuentes, ejecute los comandos de escaneo con el flag <code>-f</code>.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Caché de construcción:</b> Los mapas generados forman parte de los artefactos del despliegue y no deben editarse manualmente. Si se necesita reconstruirlos sin esperar cambios en las fuentes, ejecute los comandos de escaneo con el flag <code>-f</code>.</p>
 
 <p>También tenemos el comando <code>app/ice dbup</code> que no puede ser ejecutado en compilación o creación de la imagen, si no que se debe ejecutar cuando se haya desplegado en el servidor para que logre conectar con la base de datos.</p>
 
-<p class="doc-alert"><b>Pro-Tip de Despliegue:</b> Asegúrese siempre de ejecutar <code>composer install --optimize-autoloader --no-dev</code> en el servidor de destino para minimizar la latencia del cargador de clases de PHP.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Pro-Tip de Despliegue:</b> Asegúrese siempre de ejecutar <code>composer install --optimize-autoloader --no-dev</code> en el servidor de destino para minimizar la latencia del cargador de clases de PHP.</p>
 
 <h3>Estructura de archivos en despliegue</h3>
 
@@ -129,14 +129,18 @@ app/ice preload json:composer
 
 <p>Para profundizar en la organización de los archivos, consulte la sección de <a href="{{#view->route('doc', 'application')}}#structure">Estructura de directorios</a>.</p>
 
-<p class="doc-alert"><b>Permisos de Escritura:</b> El proceso de construcción genera archivos dentro de <code>app/storage/cache</code>. Asegúrese de que el usuario del servidor web (ej. www-data) tenga permisos de lectura sobre estos archivos y permisos de escritura sobre la carpeta <code>storage</code> para logs y caché persistente.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Permisos de Escritura:</b> El proceso de construcción genera archivos dentro de <code>app/storage/cache</code>. Asegúrese de que el usuario del servidor web (ej. www-data) tenga permisos de lectura sobre estos archivos y permisos de escritura sobre la carpeta <code>storage</code> para logs y caché persistente.</p>
 
 <h2>
     <a href="#frankenphp">Docker con FrankenPHP</a>
     <span class="anchor" id="frankenphp">...</span>
 </h2>
 
-<p>El entorno Docker de Scoop utiliza <b>FrankenPHP 1.12.0 y PHP 8.5 en modo clásico</b>. Desarrollo y producción parten de la misma imagen oficial <code>dunglas/frankenphp:1.12.0-php8.5-bookworm</code>. Caddy recibe las solicitudes y ejecuta PHP; cada petición inicia el ciclo de la aplicación sin configurar workers persistentes.</p>
+<p>El entorno Docker de Scoop utiliza <b>FrankenPHP 1.12.0 y PHP 8.5 en modo clásico</b>. Desarrollo y producción parten de la misma imagen oficial. Caddy reescribe las solicitudes hacia <code>index.php</code> y ejecuta PHP con un ciclo independiente por petición. El healthcheck interno de producción utiliza el mismo punto de entrada.</p>
+
+<h3>Ciclo por petición</h3>
+<p>Cada petición construye <code>Application</code>, ejecuta <code>run()</code> y termina con <code>terminate()</code> después de enviar la respuesta. Los servicios PHP se reconstruyen en la siguiente petición; los singletons se comparten dentro del ciclo actual. El soporte de workers persistentes permanece en el roadmap.</p>
+<p>En desarrollo, OPcache comprueba los cambios de archivos. Después de modificar los archivos de <code>.devcontainer</code>, reconstruir el contenedor de desarrollo. En producción, desplegar una imagen nueva para actualizar código y configuración.</p>
 
 <h3>Configuración compartida</h3>
 
@@ -219,111 +223,111 @@ docker inspect scoop --format '&#123;&#123;.State.Health.Status&#125;&#125;'
 
 <p>Snapshot reproducible del framework ejecutado el 21/08/2026 en Docker Linux x86_64: PHP 8.5.9, Opcache, PostgreSQL 17 y source <code>aef2d7c3c7f8</code>. Cada grupo se ejecutó completo en dos rondas independientes; se publica la mediana entre rondas. Los valores históricos fueron retirados para evitar mezclar fechas o infraestructura.</p>
 
-<p class="doc-alert"><b>Metodología:</b> candidatos secuenciales, calentamiento previo, payloads y cardinalidades validados, estado administrado limpiado entre operaciones ORM y orden HTTP invertido en la segunda ronda. HTTP acumuló 120.000 respuestas esperadas, sin fallos de transporte ni contenido. Menor es mejor para latencia; mayor es mejor para req/s.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Metodología:</b> candidatos secuenciales, calentamiento previo, payloads y cardinalidades validados, estado administrado limpiado entre operaciones ORM y orden HTTP invertido en la segunda ronda. HTTP acumuló 120.000 respuestas esperadas, sin fallos de transporte ni contenido. Menor es mejor para latencia; mayor es mejor para req/s.</p>
 
 <h3>Resolución de rutas</h3>
 <p>Ruta dinámica al final del conjunto; Scoop usa su mapa compilado, Symfony Routing 8.1.2 su matcher compilado y FastRoute 1.3.1 su dispatcher generado.</p>
-<table><thead><tr><th>Rutas</th><th>Motor</th><th>Mediana</th><th>p95</th></tr></thead><tbody>        <tr><td>100</td><td>Scoop</td><td>1,251 µs</td><td>1,900 µs</td></tr>
-        <tr><td>100</td><td>Symfony compilado</td><td>2,500 µs</td><td>3,601 µs</td></tr>
-        <tr><td>100</td><td>FastRoute</td><td>3,301 µs</td><td>5,200 µs</td></tr>
-        <tr><td>1.000</td><td>Scoop</td><td>1,300 µs</td><td>1,551 µs</td></tr>
-        <tr><td>1.000</td><td>Symfony compilado</td><td>5,701 µs</td><td>7,101 µs</td></tr>
-        <tr><td>1.000</td><td>FastRoute</td><td>37,554 µs</td><td>91,959 µs</td></tr>
-        <tr><td>10.000</td><td>Scoop</td><td>1,400 µs</td><td>1,750 µs</td></tr>
-        <tr><td>10.000</td><td>Symfony compilado</td><td>22,953 µs</td><td>43,255 µs</td></tr>
-        <tr><td>10.000</td><td>FastRoute</td><td>1.743,894 µs</td><td>2.596,212 µs</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Rutas</th><th scope="col">Motor</th><th scope="col">Mediana</th><th scope="col">p95</th></tr></thead><tbody>        <tr><td data-label="Rutas"><span>100</span></td><td data-label="Motor"><span>Scoop</span></td><td data-label="Mediana"><span>1,251 µs</span></td><td data-label="p95"><span>1,900 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>100</span></td><td data-label="Motor"><span>Symfony compilado</span></td><td data-label="Mediana"><span>2,500 µs</span></td><td data-label="p95"><span>3,601 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>100</span></td><td data-label="Motor"><span>FastRoute</span></td><td data-label="Mediana"><span>3,301 µs</span></td><td data-label="p95"><span>5,200 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>1.000</span></td><td data-label="Motor"><span>Scoop</span></td><td data-label="Mediana"><span>1,300 µs</span></td><td data-label="p95"><span>1,551 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>1.000</span></td><td data-label="Motor"><span>Symfony compilado</span></td><td data-label="Mediana"><span>5,701 µs</span></td><td data-label="p95"><span>7,101 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>1.000</span></td><td data-label="Motor"><span>FastRoute</span></td><td data-label="Mediana"><span>37,554 µs</span></td><td data-label="p95"><span>91,959 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>10.000</span></td><td data-label="Motor"><span>Scoop</span></td><td data-label="Mediana"><span>1,400 µs</span></td><td data-label="p95"><span>1,750 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>10.000</span></td><td data-label="Motor"><span>Symfony compilado</span></td><td data-label="Mediana"><span>22,953 µs</span></td><td data-label="p95"><span>43,255 µs</span></td></tr>
+    <tr><td data-label="Rutas"><span>10.000</span></td><td data-label="Motor"><span>FastRoute</span></td><td data-label="Mediana"><span>1.743,894 µs</span></td><td data-label="p95"><span>2.596,212 µs</span></td></tr>
+</tbody></table>
 
 <h3>Pipeline HTTP mínimo</h3>
 <p>Mismo JSON sobre Nginx/PHP-FPM: Scoop, Slim 4.15.2, Symfony 8.1.2 y Laravel 13.24.0; 2.000 solicitudes por combinación y ronda.</p>
-<table><thead><tr><th>Aplicación</th><th>Concurrencia</th><th>Req/s</th><th>Media</th><th>p50</th><th>p95</th><th>p99</th><th>Fallidas</th></tr></thead><tbody>
-        <tr><td>Scoop</td><td>1</td><td>374,18</td><td>2,689 ms</td><td>2,5 ms</td><td>3,5 ms</td><td>4,5 ms</td><td>0</td></tr>
-        <tr><td>Slim</td><td>1</td><td>407,62</td><td>2,460 ms</td><td>2,0 ms</td><td>3,0 ms</td><td>3,5 ms</td><td>0</td></tr>
-        <tr><td>Symfony</td><td>1</td><td>282,34</td><td>3,545 ms</td><td>3,0 ms</td><td>4,0 ms</td><td>5,0 ms</td><td>0</td></tr>
-        <tr><td>Laravel</td><td>1</td><td>128,40</td><td>7,795 ms</td><td>7,0 ms</td><td>9,5 ms</td><td>15,5 ms</td><td>0</td></tr>
-        <tr><td>Scoop</td><td>16</td><td>1.478,20</td><td>12,042 ms</td><td>9,5 ms</td><td>26,0 ms</td><td>37,0 ms</td><td>0</td></tr>
-        <tr><td>Slim</td><td>16</td><td>1.677,30</td><td>9,863 ms</td><td>8,0 ms</td><td>19,5 ms</td><td>30,0 ms</td><td>0</td></tr>
-        <tr><td>Symfony</td><td>16</td><td>1.294,71</td><td>12,359 ms</td><td>11,0 ms</td><td>23,0 ms</td><td>30,5 ms</td><td>0</td></tr>
-        <tr><td>Laravel</td><td>16</td><td>575,94</td><td>28,026 ms</td><td>24,0 ms</td><td>55,0 ms</td><td>81,5 ms</td><td>0</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Aplicación</th><th scope="col">Concurrencia</th><th scope="col">Req/s</th><th scope="col">Media</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">p99</th><th scope="col">Fallidas</th></tr></thead><tbody>
+    <tr><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>374,18</span></td><td data-label="Media"><span>2,689 ms</span></td><td data-label="p50"><span>2,5 ms</span></td><td data-label="p95"><span>3,5 ms</span></td><td data-label="p99"><span>4,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Slim</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>407,62</span></td><td data-label="Media"><span>2,460 ms</span></td><td data-label="p50"><span>2,0 ms</span></td><td data-label="p95"><span>3,0 ms</span></td><td data-label="p99"><span>3,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>282,34</span></td><td data-label="Media"><span>3,545 ms</span></td><td data-label="p50"><span>3,0 ms</span></td><td data-label="p95"><span>4,0 ms</span></td><td data-label="p99"><span>5,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>128,40</span></td><td data-label="Media"><span>7,795 ms</span></td><td data-label="p50"><span>7,0 ms</span></td><td data-label="p95"><span>9,5 ms</span></td><td data-label="p99"><span>15,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>1.478,20</span></td><td data-label="Media"><span>12,042 ms</span></td><td data-label="p50"><span>9,5 ms</span></td><td data-label="p95"><span>26,0 ms</span></td><td data-label="p99"><span>37,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Slim</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>1.677,30</span></td><td data-label="Media"><span>9,863 ms</span></td><td data-label="p50"><span>8,0 ms</span></td><td data-label="p95"><span>19,5 ms</span></td><td data-label="p99"><span>30,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>1.294,71</span></td><td data-label="Media"><span>12,359 ms</span></td><td data-label="p50"><span>11,0 ms</span></td><td data-label="p95"><span>23,0 ms</span></td><td data-label="p99"><span>30,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>575,94</span></td><td data-label="Media"><span>28,026 ms</span></td><td data-label="p50"><span>24,0 ms</span></td><td data-label="p95"><span>55,0 ms</span></td><td data-label="p99"><span>81,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+</tbody></table>
 
 <h3>Pipeline HTTP con DI y validación</h3>
 <p>Petición funcional con routing, controlador y servicio resueltos por inyección, cinco campos con reglas equivalentes, errores materializados, transformación y JSON. Se comparan Scoop; Slim 4.15.2 con Symfony DependencyInjection 8.1.4 compilado y Validator 8.1.4; Symfony 8.1.2 con Validator 8.1.4; y Laravel 13.24.0. La etiqueta de Slim describe un stack explícito porque Slim no incorpora DI ni validación propios.</p>
-<table><thead><tr><th>Payload</th><th>Aplicación</th><th>Concurrencia</th><th>HTTP esperado</th><th>Req/s</th><th>Media</th><th>p50</th><th>p95</th><th>p99</th><th>Fallos</th></tr></thead><tbody>
-        <tr><td>Válido</td><td>Scoop</td><td>1</td><td>200</td><td>383,87</td><td>2,619 ms</td><td>2,5 ms</td><td>3,0 ms</td><td>3,5 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Slim + DI/Validator</td><td>1</td><td>200</td><td>345,80</td><td>2,901 ms</td><td>2,0 ms</td><td>3,0 ms</td><td>4,0 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Symfony</td><td>1</td><td>200</td><td>262,97</td><td>3,804 ms</td><td>3,5 ms</td><td>4,5 ms</td><td>5,0 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Laravel</td><td>1</td><td>200</td><td>122,02</td><td>8,196 ms</td><td>8,0 ms</td><td>10,5 ms</td><td>14,0 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Scoop</td><td>16</td><td>200</td><td>2.133,21</td><td>7,522 ms</td><td>7,0 ms</td><td>12,5 ms</td><td>16,5 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Slim + DI/Validator</td><td>16</td><td>200</td><td>2.043,51</td><td>7,833 ms</td><td>7,0 ms</td><td>13,0 ms</td><td>21,5 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Symfony</td><td>16</td><td>200</td><td>1.335,43</td><td>12,299 ms</td><td>11,0 ms</td><td>22,0 ms</td><td>29,5 ms</td><td>0</td></tr>
-        <tr><td>Válido</td><td>Laravel</td><td>16</td><td>200</td><td>616,40</td><td>26,341 ms</td><td>24,0 ms</td><td>48,5 ms</td><td>71,0 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Scoop</td><td>1</td><td>400</td><td>341,85</td><td>2,928 ms</td><td>3,0 ms</td><td>3,0 ms</td><td>4,0 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Slim + DI/Validator</td><td>1</td><td>400</td><td>330,42</td><td>3,039 ms</td><td>3,0 ms</td><td>4,0 ms</td><td>4,0 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Symfony</td><td>1</td><td>400</td><td>254,44</td><td>3,932 ms</td><td>4,0 ms</td><td>5,0 ms</td><td>6,0 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Laravel</td><td>1</td><td>400</td><td>112,00</td><td>8,930 ms</td><td>8,0 ms</td><td>11,5 ms</td><td>14,5 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Scoop</td><td>16</td><td>400</td><td>1.600,03</td><td>10,005 ms</td><td>8,5 ms</td><td>19,0 ms</td><td>31,5 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Slim + DI/Validator</td><td>16</td><td>400</td><td>1.302,01</td><td>12,337 ms</td><td>10,5 ms</td><td>24,5 ms</td><td>32,0 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Symfony</td><td>16</td><td>400</td><td>979,51</td><td>16,482 ms</td><td>14,0 ms</td><td>33,0 ms</td><td>53,5 ms</td><td>0</td></tr>
-        <tr><td>Inválido</td><td>Laravel</td><td>16</td><td>400</td><td>417,18</td><td>39,680 ms</td><td>35,5 ms</td><td>74,5 ms</td><td>101,5 ms</td><td>0</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Payload</th><th scope="col">Aplicación</th><th scope="col">Concurrencia</th><th scope="col">HTTP esperado</th><th scope="col">Req/s</th><th scope="col">Media</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">p99</th><th scope="col">Fallos</th></tr></thead><tbody>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>383,87</span></td><td data-label="Media"><span>2,619 ms</span></td><td data-label="p50"><span>2,5 ms</span></td><td data-label="p95"><span>3,0 ms</span></td><td data-label="p99"><span>3,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Slim + DI/Validator</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>345,80</span></td><td data-label="Media"><span>2,901 ms</span></td><td data-label="p50"><span>2,0 ms</span></td><td data-label="p95"><span>3,0 ms</span></td><td data-label="p99"><span>4,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>262,97</span></td><td data-label="Media"><span>3,804 ms</span></td><td data-label="p50"><span>3,5 ms</span></td><td data-label="p95"><span>4,5 ms</span></td><td data-label="p99"><span>5,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>122,02</span></td><td data-label="Media"><span>8,196 ms</span></td><td data-label="p50"><span>8,0 ms</span></td><td data-label="p95"><span>10,5 ms</span></td><td data-label="p99"><span>14,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>2.133,21</span></td><td data-label="Media"><span>7,522 ms</span></td><td data-label="p50"><span>7,0 ms</span></td><td data-label="p95"><span>12,5 ms</span></td><td data-label="p99"><span>16,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Slim + DI/Validator</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>2.043,51</span></td><td data-label="Media"><span>7,833 ms</span></td><td data-label="p50"><span>7,0 ms</span></td><td data-label="p95"><span>13,0 ms</span></td><td data-label="p99"><span>21,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>1.335,43</span></td><td data-label="Media"><span>12,299 ms</span></td><td data-label="p50"><span>11,0 ms</span></td><td data-label="p95"><span>22,0 ms</span></td><td data-label="p99"><span>29,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Válido</span></td><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>200</span></td><td data-label="Req/s"><span>616,40</span></td><td data-label="Media"><span>26,341 ms</span></td><td data-label="p50"><span>24,0 ms</span></td><td data-label="p95"><span>48,5 ms</span></td><td data-label="p99"><span>71,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>341,85</span></td><td data-label="Media"><span>2,928 ms</span></td><td data-label="p50"><span>3,0 ms</span></td><td data-label="p95"><span>3,0 ms</span></td><td data-label="p99"><span>4,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Slim + DI/Validator</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>330,42</span></td><td data-label="Media"><span>3,039 ms</span></td><td data-label="p50"><span>3,0 ms</span></td><td data-label="p95"><span>4,0 ms</span></td><td data-label="p99"><span>4,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>254,44</span></td><td data-label="Media"><span>3,932 ms</span></td><td data-label="p50"><span>4,0 ms</span></td><td data-label="p95"><span>5,0 ms</span></td><td data-label="p99"><span>6,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>112,00</span></td><td data-label="Media"><span>8,930 ms</span></td><td data-label="p50"><span>8,0 ms</span></td><td data-label="p95"><span>11,5 ms</span></td><td data-label="p99"><span>14,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Scoop</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>1.600,03</span></td><td data-label="Media"><span>10,005 ms</span></td><td data-label="p50"><span>8,5 ms</span></td><td data-label="p95"><span>19,0 ms</span></td><td data-label="p99"><span>31,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Slim + DI/Validator</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>1.302,01</span></td><td data-label="Media"><span>12,337 ms</span></td><td data-label="p50"><span>10,5 ms</span></td><td data-label="p95"><span>24,5 ms</span></td><td data-label="p99"><span>32,0 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Symfony</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>979,51</span></td><td data-label="Media"><span>16,482 ms</span></td><td data-label="p50"><span>14,0 ms</span></td><td data-label="p95"><span>33,0 ms</span></td><td data-label="p99"><span>53,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+    <tr><td data-label="Payload"><span>Inválido</span></td><td data-label="Aplicación"><span>Laravel</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="HTTP esperado"><span>400</span></td><td data-label="Req/s"><span>417,18</span></td><td data-label="Media"><span>39,680 ms</span></td><td data-label="p50"><span>35,5 ms</span></td><td data-label="p95"><span>74,5 ms</span></td><td data-label="p99"><span>101,5 ms</span></td><td data-label="Fallos"><span>0</span></td></tr>
+</tbody></table>
 
 <h3>Persistencia PostgreSQL</h3>
 <p>10.000 filas; lecturas materializadas y escrituras transaccionales equivalentes. Controles: PDO, Doctrine DBAL 4.4.4 e Illuminate Database 13.24.0.</p>
-<table><thead><tr><th>Operación</th><th>Implementación</th><th>Mediana</th><th>p95</th></tr></thead><tbody>
-        <tr><td>Lectura de una fila</td><td>PDO preparado</td><td>321,987 µs</td><td>587,568 µs</td></tr>
-        <tr><td>Lectura de una fila</td><td>Scoop Connection</td><td>440,100 µs</td><td>770,588 µs</td></tr>
-        <tr><td>Lectura de una fila</td><td>Doctrine DBAL</td><td>564,464 µs</td><td>987,912 µs</td></tr>
-        <tr><td>Lectura de una fila</td><td>Scoop Builder</td><td>522,659 µs</td><td>874,649 µs</td></tr>
-        <tr><td>Lectura de una fila</td><td>Eloquent Builder</td><td>1.060,821 µs</td><td>1.685,091 µs</td></tr>
-        <tr><td>INSERT de 100 filas + rollback</td><td>PDO</td><td>1.659,939 µs</td><td>2.464,830 µs</td></tr>
-        <tr><td>INSERT de 100 filas + rollback</td><td>Doctrine DBAL</td><td>2.794,617 µs</td><td>3.917,494 µs</td></tr>
-        <tr><td>INSERT de 100 filas + rollback</td><td>Scoop Builder</td><td>2.258,803 µs</td><td>3.480,938 µs</td></tr>
-        <tr><td>INSERT de 100 filas + rollback</td><td>Eloquent Builder</td><td>3.790,024 µs</td><td>4.977,106 µs</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Operación</th><th scope="col">Implementación</th><th scope="col">Mediana</th><th scope="col">p95</th></tr></thead><tbody>
+    <tr><td data-label="Operación"><span>Lectura de una fila</span></td><td data-label="Implementación"><span>PDO preparado</span></td><td data-label="Mediana"><span>321,987 µs</span></td><td data-label="p95"><span>587,568 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Lectura de una fila</span></td><td data-label="Implementación"><span>Scoop Connection</span></td><td data-label="Mediana"><span>440,100 µs</span></td><td data-label="p95"><span>770,588 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Lectura de una fila</span></td><td data-label="Implementación"><span>Doctrine DBAL</span></td><td data-label="Mediana"><span>564,464 µs</span></td><td data-label="p95"><span>987,912 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Lectura de una fila</span></td><td data-label="Implementación"><span>Scoop Builder</span></td><td data-label="Mediana"><span>522,659 µs</span></td><td data-label="p95"><span>874,649 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Lectura de una fila</span></td><td data-label="Implementación"><span>Eloquent Builder</span></td><td data-label="Mediana"><span>1.060,821 µs</span></td><td data-label="p95"><span>1.685,091 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>INSERT de 100 filas + rollback</span></td><td data-label="Implementación"><span>PDO</span></td><td data-label="Mediana"><span>1.659,939 µs</span></td><td data-label="p95"><span>2.464,830 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>INSERT de 100 filas + rollback</span></td><td data-label="Implementación"><span>Doctrine DBAL</span></td><td data-label="Mediana"><span>2.794,617 µs</span></td><td data-label="p95"><span>3.917,494 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>INSERT de 100 filas + rollback</span></td><td data-label="Implementación"><span>Scoop Builder</span></td><td data-label="Mediana"><span>2.258,803 µs</span></td><td data-label="p95"><span>3.480,938 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>INSERT de 100 filas + rollback</span></td><td data-label="Implementación"><span>Eloquent Builder</span></td><td data-label="Mediana"><span>3.790,024 µs</span></td><td data-label="p95"><span>4.977,106 µs</span></td></tr>
+</tbody></table>
 
 <h3>ORM CLI</h3>
 <p>EPM, Doctrine ORM 3.6.8 y Eloquent 13.24.0 consultaron y materializaron el mismo esquema. Cada ORM limpió su estado administrado entre iteraciones.</p>
-<table><thead><tr><th>Operación</th><th>EPM</th><th>Doctrine ORM</th><th>Eloquent</th></tr></thead><tbody>
-        <tr><td>Carga por id</td><td>0,796 ms</td><td>0,645 ms</td><td>1,001 ms</td></tr>
-        <tr><td>10 entidades</td><td>1,332 ms</td><td>0,823 ms</td><td>1,752 ms</td></tr>
-        <tr><td>100 entidades</td><td>2,151 ms</td><td>2,039 ms</td><td>3,258 ms</td></tr>
-        <tr><td>1.000 entidades</td><td>9,536 ms</td><td>15,144 ms</td><td>18,723 ms</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Operación</th><th scope="col">EPM</th><th scope="col">Doctrine ORM</th><th scope="col">Eloquent</th></tr></thead><tbody>
+    <tr><td data-label="Operación"><span>Carga por id</span></td><td data-label="EPM"><span>0,796 ms</span></td><td data-label="Doctrine ORM"><span>0,645 ms</span></td><td data-label="Eloquent"><span>1,001 ms</span></td></tr>
+    <tr><td data-label="Operación"><span>10 entidades</span></td><td data-label="EPM"><span>1,332 ms</span></td><td data-label="Doctrine ORM"><span>0,823 ms</span></td><td data-label="Eloquent"><span>1,752 ms</span></td></tr>
+    <tr><td data-label="Operación"><span>100 entidades</span></td><td data-label="EPM"><span>2,151 ms</span></td><td data-label="Doctrine ORM"><span>2,039 ms</span></td><td data-label="Eloquent"><span>3,258 ms</span></td></tr>
+    <tr><td data-label="Operación"><span>1.000 entidades</span></td><td data-label="EPM"><span>9,536 ms</span></td><td data-label="Doctrine ORM"><span>15,144 ms</span></td><td data-label="Eloquent"><span>18,723 ms</span></td></tr>
+</tbody></table>
 
 <h3>Relación autores + libros</h3>
 <p>Cinco libros por autor completamente materializados y validados en cada iteración. EPM <code>aggregate('books')</code> y Doctrine ORM usan una consulta con join; Eloquent usa su eager loading idiomático de dos consultas.</p>
-<table><thead><tr><th>Grafo</th><th>Implementación</th><th>Mediana</th><th>p95</th></tr></thead><tbody>
-        <tr><td>10 autores + 50 libros</td><td>EPM aggregate</td><td>1.686,637 µs</td><td>2.771,206 µs</td></tr>
-        <tr><td>10 autores + 50 libros</td><td>Doctrine ORM</td><td>3.472,885 µs</td><td>5.352,044 µs</td></tr>
-        <tr><td>10 autores + 50 libros</td><td>Eloquent</td><td>4.329,030 µs</td><td>6.169,835 µs</td></tr>
-        <tr><td>100 autores + 500 libros</td><td>EPM aggregate</td><td>6.847,257 µs</td><td>9.304,927 µs</td></tr>
-        <tr><td>100 autores + 500 libros</td><td>Doctrine ORM</td><td>15.411,559 µs</td><td>22.208,762 µs</td></tr>
-        <tr><td>100 autores + 500 libros</td><td>Eloquent</td><td>14.767,385 µs</td><td>21.332,214 µs</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Grafo</th><th scope="col">Implementación</th><th scope="col">Mediana</th><th scope="col">p95</th></tr></thead><tbody>
+    <tr><td data-label="Grafo"><span>10 autores + 50 libros</span></td><td data-label="Implementación"><span>EPM aggregate</span></td><td data-label="Mediana"><span>1.686,637 µs</span></td><td data-label="p95"><span>2.771,206 µs</span></td></tr>
+    <tr><td data-label="Grafo"><span>10 autores + 50 libros</span></td><td data-label="Implementación"><span>Doctrine ORM</span></td><td data-label="Mediana"><span>3.472,885 µs</span></td><td data-label="p95"><span>5.352,044 µs</span></td></tr>
+    <tr><td data-label="Grafo"><span>10 autores + 50 libros</span></td><td data-label="Implementación"><span>Eloquent</span></td><td data-label="Mediana"><span>4.329,030 µs</span></td><td data-label="p95"><span>6.169,835 µs</span></td></tr>
+    <tr><td data-label="Grafo"><span>100 autores + 500 libros</span></td><td data-label="Implementación"><span>EPM aggregate</span></td><td data-label="Mediana"><span>6.847,257 µs</span></td><td data-label="p95"><span>9.304,927 µs</span></td></tr>
+    <tr><td data-label="Grafo"><span>100 autores + 500 libros</span></td><td data-label="Implementación"><span>Doctrine ORM</span></td><td data-label="Mediana"><span>15.411,559 µs</span></td><td data-label="p95"><span>22.208,762 µs</span></td></tr>
+    <tr><td data-label="Grafo"><span>100 autores + 500 libros</span></td><td data-label="Implementación"><span>Eloquent</span></td><td data-label="Mediana"><span>14.767,385 µs</span></td><td data-label="p95"><span>21.332,214 µs</span></td></tr>
+</tbody></table>
 
 <h3>ORM HTTP por id</h3>
 <p>Los tres endpoints abrieron su ORM, cargaron una entidad, materializaron el título y devolvieron el mismo JSON; 2.000 solicitudes por combinación y ronda. El throughput absoluto está dominado por abrir una conexión física nueva a PostgreSQL en cada petición FPM; por eso este escenario compara el coste extremo a extremo de los ORM y no debe interpretarse como velocidad aislada de hidratación.</p>
-<table><thead><tr><th>ORM</th><th>Concurrencia</th><th>Req/s</th><th>Media</th><th>p50</th><th>p95</th><th>p99</th><th>Fallidas</th></tr></thead><tbody>
-        <tr><td>EPM</td><td>1</td><td>39,69</td><td>25,199 ms</td><td>24,5 ms</td><td>30,0 ms</td><td>43,0 ms</td><td>0</td></tr>
-        <tr><td>Doctrine ORM</td><td>1</td><td>39,44</td><td>25,370 ms</td><td>24,5 ms</td><td>30,0 ms</td><td>43,5 ms</td><td>0</td></tr>
-        <tr><td>Eloquent</td><td>1</td><td>40,44</td><td>24,763 ms</td><td>24,0 ms</td><td>29,0 ms</td><td>37,5 ms</td><td>0</td></tr>
-        <tr><td>EPM</td><td>16</td><td>140,31</td><td>118,668 ms</td><td>110,0 ms</td><td>202,5 ms</td><td>266,0 ms</td><td>0</td></tr>
-        <tr><td>Doctrine ORM</td><td>16</td><td>121,15</td><td>132,198 ms</td><td>120,0 ms</td><td>232,0 ms</td><td>314,0 ms</td><td>0</td></tr>
-        <tr><td>Eloquent</td><td>16</td><td>101,85</td><td>158,816 ms</td><td>147,0 ms</td><td>282,0 ms</td><td>372,5 ms</td><td>0</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">ORM</th><th scope="col">Concurrencia</th><th scope="col">Req/s</th><th scope="col">Media</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">p99</th><th scope="col">Fallidas</th></tr></thead><tbody>
+    <tr><td data-label="ORM"><span>EPM</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>39,69</span></td><td data-label="Media"><span>25,199 ms</span></td><td data-label="p50"><span>24,5 ms</span></td><td data-label="p95"><span>30,0 ms</span></td><td data-label="p99"><span>43,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="ORM"><span>Doctrine ORM</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>39,44</span></td><td data-label="Media"><span>25,370 ms</span></td><td data-label="p50"><span>24,5 ms</span></td><td data-label="p95"><span>30,0 ms</span></td><td data-label="p99"><span>43,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="ORM"><span>Eloquent</span></td><td data-label="Concurrencia"><span>1</span></td><td data-label="Req/s"><span>40,44</span></td><td data-label="Media"><span>24,763 ms</span></td><td data-label="p50"><span>24,0 ms</span></td><td data-label="p95"><span>29,0 ms</span></td><td data-label="p99"><span>37,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="ORM"><span>EPM</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>140,31</span></td><td data-label="Media"><span>118,668 ms</span></td><td data-label="p50"><span>110,0 ms</span></td><td data-label="p95"><span>202,5 ms</span></td><td data-label="p99"><span>266,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="ORM"><span>Doctrine ORM</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>121,15</span></td><td data-label="Media"><span>132,198 ms</span></td><td data-label="p50"><span>120,0 ms</span></td><td data-label="p95"><span>232,0 ms</span></td><td data-label="p99"><span>314,0 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+    <tr><td data-label="ORM"><span>Eloquent</span></td><td data-label="Concurrencia"><span>16</span></td><td data-label="Req/s"><span>101,85</span></td><td data-label="Media"><span>158,816 ms</span></td><td data-label="p50"><span>147,0 ms</span></td><td data-label="p95"><span>282,0 ms</span></td><td data-label="p99"><span>372,5 ms</span></td><td data-label="Fallidas"><span>0</span></td></tr>
+</tbody></table>
 
 <h3>Servicios internos</h3>
-<table><thead><tr><th>Operación</th><th>Muestras</th><th>Mediana</th><th>p95</th></tr></thead><tbody>
-        <tr><td>Injector: singleton resuelto</td><td>100.000 por ronda</td><td>0,350 µs</td><td>0,550 µs</td></tr>
-        <tr><td>Injector: configuración resuelta</td><td>100.000 por ronda</td><td>0,350 µs</td><td>0,600 µs</td></tr>
-        <tr><td>SDT: lookup compilado</td><td>100.000 por ronda</td><td>14,052 µs</td><td>37,204 µs</td></tr>
-        <tr><td>SDT: compilación en frío</td><td>5.000 por ronda</td><td>203,174 µs</td><td>379,294 µs</td></tr>
-        <tr><td>Caché memoria: set</td><td>100.000 por ronda</td><td>1,500 µs</td><td>2,401 µs</td></tr>
-        <tr><td>Caché memoria: hit</td><td>100.000 por ronda</td><td>0,400 µs</td><td>0,650 µs</td></tr>
-    </tbody></table>
+<table class="scoop-table w-full max-w-full my-md text-on-surface"><thead><tr><th scope="col">Operación</th><th scope="col">Muestras</th><th scope="col">Mediana</th><th scope="col">p95</th></tr></thead><tbody>
+    <tr><td data-label="Operación"><span>Injector: singleton resuelto</span></td><td data-label="Muestras"><span>100.000 por ronda</span></td><td data-label="Mediana"><span>0,350 µs</span></td><td data-label="p95"><span>0,550 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Injector: configuración resuelta</span></td><td data-label="Muestras"><span>100.000 por ronda</span></td><td data-label="Mediana"><span>0,350 µs</span></td><td data-label="p95"><span>0,600 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>SDT: lookup compilado</span></td><td data-label="Muestras"><span>100.000 por ronda</span></td><td data-label="Mediana"><span>14,052 µs</span></td><td data-label="p95"><span>37,204 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>SDT: compilación en frío</span></td><td data-label="Muestras"><span>5.000 por ronda</span></td><td data-label="Mediana"><span>203,174 µs</span></td><td data-label="p95"><span>379,294 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Caché memoria: set</span></td><td data-label="Muestras"><span>100.000 por ronda</span></td><td data-label="Mediana"><span>1,500 µs</span></td><td data-label="p95"><span>2,401 µs</span></td></tr>
+    <tr><td data-label="Operación"><span>Caché memoria: hit</span></td><td data-label="Muestras"><span>100.000 por ronda</span></td><td data-label="Mediana"><span>0,400 µs</span></td><td data-label="p95"><span>0,650 µs</span></td></tr>
+</tbody></table>
 
-<p class="doc-alert"><b>Alcance:</b> estos resultados representan esta topología y estos casos concretos. El bundle canónico conserva las rondas, percentiles, versiones, hashes de instrumentos y salidas crudas para repetir o auditar la publicación.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Alcance:</b> estos resultados representan esta topología y estos casos concretos. El bundle canónico conserva las rondas, percentiles, versiones, hashes de instrumentos y salidas crudas para repetir o auditar la publicación.</p>
 
 <h2>
     <a href="#cicd">Integración Continua (GitHub Actions)</a>
@@ -355,9 +359,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
       - name: Compile to production
-        run: composer build
-      - name: Execute tests
-        run: composer test
+        run: composer run build
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -365,10 +367,10 @@ jobs:
       - name: Build assets
         run: |
           npm install
-          npm start
+          npm run build
       - name: Clean up development files
         run: |
-          rm -rf .git .github node_modules tests .vscode .devcontainer
+          rm -rf .git .github node_modules tests .vscode .dockercontainer .devcontainer
           rm -f *.md app/*.neon app/*.xml *.yml app/router.php package* composer* .dockerignore Dockerfile jsconfig.json vite.config.js
           rm -rf app/scripts app/styles app/routes
       - name: Deploy
@@ -505,4 +507,4 @@ jobs:
           script: ./deploy.sh
 </code></pre>
 
-<p class="doc-alert"><b>Seguridad:</b> Nunca incluya secretos (llaves de cipher o contraseñas de DB) directamente en el archivo YAML. Utilice los <i>Secrets</i> de GitHub y mapee los valores mediante variables de entorno.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Seguridad:</b> Nunca incluya secretos (llaves de cipher o contraseñas de DB) directamente en el archivo YAML. Utilice los <i>Secrets</i> de GitHub y mapee los valores mediante variables de entorno.</p>

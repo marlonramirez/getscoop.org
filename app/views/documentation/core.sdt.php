@@ -5,7 +5,7 @@
     <li><a href="#config">Gestión de la configuración</a></li>
     <li><a href="#injector">Inversión de control (IoC)</a></li>
     <li><a href="#extend">Extensibilidad del Núcleo</a></li>
-    <li><a href="#lifecycle">Ejecución de la aplicación</a></li>
+    <li><a href="#lifecycle">Ciclo de vida</a></li>
 </ul></p>
 
 <h2>
@@ -13,7 +13,7 @@
     <span class="anchor" id="context">...</span>
 </h2>
 
-<p>La clase <code>\Scoop\Bootstrap\Application</code> administra el arranque, el <code>Environment</code> y su Inyector de dependencias. La API estática de <code>\Scoop\Context</code> está deprecada desde v0.8.5 y permanece como puente de compatibilidad. Para código nuevo, utiliza la instancia de Application en el punto de entrada y la inyección por constructor en los servicios.</p>
+<p class="alert">La clase <code>\Scoop\Bootstrap\Application</code> administra el arranque completo desde la v.0.8.5. <code>\Scoop\Bootstrap\Environment</code> está deprecado desde v0.8.6 en favor de Context; su implementación permanece como base de compatibilidad. La API estática de Context está deprecada desde v0.8.5. Para código nuevo, utiliza la instancia de Application en el punto de entrada y la inyección por constructor en los servicios.</p>
 
 <pre><code class="language-php">require 'scoop/Bootstrap/Application.php';
 $app = new \Scoop\Bootstrap\Application();
@@ -42,19 +42,19 @@ $app->run();
 <p>
     <ul>
         <li><b>Resolución:</b> <code>$app->inject($id)</code> obtiene un servicio desde el Inyector de esa aplicación.</li>
-        <li><b>Entorno:</b> <code>Environment::getInjector()</code> permite resolver servicios en factorías y componentes de infraestructura que necesitan acceso al contenedor.</li>
+        <li><b>Contexto:</b> <code>$context->getInjector()</code> permite resolver servicios en factorías y componentes de infraestructura que reciben una instancia de <code>\Scoop\Context</code>.</li>
         <li><b>Persistencia:</b> <code>Connection</code> dispone de una factoría para su resolución como provider; el nuevo formato utiliza las opciones directamente bajo <code>db</code>, sin bundles.</li>
     </ul>
 </p>
 
 <pre><code class="language-php">$service = $app->inject(MyServiceInterface::class);
-$environment = $app->inject('\Scoop\Bootstrap\Environment');
-$injector = $environment->getInjector();
+$context = $app->inject('\Scoop\Context');
+$injector = $context->getInjector();
 </code></pre>
 
 <p><code>stateless</code> vale <code>false</code> por defecto. Configúralo como <code>true</code> para evitar el inicio automático de sesiones; el ejemplo anterior utiliza esa opción.</p>
 
-<p class="doc-alert"><b>Cambio previsto:</b> En futuras versiones, <code>stateless</code> será reemplazado por <code>stateful</code>, también con valor predeterminado <code>false</code>. La aplicación será stateless por defecto; <code>stateful =&gt; true</code> habilitará el inicio automático de sesiones. La opción de arranque <code>config</code> pasará a llamarse <code>map</code>. Estos cambios aún no se aplican a los ejemplos de la versión actual.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Cambio previsto:</b> En futuras versiones, <code>stateless</code> será reemplazado por <code>stateful</code>, también con valor predeterminado <code>false</code>. La aplicación será stateless por defecto; <code>stateful =&gt; true</code> habilitará el inicio automático de sesiones. La opción de arranque <code>config</code> pasará a llamarse <code>map</code>. Estos cambios aún no se aplican a los ejemplos de la versión actual.</p>
 
 <h2>
     <a href="#config">Gestión de la configuración</a>
@@ -72,7 +72,7 @@ $injector = $environment->getInjector();
 
 <h3>Resolución dinámica</h3>
 
-<p>La clase <code>Environment</code> implementa un sistema de <b>Resolución Diferida</b>. Para garantizar una huella de memoria mínima, Scoop no carga la configuración de forma masiva; en su lugar, utiliza <b>Lazy Loaders</b> que resuelven "intenciones" mediante prefijos en el momento exacto en que se solicitan.</p>
+<p>La instancia de <code>Context</code> implementa un sistema de <b>Resolución Diferida</b>. Para garantizar una huella de memoria mínima, Scoop no carga la configuración de forma masiva; en su lugar, utiliza <b>Lazy Loaders</b> que resuelven "intenciones" mediante prefijos en el momento exacto en que se solicitan.</p>
 
 <p>
     <ul>
@@ -157,7 +157,7 @@ $injector = $environment->getInjector();
 
 <p>El siguiente diagrama resume la resolución de un servicio y la reutilización de instancias según su scope. Los mapas precompilados se utilizan en producción; si no hay una definición disponible, el Inyector obtiene las dependencias mediante Reflection.</p>
 
-<pre class="mermaid" style="text-align:center">
+<pre class="mermaid" data-diagram-title="Resolución de servicios y scopes" style="text-align:center">
 flowchart LR
     GET["Resolver servicio"] --> EXISTS{"¿Instancia?"}
     EXISTS -->|Sí| RESULT["Servicio"]
@@ -203,7 +203,7 @@ flowchart LR
 
 <pre><code class="language-php">class LogFactory {
 
-    public function __construct(private \Scoop\Bootstrap\Environment $env) {}
+    public function __construct(private \Scoop\Context $env) {}
 
     public function create(): \Scoop\Log\Logger {
         $logConfig = $this->env->getConfig('log', []);
@@ -213,7 +213,7 @@ flowchart LR
 }
 </code></pre>
 
-<p class="doc-danger"><b>Nota de rigor:</b> El antiguo método manual <code>$injector->bind()</code> ha sido deprecado en favor de esta configuración declarativa por archivos. Esto permite que Scoop sea más predecible y habilita optimizaciones de caché en producción.</p>
+<p class="doc-danger p-md rounded-lg text-on-surface bg-error-subtle border-error"><b>Nota de rigor:</b> El antiguo método manual <code>$injector->bind()</code> ha sido deprecado en favor de esta configuración declarativa por archivos. Esto permite que Scoop sea más predecible y habilita optimizaciones de caché en producción.</p>
 
 <h2>
     <a href="#extend">Extensibilidad del Núcleo</a>
@@ -242,11 +242,11 @@ flowchart LR
 ]
 </code></pre>
 
-<p class="doc-alert"><b>Poder Arquitectónico:</b> Esto permite que Scoop se adapte a cualquier necesidad de infraestructura (inicialización de sesiones personalizadas, auditoría de conexiones, etc.) manteniendo el punto de entrada <code>index.php</code> limpio e inmutable.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Poder Arquitectónico:</b> Esto permite que Scoop se adapte a cualquier necesidad de infraestructura (inicialización de sesiones personalizadas, auditoría de conexiones, etc.) manteniendo el punto de entrada <code>index.php</code> limpio e inmutable.</p>
 
 <h3>Custom Loaders</h3>
 
-<p>Puedes registrar tus propios prefijos de carga dinámica en el archivo de configuración. Esto permite que el <code>Environment</code> entienda nuevos protocolos de configuración.</p>
+<p>Puedes registrar tus propios prefijos de carga dinámica en el archivo de configuración. Esto permite que el <code>Context</code> entienda nuevos protocolos de configuración.</p>
 
 <pre><code class="language-php">'loaders' => [
     'yaml' => \App\Infrastructure\Loader\YamlLoader::class
@@ -254,7 +254,7 @@ flowchart LR
 </code></pre>
 
 <h2>
-    <a href="#lifecycle">Ejecución de la aplicación</a>
+    <a href="#lifecycle">Ciclo de vida</a>
     <span class="anchor" id="lifecycle">...</span>
 </h2>
 
@@ -274,8 +274,6 @@ flowchart LR
 }
 </code></pre>
 
-<h3>Uso desde controladores</h3>
-
 <p>Un controlador puede devolver una <code>Response</code>, una <code>View</code>, un array o un valor escalar. Los arrays se entregan como JSON, las vistas como HTML y los escalares como texto. Para definir el código de estado y las cabeceras, devuelve una Response:</p>
 
 <pre><code class="language-php">return new \Scoop\Http\Message\Response(
@@ -284,5 +282,7 @@ flowchart LR
     json_encode(['id' => $postId])
 );
 </code></pre>
+
+<p>Después de enviar la respuesta, <code>run()</code> llama a <code>terminate()</code>: cierra la sesión activa, dispara <code>RequestFinished</code>, restablece los servicios de vista, limpia el gestor de entidades, vacía los logs y limpia el scope request del inyector. El gestor de entidades y el logger sólo se resuelven durante el cierre si ya fueron utilizados. Si una excepción no tiene estado HTTP mapeado, la aplicación termina antes de propagarla.</p>
 
 <p>Configura <code>http.errors</code> para asociar tus excepciones con respuestas HTTP. Las excepciones no mapeadas se propagan al llamador. Consulta <a href="{{#view->route('doc', 'ecosystem')}}#exceptions">Excepciones y respuestas de error</a> para definir estados, cabeceras y vistas.</p>

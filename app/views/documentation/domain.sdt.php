@@ -4,7 +4,7 @@
 
 <p>Entity Persist Manager (EPM) es un motor de persistencia basado en el patrón <b>Data Mapper</b> y diseñado bajo el principio de <b>Persistence Ignorance</b> e incluye mapa de identidad, seguimiento de cambios, persistencia diferida mediante <code>flush()</code>, relaciones, herencia y conversión de tipos. Las entidades de dominio no heredan de clases del framework ni requieren anotaciones: el mapeo se define externamente para mantener el dominio desacoplado y testeable.</p>
 
-<p class="doc-alert"><b>Carga explícita:</b> EPM prescinde deliberadamente del <i>Lazy Loading</i>. Las relaciones que forman parte de un agregado se solicitan mediante <code>aggregate()</code>, haciendo visible el alcance de la consulta y evitando accesos N+1 implícitos. Esta decisión no limita su condición de ORM; define su estrategia de carga.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Carga explícita:</b> EPM prescinde deliberadamente del <i>Lazy Loading</i>. Las relaciones que forman parte de un agregado se solicitan mediante <code>aggregate()</code>, haciendo visible el alcance de la consulta y evitando accesos N+1 implícitos. Esta decisión no limita su condición de ORM; define su estrategia de carga.</p>
 
 <p><ul>
     <li><a href="#entities">Mapeo de Entidades POPO</a></li>
@@ -146,7 +146,7 @@
 
 <p>La forma recomendada para el manejo de herencia es <b>Class Table Inheritance (CTI)</b>, donde cada subclase posee su propia tabla. Scoop sincroniza automáticamente la jerarquía de clases con el esquema relacional.</p>
 
-<p class="doc-alert"><b>Nota de Arquitectura:</b> El uso de discriminadores es potente para el polimorfismo, pero puede implicar consultas adicionales en ciertas estrategias de carga. Scoop también permite implementar <i>Single Table Inheritance</i> (STI) para maximizar el rendimiento manteniendo el aislamiento lógico.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Nota de Arquitectura:</b> El uso de discriminadores es potente para el polimorfismo, pero puede implicar consultas adicionales en ciertas estrategias de carga. Scoop también permite implementar <i>Single Table Inheritance</i> (STI) para maximizar el rendimiento manteniendo el aislamiento lógico.</p>
 
 <p>Si se requiere distinguir clases en una jerarquía, se configura un <code>discriminator</code>. Este define una columna que indica al motor qué tipo de clase instanciar.</p>
 
@@ -171,7 +171,7 @@
 
 <p>El sistema de persistencia soporta herencia recursiva; mediante el <code>DiscriminatorMapper</code>, Scoop puede resolver jerarquías polimórficas complejas, instanciando la subclase exacta basándose en el estado de la base de datos de forma totalmente transparente para el dominio.</p>
 
-<p class="doc-danger">En futuras versiones se puede implementar una única tabla por subclase (Concrete Table Inheritance).</p>
+<p class="doc-danger p-md rounded-lg text-on-surface bg-error-subtle border-error">En futuras versiones se puede implementar una única tabla por subclase (Concrete Table Inheritance).</p>
 
 <h2>
     <a href="#types">Custom Types: Extendiendo el Motor</a>
@@ -262,7 +262,7 @@
 
 <p>Scoop prohíbe el <i>Lazy Loading</i> por diseño. Para recuperar relaciones, se debe utilizar el método <b><code>aggregate()</code></b>, permitiendo que el motor realice Joins inteligentes u optimizaciones de carga en lote.</p>
 
-<pre><code class="language-php">class InvoiceCommand implements InvoiceRepository
+<pre><code class="language-php">class InvoicePostgresRepository implements InvoiceRepository
 {
     private Manager $em;
 
@@ -297,7 +297,7 @@
 }
 </code></pre>
 
-<p class="doc-alert"><b>Unit of Work:</b> El motor rastrea internamente los cambios en las entidades. Al invocar <code>$this->em->flush()</code>, Scoop genera y ejecuta atómicamente todas las sentencias SQL de actualización necesarias.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Unit of Work:</b> El motor rastrea internamente los cambios en las entidades. Al invocar <code>$this->em->flush()</code>, Scoop genera y ejecuta atómicamente todas las sentencias SQL de actualización necesarias.</p>
 
 <h3>Flujo de lectura e hidratación</h3>
 
@@ -391,4 +391,4 @@ sequenceDiagram
     </code></pre>
 </p>
 
-<p class="doc-alert"><b>Pureza Táctica:</b> Con Criteria, el desarrollador puede construir filtros complejos desde la interfaz de usuario o servicios de aplicación sin que estas capas conozcan la estructura de la base de datos o la sintaxis SQL subyacente.</p>
+<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Pureza Táctica:</b> Con Criteria, el desarrollador puede construir filtros complejos desde la interfaz de usuario o servicios de aplicación sin que estas capas conozcan la estructura de la base de datos o la sintaxis SQL subyacente.</p>

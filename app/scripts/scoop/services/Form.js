@@ -3,7 +3,7 @@ export default class Form {
     let query = '';
     for (const name in params) {
       if (params[name]) {
-        query += name + '=' + encodeURI(params[name]) + '&';
+        query += encodeURIComponent(name) + '=' + encodeURIComponent(params[name]) + '&';
       }
     }
     window.history.pushState(null, '', query ?
@@ -16,7 +16,7 @@ export default class Form {
     const params = {};
     query.substring(1, query.length).split('&').forEach((string) => {
       string = string.split('=');
-      params[string[0]] = decodeURI(string[1]);
+      params[decodeURIComponent(string[0])] = decodeURIComponent(string[1]);
     });
     return params;
   }
@@ -30,14 +30,14 @@ export default class Form {
       if ((type == "radio" || type == "checkbox") && !inp.checked) continue;
       const index = inp.selectedIndex;
       const lastChars = name.length - 2;
-      if (name.indexOf("[]") === lastChars) {
+      if (name.endsWith('[]')) {
         name = name.substr(0, lastChars);
         if (!obj[name]) {
           obj[name] = [];
         }
         obj[name].push(inp.value);
       } else if (type === 'file') {
-        obj[name] = inp.files;
+        obj[name] = Array.from(inp.files);
       } else if (!obj[name] && type.indexOf("select") == 0 && index != -1) {
         obj[name] = type === "select-multiple" ?
         Array.from(inp.selectedOptions).map(({ value }) => value) :

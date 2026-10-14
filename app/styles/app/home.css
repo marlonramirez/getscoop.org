@@ -1,0 +1,93 @@
+#welcome {
+  text-align: center;
+  color: #fff;
+  background: #000 url("/public/images/welcome-2.jpg") right 70px no-repeat fixed;
+  height: 400px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  font-size: 1.2em;
+  position: relative;
+}
+
+#welcome h1 {
+  padding-top: 120px;
+  font: 3.5em Chalet;
+  margin: 0;
+}
+
+#welcome h2 {
+  margin: 0;
+}
+
+#welcome .download {
+  color: #ffb515;
+  background-color: #000;
+  width: 250px;
+  margin-left: -125px;
+  padding: .4em 0;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateY(50%);
+}
+
+#welcome .download:active {
+  transform: translateY(calc(50% + 2px));
+}
+
+#welcome .download .app-icon {
+  font-size: 1.3em;
+}
+
+.features-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  column-gap: 3%;
+}
+
+.mark-stack-scoop .icon-badge {
+  font-size: 2.5em;
+  margin-bottom: .75rem;
+}
+
+.features-grid .mark-stack-scoop > p {
+  text-align: left;
+  line-height: 1.6;
+}
+
+#welcome ~ .features-grid {
+  margin-top: 3rem;
+}
+
+.about figcaption {
+  width: 25%;
+  flex: 0 0 25%;
+}
+
+.about article {
+  width: 75%;
+}
+
+.about-scoop-mark {
+  max-width: 26rem;
+}
+
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about figcaption {
+    display: none;
+  }
+
+  .about article {
+    width: 100%;
+  }
+}
+
+@media (max-width: 580px) {
+  .features-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
