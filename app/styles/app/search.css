@@ -78,6 +78,27 @@
   background: color-mix(in srgb, var(--surface) 90%, var(--primary));
 }
 
+.result-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.result-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.result-badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--outline);
+  border-radius: 4px;
+  color: var(--secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
 .result-title {
   font-size: 14px;
   font-weight: 600;

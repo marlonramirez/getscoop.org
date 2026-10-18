@@ -3,7 +3,7 @@
 <p><ul>
     <li><a href="#exceptions">Manejo de Excepciones y Mapeo HTTP</a></li>
     <li><a href="#monitoring">Monitoreo y Logging</a></li>
-    <li><a href="#cache">Caché distribuida</a></li>
+    <li><a href="#cache">Caché</a></li>
     <li><a href="#http-client">HTTP Client</a></li>
     <li><a href="#events">Catálogo de eventos</a></li>
     <li><a href="#ice">ICE: Interface Command Environment</a></li>
@@ -143,28 +143,58 @@
 <p>Puedes registrar listeners para eventos como <code>ConnectionOpened</code>, <code>ConnectionClosed</code> y <code>RequestFinished</code>. Para observar errores al terminar la petición, consulta <code>RequestFinished::getError()</code>.</p>
 
 <h2>
-    <a href='#cache'>Caché distribuida</a>
+    <a href='#cache'>Caché</a>
     <span class='anchor' id='cache'>...</span>
 </h2>
 
 <p>Scoop cumple funcionalmente con los contratos de <b>PSR-6</b> (Cache Item Pool) y <b>PSR-16</b> (Simple Cache), ofreciendo las operaciones y comportamientos definidos por ambos estándares. Las interfaces oficiales no se implementan directamente para preservar la retrocompatibilidad del core con PHP 5.4, por lo que el cumplimiento se expresa a nivel de contrato y API, no mediante vinculación nominal con las interfaces.</p>
 
-<h3>Arquitectura de Almacenamiento</h3>
+<h3>Uso de la caché</h3>
 
-<p>El sistema se basa en un <i>Item Pool</i> extensible. Scoop provee de serie dos <i>drivers</i> de alta eficiencia:</p>
+<p>Utiliza la caché para reutilizar datos que no necesitas calcular o consultar en cada petición. Inyecta <code>\Scoop\Cache</code> en tu servicio: primero busca el valor y, si no existe o ha vencido, obtén los datos y guárdalos para las siguientes consultas.</p>
 
-<p>
-    <ul>
-        <li><b><code>FilePool</code>:</b> Persistencia en disco con una estructura de directorios jerárquica (basada en el hash de la clave) para evitar cuellos de botella en el sistema de archivos del SO ante volúmenes masivos de datos.</li>
-        <li><b><code>MemoryPool</code>:</b> Ideal para pruebas unitarias o procesos de corta duración que requieren velocidad de acceso volátil.</li>
-    </ul>
-</p>
+<pre><code class="language-php">$products = $this->cache->get('catalog.products');
+if ($products === null) {
+    $products = $this->productRepository->findAll();
+    $this->cache->set('catalog.products', $products, 300);
+}
 
-<pre><code class="language-php">$this->cache->set('user_session_1', $userData, 3600);
-$data = $this->cache->get('user_session_1');
+return $products;
 </code></pre>
 
-<p class="doc-alert p-md rounded-lg text-on-surface bg-warning-subtle border-warning"><b>Rendimiento de Autor:</b> El sistema soporta <b>Deferred Saving</b> (Guardado Diferido). Puedes preparar múltiples cambios en el pool y ejecutarlos atómicamente al final del ciclo de vida mediante el método <code>commit()</code>, optimizando las operaciones de I/O.</p>
+<p>En este ejemplo, el catálogo se reutiliza durante cinco minutos. El tercer argumento de <code>set()</code> es su duración en segundos. Si lo omites, se aplica <code>cache.time</code>; con <code>0</code>, el valor no vence. Elige una clave que identifique todos los datos de la consulta, incluyendo filtros o usuario cuando corresponda.</p>
+
+<p>Cuando cambies los datos originales, elimina la entrada para que la siguiente consulta obtenga el valor actualizado:</p>
+
+<pre><code class="language-php">$this->productRepository->save($product);
+$this->cache->delete('catalog.products');
+</code></pre>
+
+<h3>Dónde se guardan los datos</h3>
+
+<p>Por defecto se utiliza <code>Scoop\Cache\Item\Pool\File</code>, que conserva los valores en archivos entre ejecuciones. Si sólo necesitas reutilizarlos durante la vida de una instancia, puedes elegir <code>Memory</code> desde <code>providers</code>:</p>
+
+<pre><code class="language-php">'providers' => array(
+    'Scoop\Cache\Item\Pool' => array(
+        'service' => 'Scoop\Cache\Item\Pool\Memory',
+        'scope' => 'singleton'
+    )
+)</code></pre>
+
+<p>El código que consulta la caché sigue siendo el mismo. Con <code>Memory</code>, los valores se pierden al terminar la instancia y no se comparten con otros procesos.</p>
+
+<h3>Guardar al finalizar una operación</h3>
+
+<p>Si necesitas preparar varias entradas antes de guardarlas, inyecta <code>Scoop\Cache\Item\Pool</code> y utiliza el guardado diferido:</p>
+
+<pre><code class="language-php">$item = $this->pool->getItem('catalog.products');
+$item->set($products);
+$item->expiresAfter(300);
+$this->pool->saveDeferred($item);
+$this->pool->commit();
+</code></pre>
+
+<p>Llama a <code>commit()</code> al finalizar la operación. Cada entrada se guarda por separado; el lote no constituye una transacción atómica.</p>
 
 <h2>
     <a href='#http-client'>HTTP Client</a>
@@ -353,6 +383,79 @@ $this->writer->write('&lt;done:Compilación completada!&gt;');</code></pre>
     <li><b>Opciones (Options):</b> Parámetros con nombre definidos con doble guion (<code>--name=valor</code>).</li>
     <li><b>Banderas (Flags):</b> Interruptores booleanos de un solo guion (<code>-f</code>).</li>
 </ul>
+
+<h3 id="command-pool">Supervisión de comandos</h3>
+
+<p>Utiliza <code>\Scoop\Command\Pool</code> desde un comando CLI para ejecutar y supervisar otros procesos. Recibe el pool por inyección de constructor o resuélvelo desde el contexto:</p>
+
+<pre><code class="language-php">$pool = $context->getInjector()->get('Scoop\Command\Pool');
+$pool->run([
+    'notifications' => [
+        'command' => [PHP_BINARY, 'app/ice', 'consume-notifications'],
+        'processes' => 2
+    ],
+    'report' => [
+        'command' => [PHP_BINARY, 'app/ice', 'generate-report'],
+        'policy' => 'never'
+    ],
+    'inventory' => [
+        'command' => [PHP_BINARY, 'app/ice', 'sync-inventory'],
+        'policy' => 'on-failure'
+    ]
+]);
+</code></pre>
+
+<p><code>run($workers)</code> recibe toda la configuración de una invocación. Cada clave identifica el comando en los eventos y cada valor es un mapa con <code>command</code>, <code>processes</code> y <code>policy</code>. <code>command</code> es obligatorio y contiene un array con el ejecutable y sus argumentos por separado. <code>processes</code> y <code>policy</code> son opcionales: sus valores por defecto son una réplica y <code>always</code>. El número de réplicas debe ser un entero positivo; los demás valores se normalizan a una réplica.</p>
+
+<ul>
+    <li><code>always</code>: reinicia el proceso cada vez que termina.</li>
+    <li><code>never</code>: intenta ejecutarlo una sola vez por réplica.</li>
+    <li><code>on-failure</code>: reinicia si no puede arrancar o termina sin código de éxito (<code>0</code>).</li>
+</ul>
+
+<p>Las políticas admitidas son <code>always</code>, <code>never</code> y <code>on-failure</code>. Una política desconocida produce una <code>InvalidArgumentException</code>. Omitir la política o indicar <code>null</code> utiliza <code>always</code>.</p>
+
+<p><code>run($workers)</code> mantiene ocupado el comando supervisor hasta que todas las réplicas terminan según su política o se solicita el apagado. Para ejecutar de nuevo o cambiar la configuración, vuelve a pasar el mapa a <code>run()</code>; <code>run(array())</code> no inicia procesos.</p>
+
+<h4>Configurar el cierre</h4>
+
+<p>Para ajustar los plazos, construye el pool con el dispatcher de eventos de la aplicación:</p>
+
+<pre><code class="language-php">$pool = new \Scoop\Command\Pool($dispatcher, 120, 60);
+</code></pre>
+
+<p>El segundo argumento es el tiempo máximo de cierre y el tercero la espera máxima entre reinicios, ambos en segundos. Los valores predeterminados son 120 y 60. Ejecuta los procesos en primer plano y detén el supervisor con <code>Ctrl+C</code> o la señal de apagado del servicio. Tus consumidores deben atender esa señal para terminar el trabajo en curso dentro del plazo; configura el gestor del servicio para que espere más tiempo que el pool.</p>
+
+<p>El pool es compatible con PHP 5.4. El cierre ordenado mediante señales requiere PCNTL en Linux; en Windows está disponible desde PHP 7.4. En Windows con PHP 5.4 puedes ejecutar el pool, pero no se garantiza el cierre ordenado al interrumpirlo.</p>
+
+<h4>Observar los procesos</h4>
+
+<p>Registra listeners mediante el <a href="{{#view->route('doc', 'application')}}#events">Event Bus</a>. Los eventos del supervisor pertenecen a <code>Scoop\Command\Event</code>:</p>
+
+<ul>
+    <li><code>ProcessStarted</code>: el proceso fue creado; no indica que el servicio ya esté listo.</li>
+    <li><code>ProcessExited</code>: el proceso terminó. <code>getExitCode()</code> devuelve su código de salida, o <code>-1</code> si no está disponible.</li>
+    <li><code>ProcessFailed</code>: no se pudo iniciar el proceso.</li>
+    <li><code>ProcessStopped</code>: el proceso fue cerrado durante el apagado del supervisor.</li>
+</ul>
+
+<p>Puedes escuchar un tipo concreto o <code>ProcessEvent</code> para recibirlos todos. La API común ofrece <code>getName()</code> (la clave del mapa pasado a <code>run()</code>), <code>getCommand()</code> (ejecutable y argumentos), <code>getReplica()</code> (índice desde cero dentro de cada nombre), <code>getPid()</code> (<code>null</code> si no pudo arrancar), <code>getTime()</code> (<code>DateTime</code>) y <code>getStartCount()</code> (número de arranques correctos de esa réplica durante la ejecución actual). Un intento fallido de creación no incrementa el contador.</p>
+
+<p>Por ejemplo, este listener registra el inicio de cada réplica:</p>
+
+<pre><code class="language-php">public function listen(\Scoop\Command\Event\ProcessStarted $event)
+{
+    $this->logger->info('Proceso de comando ICE iniciado', array(
+        'name' => $event->getName(),
+        'command' => $event->getCommand(),
+        'replica' => $event->getReplica(),
+        'pid' => $event->getPid(),
+        'starts' => $event->getStartCount()
+    ));
+}
+</code></pre>
+
+<p>Controla los errores de tus listeners: una excepción interrumpe la supervisión y se propaga al comando llamador.</p>
 
 <h2>
     <a href='#i18n'>Internacionalización (i18n)</a>

@@ -3,7 +3,7 @@
   width: 250px;
   transition: transform .3s cubic-bezier(.4, 0, .2, 1);
   position: sticky;
-  top: calc(var(--site-header-height, 7rem) + 1rem);
+  top: calc(var(--site-header-offset, var(--site-header-height, 7rem)) + 1rem);
 }
 
 #nav-docs.active {
@@ -108,4 +108,10 @@
   height: 1.5rem;
   display: inline-block;
   mask: url("@icon/menu-2.svg") center / contain no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nav-docs {
+    transition: none;
+  }
 }

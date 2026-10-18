@@ -1,5 +1,6 @@
 :root {
   --site-header-height: 7rem;
+  --site-header-offset: var(--site-header-height);
   --site-logo-width: clamp(8rem, 15vw, 12.5rem);
   --site-documentation-width: 6rem;
   --site-side-width: max(var(--site-logo-width), 10.25rem);
@@ -66,8 +67,6 @@ header .icon-badge {
   height: 3.25rem;
 }
 
-/* The sticky header is the containing block for both underlines, including on mobile. */
-
 header .logo::before, header nav a::before {
   content: "";
   position: absolute;
@@ -131,4 +130,8 @@ header nav a:hover::before, header nav a:focus-visible::before {
   header .logo::before, header nav a::before {
     transition: none;
   }
+}
+
+body[data-scroll-header] > header {
+  transform: translateY(calc(var(--site-header-offset) - var(--site-header-height)));
 }

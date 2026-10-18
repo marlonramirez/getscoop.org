@@ -136,26 +136,22 @@ app/ice preload json:composer
     <span class="anchor" id="frankenphp">...</span>
 </h2>
 
-<p>El entorno Docker de Scoop utiliza <b>FrankenPHP 1.12.0 y PHP 8.5 en modo clásico</b>. Desarrollo y producción parten de la misma imagen oficial. Caddy reescribe las solicitudes hacia <code>index.php</code> y ejecuta PHP con un ciclo independiente por petición. El healthcheck interno de producción utiliza el mismo punto de entrada.</p>
+<p>El entorno Docker de Scoop utiliza <b>FrankenPHP 1.13.0 y PHP 8.5 en modo clásico</b>, con una ejecución independiente por petición.</p>
 
-<h3>Ciclo por petición</h3>
-<p>Cada petición construye <code>Application</code>, ejecuta <code>run()</code> y termina con <code>terminate()</code> después de enviar la respuesta. Los servicios PHP se reconstruyen en la siguiente petición; los singletons se comparten dentro del ciclo actual. El soporte de workers persistentes permanece en el roadmap.</p>
-<p>En desarrollo, OPcache comprueba los cambios de archivos. Después de modificar los archivos de <code>.devcontainer</code>, reconstruir el contenedor de desarrollo. En producción, desplegar una imagen nueva para actualizar código y configuración.</p>
+<p>Después de modificar <code>.devcontainer</code>, reconstruye el contenedor de desarrollo. En producción, reconstruye y reemplaza la imagen para actualizar código o configuración.</p>
 
 <h3>Configuración compartida</h3>
 
 <p>La carpeta <code>.devcontainer</code> contiene tres árboles que reproducen las rutas del sistema operativo dentro de la imagen:</p>
 
 <ul>
-    <li><code>common/etc/php/extensions.list</code>: extensiones para ambos ambientes, una por línea y sin comentarios. Incluye PDO para MySQL, PostgreSQL y SQLite, Redis, APCu, Intl, ZIP y GD, entre otras. Xdebug se instala adicionalmente sólo en desarrollo.</li>
+    <li><code>common/etc/php/extensions.list</code>: extensiones para ambos ambientes, una por línea y sin comentarios. Xdebug se instala adicionalmente sólo en desarrollo.</li>
     <li><code>common/etc/php/conf.d/00-common.ini</code> y <code>common/etc/caddy/scoop.caddy</code>: ajustes PHP y rutas HTTP compartidos.</li>
     <li><code>dev/etc/php/conf.d/dev.ini</code> y <code>dev/etc/caddy/Caddyfile</code>: errores visibles, recarga de OPcache y configuración de Xdebug y HTTP local.</li>
     <li><code>prod/etc/php/conf.d/prod.ini</code> y <code>prod/etc/caddy/Caddyfile</code>: errores ocultos, OPcache sin comprobación de cambios y servidor de producción.</li>
 </ul>
 
-<p>El Dockerfile de desarrollo usa <code>.devcontainer/</code> como contexto y copia <code>common/</code> y <code>dev/</code> a <code>/</code>. El Dockerfile principal usa la raíz del repositorio y copia <code>.devcontainer/common/</code> y <code>.devcontainer/prod/</code>. <code>PHP_INI_SCAN_DIR</code> conserva la carga de extensiones en <code>/usr/local/etc/php/conf.d</code> y añade los ajustes de <code>/etc/php/conf.d</code>.</p>
-
-<p>La imagen oficial aporta PHP, FrankenPHP y Caddy ya construidos. <code>install-php-extensions</code> instala las extensiones adicionales. Esa primera instalación puede tardar; Docker reutiliza la etapa mientras no cambien la imagen base o la lista. Los cambios de configuración PHP o Caddy se copian después y no requieren reinstalar extensiones.</p>
+<p>Añade las extensiones PHP que necesites a <code>common/etc/php/extensions.list</code> y reconstruye el contenedor. Aplica la configuración compartida en <code>common/</code> y los ajustes de cada entorno en <code>dev/</code> o <code>prod/</code>.</p>
 
 <h3>Desarrollo con Dev Containers</h3>
 
@@ -166,7 +162,7 @@ app/ice preload json:composer
     <li>Abrir <code>http://localhost:8000</code>.</li>
 </ol>
 
-<p>FrankenPHP arranca con el contenedor y escucha en <code>127.0.0.1:8001</code>. Al adjuntar el editor se ejecuta directamente Vite, que escucha en 8000 y envía las solicitudes PHP al puerto interno 8001. <code>PHP_HOST</code> permite cambiar ese destino, pero no necesita declararse para esta configuración. Al volver a adjuntar el editor, conservar la instancia de Vite existente para evitar iniciar otra en el mismo puerto.</p>
+<p>Al adjuntar VS Code se inician Vite y FrankenPHP. Trabaja desde <code>http://localhost:8000</code>; la salida de ambos procesos aparece identificada como <code>vite</code> y <code>php</code>. Si vuelves a adjuntar el editor, comprueba que no haya otra instancia usando los mismos puertos.</p>
 
 <p>Compose monta el proyecto en <code>/app</code> y utiliza volúmenes separados para <code>vendor</code>, <code>node_modules</code> y PostgreSQL. <code>CHOKIDAR_USEPOLLING=true</code> y <code>CHOKIDAR_INTERVAL=300</code> permiten detectar ediciones desde Windows en Docker Desktop; el polling puede desactivarse donde los eventos nativos de archivos funcionen correctamente. Xdebug se conecta a <code>host.docker.internal:9003</code>: activar la escucha del depurador, mapear <code>/app</code> al proyecto local y utilizar <code>XDEBUG_TRIGGER=scoop</code>.</p>
 
@@ -177,7 +173,12 @@ docker run --name scoop --sysctl net.ipv4.ip_unprivileged_port_start=0 \
   -p 80:80 scoop-frankenphp-production
 </code></pre>
 
-<p>La construcción genera los assets con Node, instala las dependencias PHP sin paquetes de desarrollo y ejecuta <code>composer build</code>. La etapa final copia la aplicación preparada a <code>/app</code> y ejecuta FrankenPHP como UID/GID 1000. Node, Composer y Xdebug quedan fuera de la imagen final. El sysctl permite escuchar en los puertos bajos con ese usuario.</p>
+<p>El build prepara los assets y las dependencias de producción. La aplicación se ejecuta con el usuario 1000; utiliza ese UID al dar permisos a los volúmenes que necesite escribir.</p>
+
+<p>Para ejecutar una tarea CLI en un contenedor temporal, añade el comando al nombre de la imagen:</p>
+
+<pre><code class="language-shell">docker run --rm scoop-frankenphp-production php app/ice --help
+</code></pre>
 
 <p>Pasar <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code> y <code>DB_NAME</code> según la infraestructura del despliegue. La base de datos debe ser accesible desde el contenedor. Las migraciones se ejecutan después de conectar los servicios:</p>
 
@@ -198,6 +199,12 @@ docker run --name scoop --sysctl net.ipv4.ip_unprivileged_port_start=0 \
 </code></pre>
 
 <p>Sustituir <code>example.com</code> por el dominio real y añadir las variables y conexiones de la aplicación. Caddy gestiona automáticamente la emisión y renovación de certificados. Si Traefik u otra capa termina TLS, conservar <code>SERVER_NAME=:80</code> y conectar el proxy al puerto HTTP del contenedor. El healthcheck permanece en un listener HTTP interno independiente del dominio y de HTTPS.</p>
+
+<h3>Logs del contenedor</h3>
+
+<p>Consulta los logs con <code>docker logs -f scoop</code>. En producción se muestran en JSON; durante el desarrollo, consulta la salida del proceso <code>php</code> en el editor. Ajusta los niveles en el <code>Caddyfile</code> del entorno correspondiente.</p>
+
+<p>Esto no sustituye los handlers de log de tu aplicación. Para consultar también sus mensajes desde Docker, configura el handler <code>Standard</code>; un handler <code>File</code> sigue escribiendo en su archivo. Consulta <a href="{{#view->route('doc', 'ecosystem')}}#monitoring">Monitoreo y Logging</a>.</p>
 
 <h3>Healthcheck y verificación</h3>
 

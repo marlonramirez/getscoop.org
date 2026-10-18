@@ -54,14 +54,14 @@
 |   └─ router.php
 ├─ node_modules
 ├─ public
+|   ├─ assets
+|   |    ├─ fonts
+|   |    ├─ icons
+|   |    └─ images
 |   ├─ css
 |   ├─ fonts
-|   |    └─ awesome
 |   ├─ images
-|   |    └─ icons
 |   ├─ js
-|   ├─ licences
-|   |    └─ tabler
 |   ├─ favicon.ico
 |   ├─ humans.txt
 |   └─ robots.txt
@@ -166,7 +166,7 @@ assets de la aplicación.</p>
 &lt;/section&gt;
 </code></pre>
 
-<p>Para añadir un SVG de <a href="https://tabler.io/icons">Tabler Icons</a>, referencia su nombre con <code>@icon</code>. También puedes colocar tus SVG en <code>app/styles/scoop/icons/</code> y usar el mismo alias:</p>
+<p>Para añadir un SVG de <a href="https://tabler.io/icons">Tabler Icons</a>, referencia su nombre con <code>@icon</code>. El alias busca primero tus SVG en <code>app/styles/scoop/icons/</code> y, si no existen allí, utiliza la variante <code>outline</code> de Tabler. Puedes elegir una variante explícita con <code>@icon/filled/heart.svg</code> o <code>@icon/outline/heart.svg</code>:</p>
 
 <pre><code class="language-css">.favorite-icon {
     display: inline-block;
@@ -260,7 +260,17 @@ export default new Module()
 <p>Para enviar el formulario del ejemplo mediante JavaScript, añade <code>class="scoop-form"</code> y registra <code>Form</code> como se muestra arriba. Mantén <code>action</code>, <code>method</code> y los nombres de los campos. Usa <code>enctype="multipart/form-data"</code> para archivos; extiende <code>Form</code> y personaliza <code>done</code> o <code>fail</code> si necesitas otra respuesta. Incluye también el contenedor Message del siguiente ejemplo para mostrar los avisos de respuesta.</p>
 
 <h4>Cambiar tema: Theme toggle</h4>
-<p>Reutiliza el botón <code>data-theme-toggle</code> de la plantilla, ya registrado con <code>theme-toogle</code>. Mantén sus clases e icono: alterna claro/oscuro y guarda la selección. Carga el script de inicialización del tema antes del CSS para restaurar la preferencia al abrir la página.</p>
+<p>Reutiliza el botón <code>data-theme-toggle</code> de la plantilla para alternar entre claro y oscuro. Para conservar la selección al volver a abrir la página, añade este script en el <code>head</code>, antes del CSS:</p>
+
+<pre><code class="language-html">&lt;script&gt;
+try {
+    const theme = localStorage.getItem('scoop.theme');
+    if (theme === 'light' || theme === 'dark') {
+        document.documentElement.dataset.theme = theme;
+    }
+} catch (error) {}
+&lt;/script&gt;
+</code></pre>
 
 <pre><code class="language-html">&lt;button type="button" class="theme-toggle" data-theme-toggle
     data-attr="ariaLabel:label;title:label" aria-label="Cambiar tema"&gt;
@@ -299,6 +309,8 @@ export default new Module()
 
 <h3 id="frontend-assets">Build y documentación de herramientas</h3>
 <p>Ejecuta <code>npm run dev</code> para desarrollar y <code>npm run build</code> para generar los assets. Despliega también los archivos generados en <code>public/</code>, aunque estén ignorados por Git. Si una clase se construye dinámicamente y desaparece del build, añade su nombre completo a <code>app/styles/safelist.json</code>.</p>
+
+<p>El build escribe las hojas de estilo en <code>public/css/</code>, los scripts en <code>public/js/</code> y los recursos importados en <code>public/assets/</code>, separados en <code>fonts/</code>, <code>icons/</code> e <code>images/</code>. Conserva el recurso original en la ubicación desde la que lo importas; los archivos generados pueden cambiar de nombre al reconstruir.</p>
 
 <p>Consulta las opciones de cada herramienta en su documentación:</p>
 <ul>

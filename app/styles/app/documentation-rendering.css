@@ -1,3 +1,6 @@
+#content-docs pre.hljs-copy-wrapper {
+  overflow: hidden;
+}
 #content-docs pre code {
   display: block;
   overflow-x: auto;

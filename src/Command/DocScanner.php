@@ -20,7 +20,7 @@ class DocScanner implements Command
 
     public function execute()
     {
-        $files = glob("app/views/documentation/*.php");
+        $files = glob("app/views/documentation/*.sdt.php");
         $index = array();
         foreach($files as $file) {
             $filename = basename($file, '.sdt.php');
@@ -30,9 +30,10 @@ class DocScanner implements Command
             for ($i = 0; $i < count($sections); $i++) {
                 $fullTag = $sections[$i][0];
                 $innerHtml = $matches[1][$i][0];
-                preg_match('/id="([^"]+)"/i', $innerHtml, $idMatch);
-                $id = isset($idMatch[1]) ? $idMatch[1] : '';
-                $title = trim(strip_tags($innerHtml));
+                preg_match('/\bid\s*=\s*([\x22\x27])(.*?)\1/is', $fullTag, $idMatch);
+                $id = isset($idMatch[2]) ? $idMatch[2] : '';
+                $heading = preg_replace('/<span\b[^>]*\bclass\s*=\s*([\x22\x27])anchor\1[^>]*>.*?<\/span>/is', '', $innerHtml);
+                $title = preg_replace('/\s+/', ' ', trim(html_entity_decode(strip_tags($heading), ENT_QUOTES, 'UTF-8')));
                 $start = $sections[$i][1] + strlen($fullTag);
                 $end = isset($sections[$i+1]) ? $sections[$i+1][1] : strlen($content);
                 $sectionContent = substr($content, $start, $end - $start);

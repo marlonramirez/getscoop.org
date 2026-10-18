@@ -261,11 +261,11 @@ graph TD
         <li><b>Actualización del motor CSS:</b> Sustituir Stylus por una alternativa moderna integrada con Vite, como Lightning CSS o PostCSS.</li>
         <li><b>Redirecciones compatibles con procesos persistentes:</b> Evolución de <code>goBack()</code> y <code>redirect()</code>. En lugar de finalizar la ejecución mediante <code>exit</code>, devolverán un objeto <code>Response</code> para que la aplicación complete explícitamente su ciclo de vida.</li>
         <li><b>Stateless mode:</b> Ajuste integral del motor para operar sin dependencias directas de <code>$_SESSION</code>, facilitando la ejecución distribuida y evitando estado residual entre peticiones.</li>
-        <li><b>Circuit breaker y Fibers:</b> Implementar circuit breaker nativo en el http cliente (PSR-18) con el sistema de cache incluido (PSR-16) y Fibers para soporte de <code>PHP 8.1</code>.</li>
+        <li><b>Cliente HTTP concurrente y Circuit Breaker:</b> Permitir llamadas HTTP en paralelo e incorporar un Circuit Breaker nativo con estado compartido mediante el sistema de caché.</li>
         <li><b>EPM+structs:</b> Crear un comando para hacer diff de la base de datos actual y las entidades del sistema, generando un struct con los ajustes que se deben hacer para emparejar tanto la base de datos como el sistema de entidades.</li>
         <li><b>Tooling externo:</b> Crear una extensión para poder llevar PHPStan hasta el nivel 10 en Scoop, así como un plugin para VSCode que reconozca la sintaxis de SDT.</li>
         <li><b>Hooks de ciclo de vida:</b> Poder registrar listeners para eventos como PrePersist o PostUpdate a nivel de entidad (sin que la entidad lo sepa, vía configuración).</li>
-        <li><b>Persistencia Determinista (Worker Ready):</b> Eliminar el commit automático al destruir conexiones. Query Builder dejará la gestión de transacciones al consumidor, mediante llamadas explícitas a <code>beginTransaction()</code>, <code>commit()</code> y <code>rollBack()</code>. Entity Manager administrará la persistencia transaccional mediante su <b>Unit of Work</b>, confirmando los cambios si la operación completa tiene éxito y revirtiéndolos si falla.</li>
+        <li><b>Persistencia Determinista (Worker Ready):</b> Coordinar las transacciones y la Unit of Work mediante el ciclo de vida de Application, cerrando conexiones y limpiando el estado al terminar cada petición, sin depender de destructores.</li>
         <li><b>Interoperabilidad formal:</b> Elevar la versión mínima de PHP e implementar las interfaces PSR correspondientes sobre las APIs que ya respetan su semántica.</li>
     </ul></p>
 </div>

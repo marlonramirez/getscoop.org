@@ -10,8 +10,8 @@ export default class DocumentationRenderer {
     try {
       const highlighter = window.hljs;
       if (highlighter) {
-        if (window.CopyButtonPlugin && !this.copyPlugin) {
-          this.copyPlugin = new window.CopyButtonPlugin({ lang: 'es' });
+        if (typeof CopyButtonPlugin !== 'undefined' && !this.copyPlugin) {
+          this.copyPlugin = new CopyButtonPlugin({ lang: 'es' });
           highlighter.addPlugin(this.copyPlugin);
         }
         codes.forEach(code => {
